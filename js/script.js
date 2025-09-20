@@ -22,4 +22,16 @@
     if (!btn) return;
     MP.emit('mp:share:click', { ts: Date.now() });
   });
+
+  // Навигация по секциям (если появятся ссылки с href="#id")
+  root.addEventListener('click', (e) => {
+    const a = e.target.closest('a[href^="#"]');
+    if (!a) return;
+    const id = a.getAttribute('href').slice(1);
+    const el = root.querySelector(`#${CSS.escape(id)}`);
+    if (el) {
+      e.preventDefault();
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
 })();

@@ -26,8 +26,60 @@
       </header>
 
       <main class="mp-main" role="main">
-        <section class="mp-section mp-todo" aria-label="Секция контента">
-          <p class="mp-todo__text">TODO: заполнить контент карточки объекта согласно ТЗ.</p>
+        <!-- 1. Обзор: фото/наименование/контакты/ключевая инфа -->
+        <section class="mp-section mp-overview" id="overview" data-object-id="[TBD]" aria-labelledby="mp-section-overview-title">
+          <h2 class="mp-section__title" id="mp-section-overview-title">Обзор объекта</h2>
+          <div class="mp-overview__content">
+            <div class="mp-gallery" aria-label="Фотографии">[TODO: фото/галерея]</div>
+            <div class="mp-overview__info">
+              <h3 class="mp-title" itemprop="name">[TODO: Наименование объекта]</h3>
+              <p class="mp-price" itemprop="offers" data-price-currency="RUB">[TODO: Цена]</p>
+              <p class="mp-address">[TODO: Адрес]</p>
+              <div class="mp-contacts">[TODO: Контакты агента]</div>
+              <ul class="mp-overview__facts">
+                <li>[TODO: Площадь, комнаты, этаж]</li>
+                <li>[TODO: Тип дома, год постройки]</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. Условия сделки -->
+        <section class="mp-section mp-terms" id="terms" aria-labelledby="mp-section-terms-title">
+          <h2 class="mp-section__title" id="mp-section-terms-title">Условия</h2>
+          <div class="mp-section__body">[TODO: Условия сделки — цена, ипотека, торг, документы]</div>
+        </section>
+
+        <!-- 3. Об объекте -->
+        <section class="mp-section mp-about" id="about-object" aria-labelledby="mp-section-about-title">
+          <h2 class="mp-section__title" id="mp-section-about-title">Об объекте</h2>
+          <ul class="mp-list mp-about__list">
+            <li>[TODO: Планировка, отделка, техника]</li>
+            <li>[TODO: Окна, вид, инсоляция]</li>
+            <li>[TODO: Коммунальные платежи]</li>
+          </ul>
+        </section>
+
+        <!-- 4. О здании -->
+        <section class="mp-section mp-building" id="building" aria-labelledby="mp-section-building-title">
+          <h2 class="mp-section__title" id="mp-section-building-title">О здании</h2>
+          <ul class="mp-list mp-building__list">
+            <li>[TODO: Материал, серия, год постройки]</li>
+            <li>[TODO: Лифты, консьерж, парковка]</li>
+            <li>[TODO: Управляющая компания]</li>
+          </ul>
+        </section>
+
+        <!-- 5. Описание продавца -->
+        <section class="mp-section mp-description" id="description" aria-labelledby="mp-section-description-title">
+          <h2 class="mp-section__title" id="mp-section-description-title">Описание</h2>
+          <p class="mp-description__text">[TODO: Описание от продавца]</p>
+        </section>
+
+        <!-- 6. Расположение и карта -->
+        <section class="mp-section mp-location" id="location" aria-labelledby="mp-section-location-title" data-lat="[TBD]" data-lng="[TBD]" data-address="[TBD]">
+          <h2 class="mp-section__title" id="mp-section-location-title">Расположение</h2>
+          <div class="mp-map-placeholder" aria-label="Карта">[TODO: Карта]</div>
         </section>
       </main>
 

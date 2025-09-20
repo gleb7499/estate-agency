@@ -154,6 +154,55 @@
   font-size: 16px;
 }
 
+/* Базовая сетка секций тела */
+.mp-root .mp-section {
+  padding: 24px 0;
+  border-top: 1px solid rgba(0,0,0,0.06);
+}
+.mp-root .mp-section:first-child {
+  border-top: 0;
+}
+.mp-root .mp-section__title {
+  font-size: 22px;
+  color: #130F26;
+  margin-bottom: 12px;
+}
+.mp-root .mp-list {
+  list-style: disc inside;
+  color: #444;
+}
+.mp-root .mp-map-placeholder {
+  height: 280px;
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(33,119,158,0.08),
+    rgba(33,119,158,0.08) 10px,
+    rgba(73,215,226,0.08) 10px,
+    rgba(73,215,226,0.08) 20px
+  );
+  border: 1px dashed rgba(33,119,158,0.3);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #21779E;
+}
+.mp-root .mp-overview__content {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 24px;
+}
+.mp-root .mp-gallery {
+  background: rgba(0,0,0,0.03);
+  border: 1px dashed rgba(0,0,0,0.1);
+  border-radius: 12px;
+  min-height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+}
+
 /* Подвал с градиентом по картинке */
 .mp-root .mp-footer {
   background: linear-gradient(90deg, #21779E 0%, #49D7E2 100%);
