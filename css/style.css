@@ -1,0 +1,19 @@
+/* Изоляция всех стилей в пределах .mp-root согласно agent.md */
+.mp-root * {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.mp-root {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-family: sans-serif;
+}
+
+.mp-root h1 {
+  font-size: 24px;
+  color: #333;
+}
