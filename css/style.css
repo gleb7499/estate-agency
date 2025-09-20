@@ -1,16 +1,27 @@
-/* Изоляция всех стилей в пределах .mp-root согласно agent.md */
+/* Изоляция всех стилей под .mp-root (см. agent.md) */
 .mp-root * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
+/* Базовые переменные и каркас макета */
 .mp-root {
+  /* базовые размеры шапки (для адаптивного масштабирования) */
+  --mp-brand-title: 36px;
+  --mp-brand-subtitle: 14px;
+  --mp-share-text: 18px;
+  --mp-logo-size: 56px;
+  --mp-btn-pad-y: 10px;
+  --mp-btn-pad-x: 14px;
+  /* системные отступы по краям экрана */
+  --mp-page-pad: 25px;
+
   display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  font-family: sans-serif;
+  flex-direction: column;
+  align-items: stretch;
+  height: auto;
+  font-family: "Open Sans", Arial, sans-serif;
 }
 
 .mp-root h1 {
@@ -18,20 +29,11 @@
   color: #333;
 }
 
-/* Layout контейнер для демо страницы (фиксированная минимальная ширина по правилам) */
-.mp-root {
-  min-width: 1280px;
-  flex-direction: column;
-  align-items: stretch;
-  height: auto;
-  /* системные отступы по краям экрана */
-  --mp-page-pad: 25px;
-}
+/* Layout: базовые параметры заданы выше в .mp-root */
 
-/* Шапка и "сквиркл" */
+/* Шапка и squircle-контейнер */
 .mp-root .mp-header {
   position: relative;
-  
 }
 
 .mp-root .mp-squircle {
@@ -43,7 +45,7 @@
 
   /* Растянуть по ширине окна и дать небольшие системные отступы от краёв */
   width: calc(100% - 2 * var(--mp-page-pad));
-  margin: 50px var(--mp-page-pad) 0; /* top = 50px, боковые = системные, без нижнего */
+  margin: var(--mp-page-pad) var(--mp-page-pad) 0; /* top = боковые = системные, без нижнего */
 
   /* без внутренних отступов у самого элемента */
   padding: 0;
@@ -51,6 +53,42 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
+
+  /* Контейнер для @container-запросов */
+  container-type: inline-size;
+}
+
+/* @container: пропорциональная усадка шапки до порогов */
+@container (max-width: 680px) {
+  .mp-root .mp-squircle {
+    --mp-brand-title: 32px;
+    --mp-brand-subtitle: 13px;
+    --mp-share-text: 16px;
+    --mp-logo-size: 48px;
+    --mp-btn-pad-y: 8px;
+    --mp-btn-pad-x: 12px;
+  }
+}
+@container (max-width: 600px) {
+  .mp-root .mp-squircle {
+    --mp-brand-title: 28px;
+    --mp-brand-subtitle: 12px;
+    --mp-share-text: 15px;
+    --mp-logo-size: 44px;
+    --mp-btn-pad-y: 8px;
+    --mp-btn-pad-x: 10px;
+  }
+}
+@container (max-width: 560px) {
+  .mp-root .mp-squircle {
+    --mp-brand-title: 26px;
+    --mp-brand-subtitle: 12px;
+    --mp-share-text: 14px; /* не уменьшаем ниже 14px */
+    --mp-logo-size: 40px;
+    --mp-btn-pad-y: 6px;
+    --mp-btn-pad-x: 10px;
+  }
 }
 
 .mp-root .mp-header__left {
@@ -61,8 +99,8 @@
 }
 
 .mp-root .mp-logo {
-  width: 56px;
-  height: 56px;
+  width: var(--mp-logo-size);
+  height: var(--mp-logo-size);
   object-fit: contain;
 }
 
@@ -70,7 +108,7 @@
   /* Open Sans Condensed Light 36px; градиентный текст */
   font-family: "Open Sans Condensed", "Open Sans", Arial, sans-serif;
   font-weight: 300;
-  font-size: 36px;
+  font-size: var(--mp-brand-title);
   line-height: 100%;
   letter-spacing: 0;
   background: linear-gradient(180deg, #21779E 0%, #49D7E2 100%);
@@ -82,7 +120,7 @@
 .mp-root .mp-brand__subtitle {
   font-family: "Open Sans Condensed", "Open Sans", Arial, sans-serif;
   font-weight: 300;
-  font-size: 14px;
+  font-size: var(--mp-brand-subtitle);
   line-height: 100%;
   letter-spacing: 0.06em; /* 6% */
   color: #130F26;
@@ -93,7 +131,7 @@
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 14px;
+  padding: var(--mp-btn-pad-y) var(--mp-btn-pad-x);
   border-radius: 10px;
   border: 1px solid #21779E;
   background: #fff;
@@ -109,7 +147,7 @@
 .mp-root .mp-share__text {
   font-family: "Open Sans", Arial, sans-serif;
   font-weight: 400;
-  font-size: 18px;
+  font-size: var(--mp-share-text);
   line-height: 140%;
   letter-spacing: 0;
   text-align: center;
@@ -125,26 +163,9 @@
   outline-offset: 2px;
 }
 
-/* @font-face (опционально): добавить локальные файлы шрифтов в assets/fonts и раскомментировать */
-/*
-@font-face {
-  font-family: 'Open Sans Condensed';
-  src: url('../assets/fonts/OpenSansCondensed-Light.woff2') format('woff2');
-  font-weight: 300;
-  font-style: normal;
-  font-display: swap;
-}
+/* Шрифты подключаются отдельным файлом: assets/fonts/fonts.css */
 
-@font-face {
-  font-family: 'Open Sans';
-  src: url('../assets/fonts/OpenSans-Regular.woff2') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-*/
-
-/* Тело */
+/* Тело страницы */
 .mp-root .mp-main {
   padding: 40px;
 }
@@ -154,7 +175,7 @@
   font-size: 16px;
 }
 
-/* Базовая сетка секций тела */
+/* Секции: базовая сетка и типографика */
 .mp-root .mp-section {
   padding: 24px 0;
   border-top: 1px solid rgba(0,0,0,0.06);
@@ -187,12 +208,17 @@
   justify-content: center;
   color: #21779E;
 }
+/* Обзор: grid с областями (gallery | info) */
 .mp-root .mp-overview__content {
   display: grid;
   grid-template-columns: 1.4fr 1fr;
+  grid-template-areas: 'gallery info';
+  align-items: start;
   gap: 24px;
 }
 .mp-root .mp-gallery {
+  grid-area: gallery;
+  min-width: 0;
   background: rgba(0,0,0,0.03);
   border: 1px dashed rgba(0,0,0,0.1);
   border-radius: 12px;
@@ -202,8 +228,9 @@
   justify-content: center;
   color: #666;
 }
+.mp-root .mp-overview__info { grid-area: info; min-width: 0; }
 
-/* Подвал с градиентом по картинке */
+/* Подвал: градиент + скруглённые края */
 .mp-root .mp-footer {
   background: linear-gradient(90deg, #21779E 0%, #49D7E2 100%);
   border-top-left-radius: 32px;
@@ -283,4 +310,99 @@
   height: 16px;
   flex: 0 0 16px;
   color: #ffffff; /* currentColor для inline-SVG делает линии белыми */
+}
+
+/* ---------- Адаптив: планшеты и мобильные ---------- */
+@media (max-width: 1024px) {
+  .mp-root { --mp-page-pad: 24px; }
+  .mp-root .mp-overview__content {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      'gallery'
+      'info';
+  }
+}
+
+@media (max-width: 768px) {
+  .mp-root {
+    --mp-page-pad: 16px;
+    min-width: 0; /* разрешаем сжиматься на мобильных */
+    /* Базовое уменьшение на мобильных; дальше уточняем контейнер-запросами */
+    --mp-brand-title: 30px;
+    --mp-brand-subtitle: 13px;
+    --mp-share-text: 16px;
+    --mp-logo-size: 50px;
+    --mp-btn-pad-y: 8px;
+    --mp-btn-pad-x: 12px;
+  }
+
+  /* Шапка */
+  .mp-root .mp-squircle {
+    min-height: 96px;
+    height: auto;
+    /* По умолчанию — в строку, но разрешаем перенос при крайней нехватке места */
+    flex-direction: row;
+    flex-wrap: wrap; /* если не влезает — перенос вниз */
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px 12px;
+    margin: var(--mp-page-pad) var(--mp-page-pad) 0; /* верхний равен боковым */
+  }
+  .mp-root .mp-header__left {
+    padding-left: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-align: left;
+  }
+  .mp-root .mp-header__right {
+    margin-right: 12px;
+    white-space: nowrap; /* держим кнопку в одну строку, чтобы переносился весь блок */
+  }
+  .mp-root .mp-brand__subtitle { letter-spacing: 0.04em; }
+
+  /* Тело */
+  .mp-root .mp-main { padding: 16px; }
+  .mp-root .mp-section { padding: 16px 0; }
+  .mp-root .mp-gallery { min-height: 180px; }
+  .mp-root .mp-map-placeholder { height: 220px; }
+
+  /* Подвал */
+  .mp-root .mp-footer {
+    margin: 24px var(--mp-page-pad) 0;
+    min-height: 88px;
+    padding: 12px 16px;
+  }
+  .mp-root .mp-footer__inner { gap: 16px; }
+  .mp-root .mp-footer__qr { width: 56px; height: 56px; }
+  .mp-root .mp-footer__title { font-size: 20px; }
+}
+
+/* Очень узкие экраны — принудительно колонка и центрирование */
+@media (max-width: 520px) {
+  .mp-root .mp-squircle {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  .mp-root .mp-header__left {
+    padding-left: 0;
+    justify-content: center;
+    text-align: center;
+  }
+  .mp-root .mp-header__right { margin-right: 0; }
+}
+
+@media (max-width: 480px) {
+  .mp-root {
+    --mp-page-pad: 12px;
+    /* Понижаем базовый размер, при этом контейнерные запросы на .mp-squircle соблюдают пороги */
+    --mp-brand-title: 24px;
+    --mp-share-text: 14px;
+    --mp-logo-size: 36px;
+    --mp-btn-pad-y: 6px;
+    --mp-btn-pad-x: 10px;
+  }
+  .mp-root .mp-footer__qr { width: 48px; height: 48px; }
+  .mp-root .mp-main { padding: 16px 12px; }
 }

@@ -1,0 +1,37 @@
+/* Подключение локальных шрифтов для проекта (изолировано под mp-root) */
+
+/* Open Sans Condensed Light (300) */
+@font-face {
+  font-family: 'Open Sans Condensed';
+  src:
+    local('Open Sans Condensed Light'),
+    local('OpenSansCondensed-Light'),
+    url('./OpenSansCondensed-Light.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Open Sans Regular (400) */
+@font-face {
+  font-family: 'Open Sans';
+  src:
+    local('Open Sans Regular'),
+    local('OpenSans-Regular'),
+    url('./OpenSans-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Hagrid Medium (500) — placeholder: замените на точное название файла */
+@font-face {
+  font-family: 'Hagrid';
+  src:
+    local('Hagrid Medium'),
+    local('Hagrid-Medium'),
+    url('./Hagrid-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
