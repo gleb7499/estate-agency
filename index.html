@@ -3,18 +3,55 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Placeholder Project</title>
+  <title>Карточка объекта — Демонстрация</title>
     <!-- Подключение изолированных стилей -->
     <link rel="stylesheet" href="css/style.css" />
   </head>
   <body>
     <div class="my-page mp-root">
-      <main class="mp-content" role="main" aria-labelledby="mp-title">
-        <h1 id="mp-title">[PLACEHOLDER] Здесь будет располагаться сайт</h1>
+      <header class="mp-header" role="banner">
+        <div class="mp-squircle" aria-label="Шапка страницы">
+          <div class="mp-header__left">
+            <img class="mp-logo" src="assets/img/logo.svg" alt="Логотип" />
+            <div class="mp-brand" aria-label="Бренд">
+              <div class="mp-brand__title">Небоскреб</div>
+              <div class="mp-brand__subtitle">Агентство недвижимости</div>
+            </div>
+          </div>
+          <button class="mp-header__right" type="button" aria-label="Поделиться объектом">
+            <img class="mp-share__icon" src="assets/img/upload.svg" alt="" aria-hidden="true" />
+            <span class="mp-share__text">Поделиться объектом</span>
+          </button>
+        </div>
+      </header>
+
+      <main class="mp-main" role="main">
+        <section class="mp-section mp-todo" aria-label="Секция контента">
+          <p class="mp-todo__text">TODO: заполнить контент карточки объекта согласно ТЗ.</p>
+        </section>
       </main>
+
+      <footer class="mp-footer" role="contentinfo" aria-label="Поделиться объектом">
+        <div class="mp-footer__inner">
+          <div class="mp-footer__qr" aria-hidden="true">
+            <img src="assets/img/qr.svg" alt="QR код для обмена ссылкой" class="mp-footer__qr-img" />
+          </div>
+          <div class="mp-footer__content">
+            <p class="mp-footer__title">Поделиться объектом</p>
+            <button class="mp-btn mp-btn--outline" type="button">
+              <svg class="mp-btn__icon" width="16" height="16" viewBox="0 0 24 25" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+                <path d="M21 15.5V19.5C21 20.0304 20.7893 20.5391 20.4142 20.9142C20.0391 21.2893 19.5304 21.5 19 21.5H5C4.46957 21.5 3.96086 21.2893 3.58579 20.9142C3.21071 20.5391 3 20.0304 3 19.5V15.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M17 8.5L12 3.5L7 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M12 3.5V15.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span class="mp-btn__text">Отправить ссылку</span>
+            </button>
+          </div>
+        </div>
+      </footer>
     </div>
 
-    <!-- Подключение базового скрипта -->
-    <script src="js/script.js"></script>
+    <!-- Подключение базового скрипта (без inline), согласно agent.md -->
+    <script src="js/script.js" defer></script>
   </body>
 </html>
