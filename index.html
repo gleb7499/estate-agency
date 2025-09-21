@@ -46,12 +46,72 @@
               </figure>
 
               <div class="mp-gallery__thumbs" role="list" aria-label="Превью фотографий"></div>
-
-              <ul class="mp-facts" aria-label="Краткие характеристики"></ul>
             </section>
+            <ul class="mp-facts" aria-label="Краткие характеристики"></ul>
             <div class="mp-overview__info">
-              <p class="mp-price" itemprop="offers" data-price-currency="RUB">12 300 000 ₽</p>
-              <div class="mp-contacts">[TODO: Контакты агента]</div>
+              <!-- Карточка цены -->
+              <section class="mp-card mp-price-card" aria-label="Цена объекта">
+                <p class="mp-price" itemprop="offers" data-price-currency="RUB">10 250 000 ₽</p>
+                <p class="mp-price-per">186 363 ₽/м²</p>
+              </section>
+
+              <!-- Карточка специалиста -->
+              <section class="mp-card mp-agent" aria-label="Специалист">
+                <div class="mp-agent__header">
+                  <!-- Фото специалиста -->
+                  <img class="mp-agent__photo" src="assets/img/person.svg" alt="Фото специалиста" />
+                  <div class="mp-agent__content">
+                    <div class="mp-agent__badge" aria-label="Статус специалиста">
+                      <span class="mp-agent__role">СПЕЦИАЛИСТ</span>
+                      <img class="mp-agent__verified-icon" src="assets/img/confirmed.svg" alt="Подтверждён" />
+                    </div>
+                    <p class="mp-agent__name">Роман Антонович</p>
+                  </div>
+                </div>
+
+                <div class="mp-agent__contacts" aria-label="Контакты">
+                  <span class="mp-agent__contacts-title">Контакты:</span>
+                  <div class="mp-agent__phone-row">
+                    <span class="mp-icon mp-icon--phone" aria-hidden="true">
+                      <img src="assets/img/phone.svg" alt="" />
+                    </span>
+                    <a class="mp-agent__phone" href="tel:+79902769521">+7 (990) 276-95-21</a>
+                  </div>
+                  <ul class="mp-agent__socials" role="list" aria-label="Способы связи">
+                    <li class="mp-social">
+                      <a href="#" aria-label="Одноклассники">
+                        <img src="assets/img/odnoklassniki-logo.svg" alt="" />
+                      </a>
+                    </li>
+                    <li class="mp-social">
+                      <a href="#" aria-label="ВКонтакте">
+                        <img src="assets/img/vk-logo.svg" alt="" />
+                      </a>
+                    </li>
+                    <li class="mp-social">
+                      <a href="#" aria-label="WhatsApp">
+                        <img src="assets/img/whatsapp-logo.svg" alt="" />
+                      </a>
+                    </li>
+                    <li class="mp-social">
+                      <a href="#" aria-label="Viber">
+                        <img src="assets/img/viber-logo.svg" alt="" />
+                      </a>
+                    </li>
+                    <li class="mp-social">
+                      <a href="#" aria-label="Telegram">
+                        <img src="assets/img/telegram-logo.svg" alt="" />
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+              </section>
+
+              <!-- Действия для связи -->
+              <div class="mp-contact-actions" aria-label="Действия для связи">
+                <button type="button" class="mp-cta mp-cta--primary">Заинтересовал</button>
+                <button type="button" class="mp-cta mp-cta--secondary">Не заинтересовал</button>
+              </div>
             </div>
           </div>
         </section>
@@ -117,6 +177,7 @@
     </div>
 
   <!-- JS карточки (дефер, без inline) -->
+    <script src="js/mock-data.js" defer></script>
     <script src="js/script.js" defer></script>
   </body>
 </html>

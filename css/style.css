@@ -212,7 +212,9 @@
 .mp-root .mp-overview__content {
   display: grid;
   grid-template-columns: 1.4fr 1fr;
-  grid-template-areas: 'gallery info';
+  grid-template-areas:
+    'gallery info'
+    'facts facts';
   align-items: start;
   gap: 24px;
 }
@@ -296,9 +298,12 @@
 /* Адаптивная сетка фактов: «динамическая», сама переливается в ряды */
 .mp-root .mp-facts {
   list-style: none;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 12px;
+  /* Растягиваем список на всю ширину грида overview */
+  grid-column: 1 / -1;
+  grid-area: facts;
 }
 .mp-root .mp-fact {
   display: grid;
@@ -307,6 +312,8 @@
   gap: clamp(6px, 1.5vw, 12px);
   align-items: center;
   padding: clamp(8px, 2vw, 12px) clamp(10px, 2.5vw, 14px);
+  /* Тянемся по ширине строки, но сохраняем минимальный размер для читабельности */
+  flex: 1 1 220px;
 }
 .mp-root .mp-fact__icon {
   width: clamp(28px, 7vw, 48px);
@@ -332,6 +339,217 @@
   font-weight: 700; /* bold */
 }
 .mp-root .mp-overview__info { grid-area: info; min-width: 0; }
+
+/* ---------- Инфоблок справа: цена, агент, контакты, CTA ---------- */
+.mp-root .mp-overview__info {
+  display: grid;
+  grid-auto-rows: max-content;
+  /* Базовый внутренний интервал между элементами инфоблока */
+  --mp-overview-info-gap: 12px;
+  gap: var(--mp-overview-info-gap); /* компактнее, без лишних внешних отступов между блоками */
+}
+/* Увеличиваем расстояние между карточкой агента и блоком действий в 2 раза от базового gap */
+.mp-root .mp-overview__info .mp-agent + .mp-contact-actions {
+  margin-top: var(--mp-overview-info-gap);
+}
+
+.mp-root .mp-card {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid rgba(19, 15, 38, 0.08);
+  box-shadow: 0 1px 0 rgba(19, 15, 38, 0.04);
+  padding: 16px;
+}
+
+/* Для текущего макета — превращаем блоки в простые контейнеры без «карточного» хрома */
+.mp-root .mp-price-card,
+.mp-root .mp-agent,
+.mp-root .mp-contact-actions {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0;
+}
+
+/* Каркасные рамки для цены и блока специалиста */
+.mp-root .mp-price-card,
+.mp-root .mp-agent {
+  border: 3px solid #EDEDED;
+  border-radius: 13px;
+}
+
+/* Цена */
+.mp-root .mp-price-card { display: grid; gap: 8px; padding: 23px; }
+.mp-root .mp-price {
+  font-family: "Open Sans", Arial, sans-serif;
+  font-weight: 700; /* Bold */
+  font-size: 48px;
+  line-height: 100%;
+  letter-spacing: 0;
+  color: #21779E;
+}
+.mp-root .mp-price-per {
+  font-family: "Open Sans", Arial, sans-serif;
+  font-weight: 700; /* Bold */
+  font-size: 20px;
+  line-height: 100%;
+  letter-spacing: 0.02em; /* 2% */
+  color: #989898;
+}
+
+/* Агент */
+.mp-root .mp-agent { padding: 0; }
+.mp-root .mp-agent {
+  display: grid;
+  gap: 40px; /* расстояние между объектами первого уровня */
+  padding-top: 40px;
+  padding-right: 30px;
+  padding-bottom: 50px;
+  padding-left: 30px;
+}
+.mp-root .mp-agent__header {
+  display: grid;
+  grid-template-columns: 140px 1fr; /* под размер фото */
+  gap: 12px;
+  align-items: center; /* вертикально центрируем контент относительно фото */
+}
+.mp-root .mp-agent__photo {
+  width: 140px;
+  height: 140px;
+  border-radius: 10px;
+  object-fit: cover;
+  display: block;
+}
+.mp-root .mp-agent__content { display: grid; gap: 8px; }
+.mp-root .mp-agent__badge { display: inline-flex; align-items: center; gap: 6px; }
+.mp-root .mp-agent__role {
+  font-family: "Open Sans", Arial, sans-serif;
+  font-weight: 400; /* Regular */
+  font-size: 16px;
+  line-height: 100%;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  color: #000000;
+}
+.mp-root .mp-agent__verified-icon { width: 20px; height: 20px; display: inline-block; }
+.mp-root .mp-agent__name {
+  font-family: "Open Sans", Arial, sans-serif;
+  font-weight: 700; /* Bold */
+  font-size: 24px;
+  line-height: 100%;
+  letter-spacing: 0;
+  color: #000000;
+}
+.mp-root .mp-agent__contacts {
+  display: grid;
+  grid-template-columns: max-content 1fr; /* слева заголовок, справа телефон */
+  align-items: center;
+  column-gap: 16px; /* чуть больше расстояние между заголовком и телефоном */
+  row-gap: 20px; /* расстояние между телефоном и соц.иконками */
+}
+.mp-root .mp-agent__contacts-title {
+  font-family: "Open Sans", Arial, sans-serif;
+  font-weight: 600; /* SemiBold */
+  font-size: 20px;
+  line-height: 100%;
+  letter-spacing: 0;
+  color: #000000;
+  grid-column: 1; /* левая колонка */
+}
+.mp-root .mp-agent__phone-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  grid-column: 2; /* правая колонка */
+  justify-self: start; /* держим телефон рядом с надписью */
+  white-space: nowrap;
+}
+/* Базовый контейнер для маленьких встроенных иконок */
+.mp-root .mp-icon { display: inline-flex; align-items: center; justify-content: center; }
+.mp-root .mp-icon--phone {
+  width: 20px;
+  height: 20px;
+}
+.mp-root .mp-icon--phone img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+.mp-root .mp-agent__phone {
+  font-family: "Open Sans", Arial, sans-serif;
+  font-weight: 600; /* SemiBold */
+  font-size: 20px;
+  line-height: 100%;
+  letter-spacing: 0;
+  color: #000000;
+  text-decoration: none;
+}
+.mp-root .mp-agent__phone:hover { text-decoration: underline; }
+
+.mp-root .mp-agent__socials {
+  list-style: none;
+  display: inline-flex;
+  gap: 10px;
+  grid-column: 2; /* сразу под телефоном, выровнено по левому краю второй колонки */
+  justify-self: start;
+}
+.mp-root .mp-social { display: inline-flex; }
+.mp-root .mp-social a {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+}
+.mp-root .mp-social a:is(:hover,:focus-visible) { opacity: 0.85; outline: none; }
+.mp-root .mp-social img { width: 100%; height: 100%; object-fit: contain; display: block; }
+
+/* Кнопки действий */
+.mp-root .mp-contact-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  justify-items: center; /* центрируем кнопки внутри контейнера */
+}
+.mp-root .mp-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 52px;
+  padding: 0 16px;
+  border-radius: 26px;
+  border: 1px solid #21779E;
+  font-size: 16px;
+  cursor: pointer;
+}
+.mp-root .mp-cta--primary {
+  background: #21779ECF; /* однотонный фон из макета */
+  border: 0; /* без границы */
+  color: #ffffff;
+  height: 46px; /* чуть компактнее */
+  width: min(65%, 420px); /* адаптивная ширина, ограничена сверху для больших экранов */
+}
+.mp-root .mp-cta--primary:hover { filter: brightness(0.98); }
+.mp-root .mp-cta--secondary {
+  background: #fff;
+  color: #21779E;
+  width: min(65%, 420px);
+}
+.mp-root .mp-cta:focus-visible { outline: 2px solid #49D7E2; outline-offset: 2px; }
+
+/* Адаптив для инфоблока */
+@media (max-width: 1024px) {
+  .mp-root .mp-overview__info { order: 2; }
+}
+@media (max-width: 520px) {
+  .mp-root .mp-agent__header { grid-template-columns: 100px 1fr; align-items: center; }
+  .mp-root .mp-agent__photo { width: 100px; height: 100px; }
+}
 
 /* Подвал: градиент + скруглённые края */
 .mp-root .mp-footer {
@@ -422,6 +640,7 @@
     grid-template-columns: 1fr;
     grid-template-areas:
       'gallery'
+      'facts'
       'info';
   }
 }

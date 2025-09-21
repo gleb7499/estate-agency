@@ -35,47 +35,62 @@
     }
   });
 
-  // Галерея: смена главного изображения по клику на превью
-  const gallery = root.querySelector('.mp-gallery');
-  if (gallery) {
-    // Мок-данные объекта (локальные, без сетевых запросов)
-    const mockData = {
-      id: 58557936,
-      name: '2-комн. квартира, 55 м², 2/4 эт.',
-      address: 'Иркутск, Октябрьский, Карла Либкнехта, 112',
-      photos: [
-        'assets/mock/apartment-1.jpg',
-        'assets/mock/apartment-2.jpg',
-        'assets/mock/apartment-3.jpg',
-        'assets/mock/apartment-4.jpg',
-        'assets/mock/apartment-5.jpg',
-      ],
-      facts: [
-        { label: 'Общая площадь', value: '55 м²' },
-        { label: 'Жилая площадь', value: '32 м²' },
-        { label: 'Кухня', value: '20 м²' },
-        { label: 'Этаж', value: '2/4' },
-        { label: 'Год постройки', value: '2014' },
-      ],
-      price: '12 300 000 ₽',
-    };
+  // Утилиты форматирования (общие)
+  const fmtCurrency = (amount, currency = 'RUB') => {
+    if (typeof amount !== 'number' || !isFinite(amount)) return '';
+    try {
+      return new Intl.NumberFormat('ru-RU', {
+        style: 'currency',
+        currency,
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      }).format(amount);
+    } catch (_) {
+      return new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 0 }).format(amount) + ' ₽';
+    }
+  };
+  const fmtNumber = (n) => {
+    if (typeof n !== 'number' || !isFinite(n)) return '';
+    try { return new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 0 }).format(n); } catch (_) { return String(n); }
+  };
 
-    // Рендер заголовка и адреса
-    const titleEl = gallery.querySelector('.mp-title');
-  const addrEl = gallery.querySelector('.mp-address__text');
-    if (titleEl) titleEl.textContent = mockData.name;
-  if (addrEl) addrEl.textContent = mockData.address;
-
-    // Рендер главного фото и превью
+  // Делегированный клик по превью галереи — один обработчик на корне
+  root.addEventListener('click', (e) => {
+    const btn = e.target.closest('.mp-gallery__thumb');
+    if (!btn || !root.contains(btn)) return;
+    const gallery = root.querySelector('.mp-gallery');
+    if (!gallery) return;
     const mainImg = gallery.querySelector('.mp-gallery__image');
-    if (mockData.photos?.length) {
+    const full = btn.getAttribute('data-full');
+    if (full && mainImg) {
+      mainImg.src = full;
+      gallery.querySelectorAll('.mp-gallery__thumb.is-active').forEach((el) => el.classList.remove('is-active'));
+      btn.classList.add('is-active');
+      MP.emit('mp:gallery:change', { src: full });
+    }
+  });
+
+  // Рендер всей карточки по переданным данным
+  const renderAll = (data) => {
+    const gallery = root.querySelector('.mp-gallery');
+    if (!gallery || !data) return;
+
+    // Заголовок и адрес
+    const titleEl = gallery.querySelector('.mp-title');
+    const addrEl = gallery.querySelector('.mp-address__text');
+    if (titleEl) titleEl.textContent = data.name || '';
+    if (addrEl) addrEl.textContent = data.address || '';
+
+    // Главная фотка и превью
+    const mainImg = gallery.querySelector('.mp-gallery__image');
+    if (Array.isArray(data.photos) && data.photos.length) {
       if (mainImg) {
-        mainImg.src = mockData.photos[0];
+        mainImg.src = data.photos[0];
         try { mainImg.setAttribute('loading', 'eager'); } catch (_) {}
       }
       const thumbsWrap = gallery.querySelector('.mp-gallery__thumbs');
       if (thumbsWrap) {
-        thumbsWrap.innerHTML = mockData.photos.map((src, i) => (
+        thumbsWrap.innerHTML = data.photos.map((src, i) => (
           `<button class="mp-gallery__thumb${i === 0 ? ' is-active' : ''}" type="button" role="listitem" aria-label="Фото ${i + 1}" data-full="${src}">
             <img src="${src}" alt="Превью ${i + 1}" loading="lazy">
           </button>`
@@ -83,17 +98,17 @@
       }
     }
 
-    // Рендер характеристик (без пункта «Комнат» по заданию)
-    const factsWrap = gallery.querySelector('.mp-facts');
-    if (factsWrap) {
+    // Факты
+    const factsWrap = root.querySelector('#overview .mp-facts');
+    if (factsWrap && Array.isArray(data.facts)) {
       const iconByIndex = [
-        'assets/img/square.svg',              // 1: Общая площадь
-        'assets/img/living-area.svg',         // 2: Жилая площадь
-        'assets/img/kitchen.svg',             // 3: Кухня
-        'assets/img/floor.svg',               // 4: Этаж
-        'assets/img/construction-year.svg',   // 5: Год постройки
+        'assets/img/square.svg',
+        'assets/img/living-area.svg',
+        'assets/img/kitchen.svg',
+        'assets/img/floor.svg',
+        'assets/img/construction-year.svg',
       ];
-      factsWrap.innerHTML = mockData.facts.map(({ label, value }, i) => (
+      factsWrap.innerHTML = data.facts.map(({ label, value }, i) => (
         `<li class="mp-fact">
           <span class="mp-fact__icon" aria-hidden="true">${iconByIndex[i] ? `<img src="${iconByIndex[i]}" alt="" aria-hidden="true">` : ''}</span>
           <div class="mp-fact__text">
@@ -102,28 +117,35 @@
           </div>
         </li>`
       )).join('');
-
       factsWrap.querySelectorAll('.mp-fact__icon img').forEach((img) => {
         img.addEventListener('error', () => { img.remove(); });
       });
     }
 
-    // Цена в правой колонке (если есть)
+    // Цена и цена за м²
     const priceEl = root.querySelector('.mp-overview__info .mp-price');
-    if (priceEl) priceEl.textContent = mockData.price;
-
-    gallery.addEventListener('click', (e) => {
-      const btn = e.target.closest('.mp-gallery__thumb');
-      if (!btn) return;
-      const full = btn.getAttribute('data-full');
-      if (full && mainImg) {
-        mainImg.src = full;
-        // активное превью
-        gallery.querySelectorAll('.mp-gallery__thumb.is-active').forEach((el) => el.classList.remove('is-active'));
-        btn.classList.add('is-active');
-        // эмитим событие для интегратора
-        MP.emit('mp:gallery:change', { src: full });
+    const pricePerEl = root.querySelector('.mp-overview__info .mp-price-per');
+    if (priceEl) {
+      if (typeof data.currency === 'string') {
+        try { priceEl.setAttribute('data-price-currency', data.currency); } catch(_) {}
       }
-    });
-  }
+      if (typeof data.price === 'number') {
+        priceEl.textContent = fmtCurrency(data.price, data.currency || 'RUB');
+      }
+    }
+    if (pricePerEl) {
+      let per = (typeof data.pricePerSqm === 'number') ? data.pricePerSqm : null;
+      if (per == null && typeof data.price === 'number' && typeof data.totalAreaSqm === 'number' && data.totalAreaSqm > 0) {
+        per = Math.round(data.price / data.totalAreaSqm);
+      }
+      if (typeof per === 'number') {
+        pricePerEl.textContent = `${fmtNumber(per)} ₽/м²`;
+      }
+    }
+  };
+
+  // Инициализация: если данные уже глобально доступны — рендерим; иначе ждём события mp:data
+  const initialData = (typeof window !== 'undefined' && window.MP_MOCK) ? window.MP_MOCK : null;
+  if (initialData) renderAll(initialData);
+  root.addEventListener('mp:data', (e) => { if (e && e.detail) renderAll(e.detail); });
 })();
