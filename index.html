@@ -32,19 +32,26 @@
   <!-- Основной контент карточки -->
   <main class="mp-main" role="main">
   <!-- 1. Обзор: фото + ключевая инфа -->
-        <section class="mp-section mp-overview" id="overview" data-object-id="[TBD]" aria-labelledby="mp-section-overview-title">
-          <h2 class="mp-section__title" id="mp-section-overview-title">Обзор объекта</h2>
+        <section class="mp-section mp-overview" id="overview" data-object-id="[TBD]" aria-label="Обзор объекта">
           <div class="mp-overview__content">
-            <div class="mp-gallery" aria-label="Фотографии">[TODO: фото/галерея]</div>
+            <section class="mp-gallery" aria-label="Фотографии">
+              <h3 class="mp-title" itemprop="name"></h3>
+              <p class="mp-address">
+                <img class="mp-address__icon" src="assets/img/location.svg" alt="" aria-hidden="true" />
+                <span class="mp-address__text"></span>
+              </p>
+
+              <figure class="mp-gallery__main" aria-label="Текущее фото">
+                <img class="mp-gallery__image" alt="Фото объекта" />
+              </figure>
+
+              <div class="mp-gallery__thumbs" role="list" aria-label="Превью фотографий"></div>
+
+              <ul class="mp-facts" aria-label="Краткие характеристики"></ul>
+            </section>
             <div class="mp-overview__info">
-              <h3 class="mp-title" itemprop="name">[TODO: Наименование объекта]</h3>
-              <p class="mp-price" itemprop="offers" data-price-currency="RUB">[TODO: Цена]</p>
-              <p class="mp-address">[TODO: Адрес]</p>
+              <p class="mp-price" itemprop="offers" data-price-currency="RUB">12 300 000 ₽</p>
               <div class="mp-contacts">[TODO: Контакты агента]</div>
-              <ul class="mp-overview__facts">
-                <li>[TODO: Площадь, комнаты, этаж]</li>
-                <li>[TODO: Тип дома, год постройки]</li>
-              </ul>
             </div>
           </div>
         </section>
