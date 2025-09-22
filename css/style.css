@@ -207,6 +207,13 @@
   justify-content: center;
   color: #21779E;
 }
+.mp-root .mp-map {
+  height: 420px; /* фиксированная высота по требованию */
+  width: 90vw;   /* 80% ширины окна */
+  margin: 0 auto; /* центр по горизонтали */
+  border-radius: 25px;
+  overflow: hidden;
+}
 
 /* -------------------- Секция «Условия» -------------------- */
 .mp-root .mp-terms__grid {

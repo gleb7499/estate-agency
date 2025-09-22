@@ -54,6 +54,123 @@
     try { return new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 0 }).format(n); } catch (_) { return String(n); }
   };
 
+  // Упрощаем: не грузим тяжёлый JS API Яндекс. Работаем через iframe + лёгкое геокодирование.
+
+  // Инициализация карты: получаем координаты → вставляем iframe с точкой
+  // Нормализация адреса: убираем квартиру/этаж/подъезд из строки, чтобы повысить шанс точного геокода
+  const normalizeAddress = (addr) => {
+    if (typeof addr !== 'string') return addr;
+    let a = addr;
+    a = a.replace(/\bкв\.?\s*\d+\b/gi, '');
+    a = a.replace(/\bквартира\s*\d+\b/gi, '');
+    a = a.replace(/\bподъезд\s*\d+\b/gi, '');
+    a = a.replace(/\bэтаж\s*\d+\b/gi, '');
+    // Частый формат корпуса: 117/1 → 117к1 (как отдаёт Яндекс)
+    a = a.replace(/(\d+)\s*\/\s*(\d+)\b/g, '$1к$2');
+    a = a.replace(/\s*,\s*,+/g, ','); // двойные запятые
+    a = a.replace(/\s{2,}/g, ' ').trim();
+    a = a.replace(/,\s*$/,'');
+    return a;
+  };
+  
+  // JSONP-геокодирование Яндекс (обходит CORS). Возвращает [lat, lng]
+  const jsonpGeocode = (addr) => {
+    const address = normalizeAddress(addr);
+    if (!address) return Promise.reject(new Error('Нет адреса для JSONP-геокодирования'));
+    return new Promise((resolve, reject) => {
+      const cbName = `__mp_jsonp_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+      const url = `https://geocode-maps.yandex.ru/1.x/?format=json&lang=ru_RU&geocode=${encodeURIComponent(address)}&callback=${cbName}`;
+      const script = document.createElement('script');
+      let timer = null;
+      const cleanup = () => {
+        try { delete window[cbName]; } catch (_) {}
+        if (script && script.parentNode) script.parentNode.removeChild(script);
+        clearTimeout(timer);
+      };
+      window[cbName] = (j) => {
+        try {
+          const members = j?.response?.GeoObjectCollection?.featureMember || [];
+          if (!members.length) throw new Error('JSONP: адрес не найден');
+          let best = null;
+          for (const m of members) {
+            const kind = m?.GeoObject?.metaDataProperty?.GeocoderMetaData?.kind;
+            if (kind === 'house') { best = m; break; }
+          }
+          const obj = best || members[0];
+          const pos = obj?.GeoObject?.Point?.pos;
+          if (!pos) throw new Error('JSONP: нет координат');
+          const [lonStr, latStr] = pos.split(' ');
+          const lat = parseFloat(latStr); const lng = parseFloat(lonStr);
+          if (Number.isNaN(lat) || Number.isNaN(lng)) throw new Error('JSONP: нераспознанные координаты');
+          resolve([lat, lng]);
+        } catch (err) { reject(err); }
+        finally { cleanup(); }
+      };
+      script.onerror = () => { cleanup(); reject(new Error('JSONP: ошибка загрузки')); };
+      script.src = url;
+      script.async = true;
+      document.head.appendChild(script);
+      timer = setTimeout(() => { cleanup(); reject(new Error('JSONP: таймаут')); }, 8000);
+    });
+  };
+  // Альтернативный геокодер (OSM Nominatim) — без ключа. Возвращает [lat, lng]
+  const osmGeocode = (addr) => {
+    const address = normalizeAddress(addr);
+    if (!address) return Promise.reject(new Error('Нет адреса для OSM-геокодирования'));
+    const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q=${encodeURIComponent(address)}`;
+    return fetch(url, { headers: { 'Accept-Language': 'ru' } })
+      .then((r) => { if (!r.ok) throw new Error(`OSM HTTP ${r.status}`); return r.json(); })
+      .then((arr) => {
+        if (!Array.isArray(arr) || !arr.length) throw new Error('OSM: адрес не найден');
+        const { lat, lon } = arr[0] || {};
+        const plat = parseFloat(lat); const plng = parseFloat(lon);
+        if (Number.isNaN(plat) || Number.isNaN(plng)) throw new Error('OSM: нераспознанные координаты');
+        return [plat, plng];
+      });
+  };
+  const initMap = (data) => {
+    const container = root.querySelector('#mp-map');
+    if (!container) return;
+    const section = root.querySelector('#location');
+    const addressAttr = (section && section.getAttribute('data-address') && section.getAttribute('data-address') !== '[TBD]')
+      ? section.getAttribute('data-address')
+      : null;
+    const addressRaw = (data && typeof data.address === 'string') ? data.address : addressAttr;
+    const address = normalizeAddress(addressRaw);
+    // Пытаемся взять координаты из data-атрибутов (если интегратор их проставит)
+    let lat = null; let lng = null;
+    if (section) {
+      const latAttr = section.getAttribute('data-lat');
+      const lngAttr = section.getAttribute('data-lng');
+      if (latAttr && lngAttr && latAttr !== '[TBD]' && lngAttr !== '[TBD]') {
+        const latNum = Number(latAttr);
+        const lngNum = Number(lngAttr);
+        if (!Number.isNaN(latNum) && !Number.isNaN(lngNum)) { lat = latNum; lng = lngNum; }
+      }
+    }
+    if (!address && (lat == null || lng == null)) return;
+
+    const buildIframeWithPoint = (plat, plng) => {
+      const src = `https://yandex.ru/map-widget/v1/?ll=${plng},${plat}&z=16&pt=${plng},${plat},pm2rdm`;
+      container.innerHTML = `<iframe title="Карта" src="${src}" style="border:0;width:100%;height:100%" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>`;
+    };
+
+    // 1) если координаты заданы — рисуем сразу
+    if (lat != null && lng != null) { buildIframeWithPoint(lat, lng); return; }
+
+    // 2) есть адрес — JSONP Яндекс → OSM → в крайнем случае поиск (может показать "1 найден")
+    jsonpGeocode(address)
+      .then(([plat, plng]) => buildIframeWithPoint(plat, plng))
+      .catch(() => osmGeocode(address)
+        .then(([plat, plng]) => buildIframeWithPoint(plat, plng))
+        .catch(() => {
+          const q = encodeURIComponent(address || '');
+          const src = `https://yandex.ru/map-widget/v1/?text=${q}&z=16`;
+          container.innerHTML = `<iframe title="Карта" src="${src}" style="border:0;width:100%;height:100%" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>`;
+        })
+      );
+  };
+
   // Делегированный клик по превью галереи — один обработчик на корне
   root.addEventListener('click', (e) => {
     const btn = e.target.closest('.mp-gallery__thumb');
@@ -189,6 +306,9 @@
     if (descEl && typeof data.description === 'string') {
       descEl.textContent = data.description;
     }
+
+    // Расположение: инициализируем карту
+    try { initMap(data); } catch (err) { /* no-op */ }
   };
 
   // Инициализация: если данные уже глобально доступны — рендерим; иначе ждём события mp:data
