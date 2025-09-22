@@ -23,6 +23,13 @@
     MP.emit('mp:share:click', { ts: Date.now() });
   });
 
+  // Кнопка «Печать» — печать страницы
+  root.addEventListener('click', (e) => {
+    const printBtn = e.target.closest('.mp-header__print');
+    if (!printBtn) return;
+    try { window.print(); } catch (_) {}
+  });
+
   // Навигация по секциям (если появятся ссылки с href="#id")
   root.addEventListener('click', (e) => {
     const a = e.target.closest('a[href^="#"]');

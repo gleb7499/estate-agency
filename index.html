@@ -18,10 +18,14 @@
           <div class="mp-header__left">
             <img class="mp-logo" src="assets/img/logo.svg" alt="Логотип" />
             <div class="mp-brand" aria-label="Бренд">
-              <div class="mp-brand__title">Небоскреб</div>
+              <div class="mp-brand__title">Небоскрёб</div>
               <div class="mp-brand__subtitle">Агентство недвижимости</div>
             </div>
           </div>
+          <button class="mp-header__print" type="button" aria-label="Печать страницы">
+            <img class="mp-print__icon" src="assets/img/printer.svg" alt="" aria-hidden="true" />
+            <span class="mp-print__text">Печать</span>
+          </button>
           <button class="mp-header__right" type="button" aria-label="Поделиться объектом">
             <img class="mp-share__icon" src="assets/img/upload.svg" alt="" aria-hidden="true" />
             <span class="mp-share__text">Поделиться объектом</span>
@@ -51,7 +55,12 @@
             <div class="mp-overview__info">
               <!-- Карточка цены -->
               <section class="mp-card mp-price-card" aria-label="Цена объекта">
-                <p class="mp-price" itemprop="offers" data-price-currency="RUB">10 250 000 ₽</p>
+                <div class="mp-price-row">
+                  <p class="mp-price" itemprop="offers" data-price-currency="RUB">10 250 000 ₽</p>
+                  <button class="mp-price-info" type="button" aria-label="Информация о цене" data-tooltip="Плейсхолдер: как формируется цена и стоимость за м²">
+                    <img src="assets/img/cost-info.svg" alt="" width="24" height="24" aria-hidden="true" />
+                  </button>
+                </div>
                 <p class="mp-price-per">186 363 ₽/м²</p>
               </section>
 

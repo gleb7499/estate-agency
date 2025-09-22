@@ -1,4 +1,12 @@
-/* Подключение локальных шрифтов для проекта (изолировано под mp-root) */
+/* Подключение шрифтов проекта.
+  1) Быстрый фолбэк из Google Fonts (если локальных файлов нет)
+  2) Локальные @font-face (когда добавите .woff2 в эту папку)
+*/
+
+/* Fallback CDN: Open Sans и Open Sans Condensed */
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&family=Open+Sans+Condensed:wght@300&display=swap');
+
+/* Локальные шрифты (при наличии файлов рядом с этим CSS) */
 
 /* Open Sans Condensed Light (300) */
 @font-face {

@@ -1,3 +1,6 @@
+/* Глобальный сброс отступов, чтобы не было белой рамки вокруг страницы */
+html, body { margin: 0; padding: 0; }
+
 /* Изоляция всех стилей под .mp-root (см. agent.md) */
 .mp-root * {
   box-sizing: border-box;
@@ -21,6 +24,7 @@
   flex-direction: column;
   align-items: stretch;
   height: auto;
+  min-height: 100vh; /* чтобы подвал мог прижиматься к низу экрана, когда контента мало */
   font-family: "Open Sans", Arial, sans-serif;
 }
 
@@ -43,16 +47,16 @@
   border: 1px solid #130F26;
   height: 145px;
 
-  /* Растянуть по ширине окна и дать небольшие системные отступы от краёв */
-  width: calc(100% - 2 * var(--mp-page-pad));
-  margin: var(--mp-page-pad) var(--mp-page-pad) 0; /* top = боковые = системные, без нижнего */
+  /* Фиксированные боковые отступы шапки по 25px */
+  width: calc(100% - 50px);
+  margin: 25px 25px 0; /* верх = 25px, бока = 25px */
 
   /* без внутренних отступов у самого элемента */
   padding: 0;
 
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr; /* слева лого, по центру печать, справа шаринг */
   align-items: center;
-  justify-content: space-between;
   gap: 12px;
 
   /* Контейнер для @container-запросов */
@@ -97,6 +101,27 @@
   gap: 16px;
   padding-left: 32px;
 }
+.mp-root .mp-header__print {
+  justify-self: center; /* центрируем в средней колонке */
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 20px 32px;
+  border-radius: 13px;
+  border: 1px solid #21779E;
+  background: #fff;
+  cursor: pointer;
+}
+.mp-root .mp-print__icon { width: 20px; height: 20px; }
+.mp-root .mp-print__text {
+  font-family: "Open Sans", Arial, sans-serif;
+  font-weight: 400;
+  font-size: var(--mp-share-text);
+  line-height: 140%;
+  color: #21779E;
+}
+.mp-root .mp-header__print:hover { background: rgba(33, 119, 158, 0.06); }
+.mp-root .mp-header__print:focus-visible { outline: 2px solid #21779E; outline-offset: 2px; }
 
 .mp-root .mp-logo {
   width: var(--mp-logo-size);
@@ -133,10 +158,13 @@
   gap: 10px;
   padding: var(--mp-btn-pad-y) var(--mp-btn-pad-x);
   border-radius: 10px;
-  border: 1px solid #21779E;
-  background: #fff;
+  border: 0; /* без границы */
+  background: transparent; /* прозрачный фон */
   cursor: pointer;
   margin-right: 32px;
+  /* Не растягиваем на всю третью колонку грида, прижимаем к правому краю */
+  justify-self: end;
+  width: max-content;
 }
 
 .mp-root .mp-share__icon {
@@ -155,9 +183,7 @@
 }
 
 /* Поддержка фокуса/hover для доступности */
-.mp-root .mp-header__right:hover {
-  background: rgba(33, 119, 158, 0.06);
-}
+.mp-root .mp-header__right:hover { background: transparent; }
 .mp-root .mp-header__right:focus-visible {
   outline: 2px solid #21779E;
   outline-offset: 2px;
@@ -167,7 +193,8 @@
 
 /* Тело страницы */
 .mp-root .mp-main {
-  padding: 40px;
+  padding: 70px;
+  flex: 1 0 auto; /* занимать доступное пространство для эффекта "подвал внизу" */
 }
 
 .mp-root .mp-todo__text {
@@ -364,8 +391,8 @@
   gap: 12px;
 }
 .mp-root .mp-gallery .mp-title {
-  font-family: "Open Sans Condensed", "Open Sans", Arial, sans-serif;
-  font-weight: 300;
+  font-family: "Open Sans", Arial, sans-serif;
+  font-weight: 700;
   /* Адаптивный кегль: от 24px на мобильных до 48px на десктопе */
   font-size: clamp(24px, 7vw, 48px);
   line-height: 110%;
@@ -519,12 +546,55 @@
 /* Цена */
 .mp-root .mp-price-card { display: grid; gap: 8px; padding: 23px; }
 .mp-root .mp-price {
+  white-space: nowrap; /* подпись всегда в одну строку */
   font-family: "Open Sans", Arial, sans-serif;
   font-weight: 700; /* Bold */
   font-size: 48px;
   line-height: 100%;
   letter-spacing: 0;
   color: #21779E;
+}
+.mp-root .mp-price-row {
+  display: inline-flex;           /* ставим цену и иконку в одну линию */
+  align-items: center;
+  gap: 8px;                       /* расстояние между ценой и иконкой */
+  width: max-content;             /* ширина по содержимому, не тянем на всю карточку */
+}
+.mp-root .mp-price-info {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.mp-root .mp-price-info img { width: 24px; height: 24px; display: block; }
+/* Минималистичный tooltip */
+.mp-root .mp-price-info::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  white-space: nowrap;
+  bottom: calc(100% + 8px);
+  right: 0;
+  transform: translateY(4px);
+  background: #130F26;
+  color: #fff;
+  font: 400 12px/1.2 "Open Sans", Arial, sans-serif;
+  padding: 8px 10px;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .15s ease, transform .15s ease;
+}
+.mp-root .mp-price-info:hover::after,
+.mp-root .mp-price-info:focus-visible::after {
+  opacity: 1;
+  transform: translateY(0);
 }
 .mp-root .mp-price-per {
   font-family: "Open Sans", Arial, sans-serif;
@@ -654,28 +724,37 @@
   justify-items: center; /* центрируем кнопки внутри контейнера */
 }
 .mp-root .mp-cta {
+  /* Единая база для обеих кнопок */
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 52px;
-  padding: 0 16px;
-  border-radius: 26px;
+  gap: 10px;
+  width: 398px;
+  height: 65px;
+  padding: 19px 110px; /* top/bottom 19px, left/right 125px */
+  border-radius: 65px;
   border: 1px solid #21779E;
-  font-size: 16px;
   cursor: pointer;
+  /* Типографика */
+  font-family: "Open Sans", Arial, sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  font-size: 20px;
+  line-height: 100%;
+  letter-spacing: 0;
 }
 .mp-root .mp-cta--primary {
   background: #21779ECF; /* однотонный фон из макета */
   border: 0; /* без границы */
   color: #ffffff;
-  height: 46px; /* чуть компактнее */
-  width: min(65%, 420px); /* адаптивная ширина, ограничена сверху для больших экранов */
 }
 .mp-root .mp-cta--primary:hover { filter: brightness(0.98); }
 .mp-root .mp-cta--secondary {
   background: #fff;
   color: #21779E;
-  width: min(65%, 420px);
+  /* Чтобы длинная подпись помещалась в одну строку при фиксированной ширине */
+  padding-left: 32px;
+  padding-right: 32px;
 }
 .mp-root .mp-cta:focus-visible { outline: 2px solid #49D7E2; outline-offset: 2px; }
 
@@ -693,27 +772,29 @@
   background: linear-gradient(90deg, #21779E 0%, #49D7E2 100%);
   border-top-left-radius: 32px;
   border-top-right-radius: 32px;
-  /* растянуть по ширине окна, оставить системные поля по краям */
-  width: calc(100% - 2 * var(--mp-page-pad));
-  margin: 40px var(--mp-page-pad) 0;
-  /* высота около 100dp */
-  min-height: 100px;
-  height: auto;
-  padding: 16px 24px;
+  /* full-bleed по ширине экрана всегда */
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  /* отступ сверху от контента, без отступа снизу (подвал у низа экрана) */
+  margin-top: 40px;
+  /* размеры по макету */
+  height: 290px;
+  padding: 79px 495px;
 }
 
 .mp-root .mp-footer__inner {
   display: flex;
   align-items: center;
   justify-content: center; /* центрируем оба блока */
-  gap: 24px;
+  gap: 10px;
   width: 100%;
   height: 100%;
 }
 
 .mp-root .mp-footer__qr {
-  width: 72px;
-  height: 72px;
+  width: 132px;  /* Figma size */
+  height: 132px; /* Figma size */
   background: transparent; /* фон прозрачный — виден градиент подвала */
   border-radius: 0; /* убираем скругление, чтобы не резать QR */
   box-shadow: none; /* без тени */
@@ -732,19 +813,30 @@
 
 .mp-root .mp-footer__title {
   color: #ffffff;
-  font-family: "Hagrid", Arial, sans-serif;
+  font-family: "Hagrid", "Open Sans", Arial, sans-serif;
   font-weight: 500; /* Medium */
-  font-size: 20px;
+  font-size: 24px;  /* Figma size */
   line-height: 100%;
   letter-spacing: 0;
-  margin: 0 0 8px;
+  margin: 0; /* управляем интервалами через gap у контейнера */
+}
+
+/* Параграфы внутри контента подвала (на случай, если это не .mp-footer__title) */
+.mp-root .mp-footer__content > p {
+  font-family: "Hagrid", "Open Sans", Arial, sans-serif;
+  font-weight: 500; /* Medium */
+  font-style: normal;
+  font-size: 24px;
+  line-height: 100%;
+  letter-spacing: 0;
+  color: #ffffff;
 }
 
 .mp-root .mp-footer__content {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 8px;
+  gap: 15px; /* Figma: расстояние между элементами внутри подвала */
 }
 
 .mp-root .mp-btn {
@@ -761,6 +853,47 @@
   background: transparent;
   color: #ffffff;
   border: 1px solid rgba(255, 255, 255, 0.7);
+}
+
+/* Кнопка в подвале по макету Figma */
+.mp-root .mp-footer__content > button {
+  width: 256px;
+  height: 57px;
+  padding: 16px 32px;
+  gap: 8px;
+  border-radius: 4px;
+  border: 2px solid #FFFFFF;
+  background: transparent;
+  color: #ffffff;
+  opacity: 1;
+  /* Типографика из макета для текста внутри кнопки */
+  font-family: "Open Sans", Arial, sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  font-size: 18px;
+  line-height: 140%;
+  letter-spacing: 0;
+  text-align: center;
+  vertical-align: middle;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap; /* надпись в одну строку */
+}
+
+/* Запрет переноса конкретно для текста, если кнопка переопределена где-то ещё */
+.mp-root .mp-footer__content > button .mp-btn__text { white-space: nowrap; }
+
+/* Иконка в кнопке подвала — 24x24 по макету */
+.mp-root .mp-footer__content > button .mp-btn__icon {
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+}
+.mp-root .mp-footer__content > button svg,
+.mp-root .mp-footer__content > button img {
+  width: 24px;
+  height: 24px;
 }
 
 .mp-root .mp-btn__icon {
@@ -826,9 +959,22 @@
   .mp-root .mp-gallery { min-height: 180px; }
   .mp-root .mp-map-placeholder { height: 220px; }
 
+  /* CTA: адаптивные размеры на мобильных */
+  .mp-root .mp-cta {
+    width: 100%;
+    max-width: 398px;
+    height: 56px;
+    padding: 12px 16px;
+    border-radius: 56px;
+  }
+
   /* Подвал */
   .mp-root .mp-footer {
-    margin: 24px var(--mp-page-pad) 0;
+    width: 100vw; /* full-bleed сохраняем и на мобильных */
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+    margin-top: 24px;
+    height: auto;
     min-height: 88px;
     padding: 12px 16px;
   }
