@@ -142,6 +142,53 @@
         pricePerEl.textContent = `${fmtNumber(per)} ₽/м²`;
       }
     }
+
+    // Условия сделки (2x2 сетка)
+    const termsWrap = root.querySelector('.mp-terms__grid');
+    if (termsWrap) {
+      const t = data.terms || {};
+      const yesNo = (v) => (v ? 'Да' : 'Нет');
+      const items = [
+        { label: 'Тип продажи', value: t.saleType ?? '' },
+        { label: 'Продается впервые', value: (t.firstSale != null) ? yesNo(!!t.firstSale) : '' },
+        { label: 'Онлайн показ', value: (t.onlineViewing != null) ? yesNo(!!t.onlineViewing) : '' },
+        { label: 'Ипотека', value: (t.mortgage != null) ? yesNo(!!t.mortgage) : '' },
+      ];
+      termsWrap.innerHTML = items.map(({ label, value }) => (
+        `<li class="mp-terms__item">
+          <span class="mp-terms__label">${label}</span>
+          <span class="mp-terms__value">${value}</span>
+        </li>`
+      )).join('');
+    }
+
+    // Об объекте (4x3)
+    const aboutWrap = root.querySelector('.mp-about__grid');
+    if (aboutWrap && Array.isArray(data.about)) {
+      aboutWrap.innerHTML = data.about.map(({ label, value }) => (
+        `<li class="mp-about__item">
+          <span class="mp-about__label">${label}</span>
+          <span class="mp-about__value">${value}</span>
+        </li>`
+      )).join('');
+    }
+
+    // О здании (2x3)
+    const buildingWrap = root.querySelector('.mp-building__grid');
+    if (buildingWrap && Array.isArray(data.building)) {
+      buildingWrap.innerHTML = data.building.map(({ label, value }) => (
+        `<li class="mp-building__item">
+          <span class="mp-building__label">${label}</span>
+          <span class="mp-building__value">${value}</span>
+        </li>`
+      )).join('');
+    }
+
+    // Описание (plain text)
+    const descEl = root.querySelector('.mp-description__text');
+    if (descEl && typeof data.description === 'string') {
+      descEl.textContent = data.description;
+    }
   };
 
   // Инициализация: если данные уже глобально доступны — рендерим; иначе ждём события mp:data

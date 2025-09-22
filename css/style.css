@@ -178,13 +178,12 @@
 /* Секции: базовая сетка и типографика */
 .mp-root .mp-section {
   padding: 24px 0;
-  border-top: 1px solid rgba(0,0,0,0.06);
 }
 .mp-root .mp-section:first-child {
   border-top: 0;
 }
 .mp-root .mp-section__title {
-  font-size: 22px;
+  font-size: 36px;
   color: #130F26;
   margin-bottom: 12px;
 }
@@ -207,6 +206,137 @@
   align-items: center;
   justify-content: center;
   color: #21779E;
+}
+
+/* -------------------- Секция «Условия» -------------------- */
+.mp-root .mp-terms__grid {
+  list-style: none;
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* 2 колонки */
+  column-gap: 40px;              /* горизонтальный промежуток */
+  row-gap: 3px;                  /* вертикальный промежуток */
+}
+.mp-root .mp-terms__item {
+  display: grid;
+  grid-template-columns: 1fr auto; /* подпись слева, значение справа */
+  align-items: center;
+  gap: 40px; /* чтобы подпись и значение не прилипали в узких местах */
+  padding: 20px 0; /* вертикальный внутренний отступ для кликабельности */
+
+  border-bottom: 1px solid #E6EAEE; /* нижняя граница каждого элемента */
+}
+.mp-root .mp-terms__label {
+  font-family: "Open Sans", Arial, sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  font-size: 20px;
+  line-height: 100%;
+  letter-spacing: 0;
+  color: #989898; /* серый для подписей */
+  padding-left: 20px; /* визуальный отступ от левого края контейнера */
+}
+.mp-root .mp-terms__value {
+  justify-self: end; /* значение выравниваем вправо внутри ячейки */
+  font-family: "Open Sans", Arial, sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  font-size: 20px;
+  line-height: 100%;
+  letter-spacing: 0;
+  color: #130F26; /* тёмный для значений */
+  padding-right: 20px; /* визуальный отступ от правого края контейнера */
+}
+
+@media (max-width: 640px) {
+  .mp-root .mp-terms__grid { grid-template-columns: 1fr; }
+}
+/* -------------------- Секция «Об объекте» -------------------- */
+.mp-root .mp-about__grid {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 колонки */
+  column-gap: 40px;  /* горизонтальный промежуток, как в «Условия» */
+  row-gap: 5px;      /* по требованию: внутренние отступы между строками */
+}
+.mp-root .mp-about__item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 40px;
+  padding: 20px 0; /* как в «Условия» */
+  border-bottom: 1px solid #E6EAEE;
+}
+.mp-root .mp-about__label {
+  font-family: "Open Sans", Arial, sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  font-size: 20px;
+  line-height: 100%;
+  letter-spacing: 0;
+  color: #989898;
+  padding-left: 20px; /* визуальный отступ текстов как в «Условия» */
+}
+.mp-root .mp-about__value {
+  justify-self: end;
+  font-family: "Open Sans", Arial, sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  font-size: 20px;
+  line-height: 100%;
+  letter-spacing: 0;
+  color: #130F26;
+  padding-right: 20px;
+}
+
+@media (max-width: 1024px) {
+  .mp-root .mp-about__grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 640px) {
+  .mp-root .mp-about__grid { grid-template-columns: 1fr; }
+}
+/* -------------------- Секция «О здании» -------------------- */
+.mp-root .mp-building__grid {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 столбца → 2 строки при 6 элементах */
+  column-gap: 40px;  /* как в других блоках */
+  row-gap: 5px;      /* по требованию: 5px */
+}
+.mp-root .mp-building__item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 40px;
+  padding: 20px 0;
+  border-bottom: 1px solid #E6EAEE;
+}
+.mp-root .mp-building__label {
+  font-family: "Open Sans", Arial, sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  font-size: 20px;
+  line-height: 100%;
+  letter-spacing: 0;
+  color: #989898;
+  padding-left: 20px;
+}
+.mp-root .mp-building__value {
+  justify-self: end;
+  font-family: "Open Sans", Arial, sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  font-size: 20px;
+  line-height: 100%;
+  letter-spacing: 0;
+  color: #130F26;
+  padding-right: 20px;
+}
+
+@media (max-width: 1024px) {
+  .mp-root .mp-building__grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 640px) {
+  .mp-root .mp-building__grid { grid-template-columns: 1fr; }
 }
 /* Обзор: grid с областями (gallery | info) */
 .mp-root .mp-overview__content {
@@ -727,4 +857,15 @@
   }
   .mp-root .mp-footer__qr { width: 48px; height: 48px; }
   .mp-root .mp-main { padding: 16px 12px; }
+}
+
+/* -------------------- Секция «Описание» -------------------- */
+.mp-root .mp-description__text {
+  font-family: "Open Sans", Arial, sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  font-size: 20px;
+  line-height: 100%;
+  letter-spacing: 0;
+  color: #130F26;
 }
