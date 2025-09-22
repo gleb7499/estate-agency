@@ -111,16 +111,24 @@ html, body { margin: 0; padding: 0; }
   border: 1px solid #21779E;
   background: #fff;
   cursor: pointer;
+  transition: background-color 150ms ease, border-color 150ms ease;
 }
-.mp-root .mp-print__icon { width: 20px; height: 20px; }
+.mp-root .mp-print__icon { width: 24px; height: 24px; transition: filter 150ms ease; }
 .mp-root .mp-print__text {
   font-family: "Open Sans", Arial, sans-serif;
   font-weight: 400;
   font-size: var(--mp-share-text);
   line-height: 140%;
   color: #21779E;
+  transition: color 150ms ease;
 }
-.mp-root .mp-header__print:hover { background: rgba(33, 119, 158, 0.06); }
+.mp-root .mp-header__print:hover {
+  background: #21779E;
+  border-color: #21779E;
+}
+.mp-root .mp-header__print:hover .mp-print__text { color: #F9F9F9; }
+/* Так как иконка — внешнее SVG через <img>, перекрашиваем её приближённо фильтром */
+.mp-root .mp-header__print:hover .mp-print__icon { filter: brightness(0) invert(1); }
 .mp-root .mp-header__print:focus-visible { outline: 2px solid #21779E; outline-offset: 2px; }
 
 .mp-root .mp-logo {
@@ -167,18 +175,22 @@ html, body { margin: 0; padding: 0; }
   width: max-content;
 }
 
-.mp-root .mp-share__icon {
-  width: 20px;
-  height: 20px;
+/* Иконка в кнопке шапки */
+.mp-root .mp-header__right .mp-share__icon {
+  width: 24px;
+  height: 24px;
 }
 
 .mp-root .mp-share__text {
   font-family: "Open Sans", Arial, sans-serif;
   font-weight: 400;
-  font-size: var(--mp-share-text);
+  font-style: normal;
+  font-size: 18px; /* фиксировано по макету */
   line-height: 140%;
   letter-spacing: 0;
   text-align: center;
+  vertical-align: middle;
+  background: transparent;
   color: #21779E;
 }
 
@@ -1021,4 +1033,145 @@ html, body { margin: 0; padding: 0; }
   line-height: 100%;
   letter-spacing: 0;
   color: #130F26;
+}
+
+/* ==================== Модальное окно «Поделиться объектом» ==================== */
+.mp-root .mp-modal[hidden] { display: none !important; }
+.mp-root .mp-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+}
+.mp-root .mp-modal__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(19, 15, 38, 0.6);
+}
+.mp-root .mp-modal__dialog {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 902px;
+  /* Вместо фиксированной высоты используем ограничение по максимальной высоте */
+  max-height: min(90vh, 538px);
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+  padding: 32px 32px 28px 32px;
+  box-sizing: border-box;
+  display: grid;
+  /* Авто-высота строк по контенту, чтобы нижний блок не растягивался */
+  grid-template-rows: max-content max-content max-content max-content;
+  /* При свободном месте содержимое остаётся прижато к верхней части */
+  align-content: start;
+  /* Чуть компактнее вертикальные промежутки между рядами */
+  row-gap: 12px;
+}
+.mp-root .mp-modal__close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.mp-root .mp-share__title {
+  margin-top: 12px;
+  color: #130F26;
+  font-family: "Hagrid", "Open Sans", Arial, sans-serif;
+  font-weight: 500;
+  font-size: 36px;
+  line-height: 100%;
+}
+.mp-root .mp-share__row {
+  display: grid;
+  grid-template-columns: 157px auto 1fr;
+  align-items: center;
+  gap: 24px;
+}
+.mp-root .mp-share__qr img { width: 157px; height: 157px; display: block; }
+.mp-root .mp-share__or {
+  font-family: "Hagrid", "Open Sans", Arial, sans-serif;
+  font-weight: 500;
+  font-size: 20px;
+  line-height: 100%;
+  color: #130F26;
+  text-align: center;
+}
+.mp-root .mp-share__links {
+  width: 446px;
+  height: 90px;
+  padding: 25px 81px;
+  border-radius: 69px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 21px;
+  /* Градиентная рамка со скруглением: двойной фон + прозрачная граница */
+  border: 4px solid transparent;
+  background:
+    linear-gradient(#fff, #fff) padding-box,
+    linear-gradient(90deg, #21779E 0%, #49D7E2 100%) border-box;
+}
+.mp-root .mp-share__icon {
+  width: 40px;
+  height: 40px;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.mp-root .mp-share__icon img { width: 100%; height: 100%; display: block; }
+.mp-root .mp-share__link-title {
+  /* Убираем лишний внешний отступ сверху — расстояние даёт row-gap */
+  margin: 0;
+  color: #000000;
+  font-family: "Open Sans", Arial, sans-serif;
+  font-weight: 400;
+  font-size: 18px;
+  line-height: 140%;
+}
+.mp-root .mp-share__copy {
+  display: grid;
+  grid-template-columns: auto auto;
+  align-items: center;
+  /* Чуть меньше расстояние между полем и кнопкой */
+  gap: 12px;
+  /* На всякий случай не позволяем блоку растягиваться по высоте сетки */
+  align-self: start;
+}
+.mp-root .mp-share__input {
+  width: 340px;
+  height: 56px;
+  border-radius: 4px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  background: #F2F4F7;
+  color: #130F26;
+  font-family: "Nunito Sans", "Open Sans", Arial, sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+}
+.mp-root .mp-share__copy-btn {
+  background: transparent;
+  color: #21779E;
+  font-family: "Open Sans", Arial, sans-serif;
+  font-weight: 400;
+  font-size: 18px;
+  line-height: 140%;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+@media (max-width: 980px) {
+  .mp-root .mp-modal__dialog { width: min(902px, 92vw); /* высота по содержимому, ограничение max-height остаётся */ overflow: auto; }
+  .mp-root .mp-share__row { grid-template-columns: 1fr; justify-items: center; gap: 16px; }
+  .mp-root .mp-share__links { width: min(446px, 100%); }
 }

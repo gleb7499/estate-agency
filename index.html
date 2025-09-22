@@ -175,6 +175,35 @@
           </div>
         </div>
       </footer>
+
+      <!-- Модалка «Поделиться объектом» (должна быть внутри .mp-root для стилизации и делегирования событий) -->
+      <div class="mp-modal mp-share-modal" role="dialog" aria-modal="true" aria-labelledby="mp-share-modal-title" hidden>
+        <div class="mp-modal__overlay" data-close="true"></div>
+        <div class="mp-modal__dialog" role="document">
+          <button class="mp-modal__close" type="button" aria-label="Закрыть окно" data-close="true">
+            <img src="assets/img/close.svg" alt="" aria-hidden="true" />
+          </button>
+          <h3 class="mp-share__title" id="mp-share-modal-title">Поделиться объектом</h3>
+          <div class="mp-share__row">
+            <div class="mp-share__qr" aria-hidden="true">
+              <img src="assets/img/qr-black.svg" alt="QR код" />
+            </div>
+            <div class="mp-share__or">или</div>
+            <div class="mp-share__links" aria-label="Поделиться в соцсетях">
+              <button class="mp-share__icon" type="button" aria-label="Одноклассники"><img src="assets/img/odnoklassniki-logo.svg" alt="" aria-hidden="true" /></button>
+              <button class="mp-share__icon" type="button" aria-label="ВКонтакте"><img src="assets/img/vk-logo.svg" alt="" aria-hidden="true" /></button>
+              <button class="mp-share__icon" type="button" aria-label="WhatsApp"><img src="assets/img/whatsapp-logo.svg" alt="" aria-hidden="true" /></button>
+              <button class="mp-share__icon" type="button" aria-label="Viber"><img src="assets/img/viber-logo.svg" alt="" aria-hidden="true" /></button>
+              <button class="mp-share__icon" type="button" aria-label="Telegram"><img src="assets/img/telegram-logo.svg" alt="" aria-hidden="true" /></button>
+            </div>
+          </div>
+          <div class="mp-share__link-title">Прямая ссылка</div>
+          <div class="mp-share__copy">
+            <div class="mp-share__input" role="textbox" aria-readonly="true"></div>
+            <button class="mp-share__copy-btn" type="button">Скопировать</button>
+          </div>
+        </div>
+      </div>
     </div>
 
   <!-- JS карточки (дефер, без inline) -->

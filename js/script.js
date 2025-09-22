@@ -23,6 +23,55 @@
     MP.emit('mp:share:click', { ts: Date.now() });
   });
 
+  // Модалка «Поделиться»: открыть по клику на кнопку в шапке и в подвале
+  const openShareModal = () => {
+    const modal = root.querySelector('.mp-share-modal');
+    if (!modal) return;
+    try {
+      const href = window.location?.href || '';
+      const box = modal.querySelector('.mp-share__input');
+      if (box) box.textContent = href;
+    } catch (_) {}
+    modal.hidden = false;
+    document.body.style.overflow = 'hidden';
+  };
+  const closeShareModal = () => {
+    const modal = root.querySelector('.mp-share-modal');
+    if (!modal) return;
+    modal.hidden = true;
+    document.body.style.overflow = '';
+  };
+  root.addEventListener('click', (e) => {
+    const headerShare = e.target.closest('.mp-header__right');
+    const footerShare = e.target.closest('.mp-footer__content .mp-btn');
+    if (headerShare || footerShare) {
+      e.preventDefault();
+      openShareModal();
+      return;
+    }
+    const isClose = e.target.closest('[data-close="true"]');
+    if (isClose) { closeShareModal(); return; }
+  });
+  // Escape закрывает модалку
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeShareModal();
+  });
+  // Кнопка «Скопировать»
+  root.addEventListener('click', async (e) => {
+    const copyBtn = e.target.closest('.mp-share__copy-btn');
+    if (!copyBtn) return;
+    const modal = root.querySelector('.mp-share-modal');
+    const box = modal?.querySelector('.mp-share__input');
+    const text = box?.textContent?.trim() || window.location.href;
+    try {
+      await navigator.clipboard.writeText(text);
+      copyBtn.textContent = 'Скопировано';
+      setTimeout(() => { copyBtn.textContent = 'Скопировать'; }, 1500);
+    } catch (_) {
+      // no-op
+    }
+  });
+
   // Кнопка «Печать» — печать страницы
   root.addEventListener('click', (e) => {
     const printBtn = e.target.closest('.mp-header__print');
