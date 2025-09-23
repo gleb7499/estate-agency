@@ -50,11 +50,16 @@
       return;
     }
     const isClose = e.target.closest('[data-close="true"]');
-    if (isClose) { closeShareModal(); return; }
+    if (isClose) {
+      // Закрыть любую открытую модалку
+      closeShareModal();
+      closeInterestModal();
+      return;
+    }
   });
   // Escape закрывает модалку
   window.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeShareModal();
+    if (e.key === 'Escape') { closeShareModal(); closeInterestModal(); }
   });
   // Кнопка «Скопировать»
   root.addEventListener('click', async (e) => {
@@ -77,6 +82,116 @@
     const printBtn = e.target.closest('.mp-header__print');
     if (!printBtn) return;
     try { window.print(); } catch (_) {}
+  });
+
+  // =================== Модалка «Оставить заявку» ===================
+  const openInterestModal = () => {
+    const modal = root.querySelector('.mp-interest-modal');
+    if (!modal) return;
+    modal.hidden = false;
+    document.body.style.overflow = 'hidden';
+    // фокус на поле телефона
+    const phone = modal.querySelector('#mp-int-phone');
+    if (phone) { try { phone.focus(); } catch (_) {} }
+  };
+  const closeInterestModal = () => {
+    const modal = root.querySelector('.mp-interest-modal');
+    if (!modal) return;
+    modal.hidden = true;
+    document.body.style.overflow = '';
+  };
+  // Открытие по клику на primary CTA внутри #overview
+  root.addEventListener('click', (e) => {
+    const primaryCta = e.target.closest('#overview .mp-contact-actions .mp-cta.mp-cta--primary');
+    if (!primaryCta) return;
+    e.preventDefault();
+    openInterestModal();
+  });
+  // Простейшая валидация телефона: допустимы цифры + пробелы + ( ) + - , минимум 10 цифр
+  const validatePhone = (value) => {
+    if (typeof value !== 'string') return false;
+    const digits = value.replace(/\D+/g, '');
+    return digits.length >= 10; // РФ номера обычно 10-11 без кода страны
+  };
+  // Обработка submit формы
+  root.addEventListener('submit', async (e) => {
+    const form = e.target.closest('.mp-interest-form');
+    if (!form) return;
+    e.preventDefault();
+    const phoneInput = form.querySelector('input[name="phone"]');
+    const commentInput = form.querySelector('textarea[name="comment"]');
+    const errBox = form.querySelector('.mp-field__error');
+    const phone = phoneInput?.value?.trim() || '';
+    const comment = commentInput?.value?.trim() || '';
+    if (!validatePhone(phone)) {
+      if (errBox) errBox.textContent = 'Введите корректный номер телефона';
+      try { phoneInput?.focus(); } catch (_) {}
+      return;
+    }
+    if (errBox) errBox.textContent = '';
+    try {
+      const payload = { phone, comment, objectId: root.querySelector('#overview')?.getAttribute('data-object-id') || null };
+      const res = await MP.sendToServer('interest.submit', payload);
+      if (res && res.ok) {
+        closeInterestModal();
+        MP.emit('mp:interest:submitted', payload);
+      }
+    } catch (_) {
+      if (errBox) errBox.textContent = 'Не удалось отправить. Попробуйте позже';
+    }
+  });
+
+  // При успешной отправке — заменить кнопки на статус «Объект заинтересовал»
+  const renderInterestedState = () => {
+    const overview = root.querySelector('#overview');
+    const actions = root.querySelector('#overview .mp-overview__info .mp-contact-actions');
+    if (!actions) return;
+    // Если уже отрисовано — не повторяем
+    if (overview?.getAttribute('data-interested') === 'true') return;
+    actions.innerHTML = `
+      <div class="mp-interest-state" role="status" aria-live="polite">
+        <p class="mp-interest-state__title">Объект заинтересовал</p>
+        <img class="mp-interest-state__icon" src="assets/img/interested.svg" alt="" aria-hidden="true" />
+      </div>
+    `;
+    try { overview?.setAttribute('data-interested', 'true'); } catch (_) {}
+  };
+  root.addEventListener('mp:interest:submitted', renderInterestedState);
+
+  
+  // Маска телефона: +7 (XXX) XXX-XX-XX — лёгкая, без зависимостей
+  const maskPhoneValue = (raw) => {
+    if (typeof raw !== 'string') return '';
+    let d = raw.replace(/\D+/g, '');
+    if (!d) return '';
+    // Приводим 8/9 к российскому формату +7
+    if (d[0] === '9') d = '7' + d; // без кода страны, начинаем с оператора
+    else if (d[0] === '8') d = '7' + d.slice(1);
+    // Если не 7 — позволяем ввод других стран без форматирования
+    if (d[0] !== '7') return `+${d.slice(0, 15)}`;
+    const len = d.length;
+    let res = '+7';
+    if (len > 1) res += ' (' + d.slice(1, Math.min(4, len));
+    if (len >= 4) res += ')';
+    if (len > 4) res += ' ' + d.slice(4, Math.min(7, len));
+    if (len >= 7) res += '-' + d.slice(7, Math.min(9, len));
+    if (len >= 9) res += '-' + d.slice(9, Math.min(11, len));
+    return res;
+  };
+  const applyPhoneMask = (inputEl) => {
+    const formatted = maskPhoneValue(inputEl.value);
+    inputEl.value = formatted;
+    try { inputEl.setSelectionRange(formatted.length, formatted.length); } catch (_) {}
+  };
+  root.addEventListener('input', (e) => {
+    const el = e.target.closest('#mp-int-phone');
+    if (!el) return;
+    applyPhoneMask(el);
+  });
+  root.addEventListener('paste', (e) => {
+    const el = e.target.closest('#mp-int-phone');
+    if (!el) return;
+    setTimeout(() => applyPhoneMask(el), 0);
   });
 
   // Навигация по секциям (если появятся ссылки с href="#id")

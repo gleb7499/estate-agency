@@ -248,7 +248,8 @@ html, body { margin: 0; padding: 0; }
 }
 .mp-root .mp-map {
   height: 420px; /* фиксированная высота по требованию */
-  width: 90vw;   /* 80% ширины окна */
+  width: 100%;   /* избегаем переполнения из-за паддингов родителя */
+  max-width: 90vw; /* сохраняем прежний визуальный максимум относительно окна */
   margin: 0 auto; /* центр по горизонтали */
   border-radius: 25px;
   overflow: hidden;
@@ -784,10 +785,10 @@ html, body { margin: 0; padding: 0; }
   background: linear-gradient(90deg, #21779E 0%, #49D7E2 100%);
   border-top-left-radius: 32px;
   border-top-right-radius: 32px;
-  /* full-bleed по ширине экрана всегда */
-  width: 100vw;
-  margin-left: calc(50% - 50vw);
-  margin-right: calc(50% - 50vw);
+  /* full-bleed по ширине контейнера — без 100vw, чтобы не учитывать полосу прокрутки */
+  width: 100%;
+  margin-left: 0;
+  margin-right: 0;
   /* отступ сверху от контента, без отступа снизу (подвал у низа экрана) */
   margin-top: 40px;
   /* размеры по макету */
@@ -982,9 +983,9 @@ html, body { margin: 0; padding: 0; }
 
   /* Подвал */
   .mp-root .mp-footer {
-    width: 100vw; /* full-bleed сохраняем и на мобильных */
-    margin-left: calc(50% - 50vw);
-    margin-right: calc(50% - 50vw);
+    width: 100%; /* без 100vw, чтобы не появлялась горизонтальная прокрутка */
+    margin-left: 0;
+    margin-right: 0;
     margin-top: 24px;
     height: auto;
     min-height: 88px;
@@ -1067,6 +1068,8 @@ html, body { margin: 0; padding: 0; }
   align-content: start;
   /* Чуть компактнее вертикальные промежутки между рядами */
   row-gap: 12px;
+  /* Если контента больше, чем max-height — показываем скролл внутри модалки, а не за её рамки */
+  overflow: auto;
 }
 .mp-root .mp-modal__close {
   position: absolute;
@@ -1175,3 +1178,58 @@ html, body { margin: 0; padding: 0; }
   .mp-root .mp-share__row { grid-template-columns: 1fr; justify-items: center; gap: 16px; }
   .mp-root .mp-share__links { width: min(446px, 100%); }
 }
+
+/* ==================== Модалка «Оставить заявку» ==================== */
+.mp-root .mp-form { display: grid; gap: 16px; }
+.mp-root .mp-field { display: grid; gap: 8px; }
+.mp-root .mp-field__label {
+  font-family: "Open Sans", Arial, sans-serif;
+  font-size: 16px;
+  color: #130F26;
+}
+.mp-root .mp-input {
+  width: 100%;
+  height: 56px;
+  border-radius: 8px;
+  padding: 14px 16px;
+  background: #F2F4F7;
+  color: #130F26;
+  border: 1px solid transparent;
+  font-family: "Open Sans", Arial, sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+}
+.mp-root .mp-textarea {
+  min-height: 96px;
+  height: auto;
+  resize: vertical;           /* разрешаем только вертикальный ресайз */
+  max-height: 40vh;           /* ограничиваем рост поля внутри модалки */
+}
+.mp-root .mp-input:focus { outline: none; border-color: #49D7E2; box-shadow: 0 0 0 3px rgba(73,215,226,0.25); }
+.mp-root .mp-field__error {
+  min-height: 18px;
+  font-family: "Open Sans", Arial, sans-serif;
+  font-size: 13px;
+  color: #C0392B;
+}
+.mp-root .mp-form__actions { display: flex; justify-content: flex-end; margin-top: 8px; }
+
+/* Состояние после подтверждения интереса */
+.mp-root .mp-interest-state {
+  display: grid;
+  justify-items: center;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+}
+.mp-root .mp-interest-state__title {
+  font-family: "Open Sans", Arial, sans-serif;
+  font-weight: 600; /* SemiBold */
+  font-size: 20px;
+  line-height: 100%;
+  letter-spacing: 0;
+  color: #000000;
+  margin: 0;
+  text-align: center;
+}
+.mp-root .mp-interest-state__icon { width: 50px; height: 50px; display: block; }

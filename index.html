@@ -204,6 +204,31 @@
           </div>
         </div>
       </div>
+
+      <!-- Модалка «Оставить заявку» (форма контакта) -->
+      <div class="mp-modal mp-interest-modal" role="dialog" aria-modal="true" aria-labelledby="mp-interest-modal-title" hidden>
+        <div class="mp-modal__overlay" data-close="true"></div>
+        <div class="mp-modal__dialog" role="document">
+          <button class="mp-modal__close" type="button" aria-label="Закрыть окно" data-close="true">
+            <img src="assets/img/close.svg" alt="" aria-hidden="true" />
+          </button>
+          <h3 class="mp-share__title" id="mp-interest-modal-title">Оставить заявку</h3>
+          <form class="mp-form mp-interest-form" novalidate>
+            <div class="mp-field">
+              <label class="mp-field__label" for="mp-int-phone">Номер телефона</label>
+              <input class="mp-input" type="tel" id="mp-int-phone" name="phone" required inputmode="tel" autocomplete="tel" placeholder="+7 (___) ___-__-__" />
+              <div class="mp-field__error" aria-live="polite"></div>
+            </div>
+            <div class="mp-field">
+              <label class="mp-field__label" for="mp-int-comment">Комментарий (необязательно)</label>
+              <textarea class="mp-input mp-textarea" id="mp-int-comment" name="comment" rows="4" placeholder="Ваш комментарий"></textarea>
+            </div>
+            <div class="mp-form__actions">
+              <button type="submit" class="mp-cta mp-cta--primary">Подтвердить</button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
 
   <!-- JS карточки (дефер, без inline) -->
