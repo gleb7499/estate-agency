@@ -24,7 +24,7 @@ html, body { margin: 0; padding: 0; }
   flex-direction: column;
   align-items: stretch;
   height: auto;
-  min-height: 100vh; /* чтобы подвал мог прижиматься к низу экрана, когда контента мало */
+  min-height: auto; /* фиксированный макет без зависимости от высоты окна */
   font-family: "Open Sans", Arial, sans-serif;
 }
 
@@ -59,41 +59,9 @@ html, body { margin: 0; padding: 0; }
   align-items: center;
   gap: 12px;
 
-  /* Контейнер для @container-запросов */
-  container-type: inline-size;
+  /* Без контейнерных запросов в статичном макете */
 }
 
-/* @container: пропорциональная усадка шапки до порогов */
-@container (max-width: 680px) {
-  .mp-root .mp-squircle {
-    --mp-brand-title: 32px;
-    --mp-brand-subtitle: 13px;
-    --mp-share-text: 16px;
-    --mp-logo-size: 48px;
-    --mp-btn-pad-y: 8px;
-    --mp-btn-pad-x: 12px;
-  }
-}
-@container (max-width: 600px) {
-  .mp-root .mp-squircle {
-    --mp-brand-title: 28px;
-    --mp-brand-subtitle: 12px;
-    --mp-share-text: 15px;
-    --mp-logo-size: 44px;
-    --mp-btn-pad-y: 8px;
-    --mp-btn-pad-x: 10px;
-  }
-}
-@container (max-width: 560px) {
-  .mp-root .mp-squircle {
-    --mp-brand-title: 26px;
-    --mp-brand-subtitle: 12px;
-    --mp-share-text: 14px; /* не уменьшаем ниже 14px */
-    --mp-logo-size: 40px;
-    --mp-btn-pad-y: 6px;
-    --mp-btn-pad-x: 10px;
-  }
-}
 
 .mp-root .mp-header__left {
   display: flex;
@@ -249,10 +217,17 @@ html, body { margin: 0; padding: 0; }
 .mp-root .mp-map {
   height: 420px; /* фиксированная высота по требованию */
   width: 100%;   /* избегаем переполнения из-за паддингов родителя */
-  max-width: 90vw; /* сохраняем прежний визуальный максимум относительно окна */
+  max-width: none; /* без зависимости от ширины окна */
   margin: 0 auto; /* центр по горизонтали */
   border-radius: 25px;
   overflow: hidden;
+}
+/* Статическая картинка карты (используется для печати) по умолчанию скрыта */
+.mp-root .mp-map .mp-map__print {
+  display: none;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 /* -------------------- Секция «Условия» -------------------- */
@@ -294,9 +269,7 @@ html, body { margin: 0; padding: 0; }
   padding-right: 20px; /* визуальный отступ от правого края контейнера */
 }
 
-@media (max-width: 640px) {
-  .mp-root .mp-terms__grid { grid-template-columns: 1fr; }
-}
+/* Адаптив отключён: сетка условий фиксирована в 2 колонки */
 /* -------------------- Секция «Об объекте» -------------------- */
 .mp-root .mp-about__grid {
   list-style: none;
@@ -335,12 +308,7 @@ html, body { margin: 0; padding: 0; }
   padding-right: 20px;
 }
 
-@media (max-width: 1024px) {
-  .mp-root .mp-about__grid { grid-template-columns: repeat(2, 1fr); }
-}
-@media (max-width: 640px) {
-  .mp-root .mp-about__grid { grid-template-columns: 1fr; }
-}
+/* Адаптив отключён: 3 колонки всегда */
 /* -------------------- Секция «О здании» -------------------- */
 .mp-root .mp-building__grid {
   list-style: none;
@@ -379,12 +347,7 @@ html, body { margin: 0; padding: 0; }
   padding-right: 20px;
 }
 
-@media (max-width: 1024px) {
-  .mp-root .mp-building__grid { grid-template-columns: repeat(2, 1fr); }
-}
-@media (max-width: 640px) {
-  .mp-root .mp-building__grid { grid-template-columns: 1fr; }
-}
+/* Адаптив отключён: 3 колонки всегда */
 /* Обзор: grid с областями (gallery | info) */
 .mp-root .mp-overview__content {
   display: grid;
@@ -406,8 +369,8 @@ html, body { margin: 0; padding: 0; }
 .mp-root .mp-gallery .mp-title {
   font-family: "Open Sans", Arial, sans-serif;
   font-weight: 700;
-  /* Адаптивный кегль: от 24px на мобильных до 48px на десктопе */
-  font-size: clamp(24px, 7vw, 48px);
+  /* Статичный кегль */
+  font-size: 48px;
   line-height: 110%;
   background: #130F26;
   -webkit-background-clip: text;
@@ -415,8 +378,8 @@ html, body { margin: 0; padding: 0; }
   -webkit-text-fill-color: transparent;
 }
 .mp-root .mp-gallery .mp-address {
-  /* Адаптивный кегль: от 14px до 20px */
-  font-size: clamp(14px, 3.6vw, 20px);
+  /* Статичный кегль */
+  font-size: 20px;
   color: #130F26;
   display: inline-flex;
   align-items: center;
@@ -576,17 +539,16 @@ html, body { margin: 0; padding: 0; }
 }
 .mp-root .mp-fact {
   display: grid;
-  /* Первая колонка под иконку масштабируется от 28px до 48px */
-  grid-template-columns: clamp(28px, 7vw, 48px) 1fr;
-  gap: clamp(6px, 1.5vw, 12px);
+  grid-template-columns: 48px 1fr;
+  gap: 12px;
   align-items: center;
-  padding: clamp(8px, 2vw, 12px) clamp(10px, 2.5vw, 14px);
+  padding: 12px 14px;
   /* Тянемся по ширине строки, но сохраняем минимальный размер для читабельности */
   flex: 1 1 220px;
 }
 .mp-root .mp-fact__icon {
-  width: clamp(28px, 7vw, 48px);
-  height: clamp(28px, 7vw, 48px);
+  width: 48px;
+  height: 48px;
   border-radius: 6px;
   display: inline-flex;
   align-items: center;
@@ -598,13 +560,13 @@ html, body { margin: 0; padding: 0; }
 .mp-root .mp-fact__label {
   font-family: "Open Sans", Arial, sans-serif;
   color: #989898;
-  font-size: clamp(12px, 2.6vw, 16px);
+  font-size: 16px;
   font-weight: 400;
 }
 .mp-root .mp-fact__value {
   font-family: "Open Sans", Arial, sans-serif;
   color: #000000;
-  font-size: clamp(16px, 4.2vw, 24px);
+  font-size: 24px;
   font-weight: 700; /* bold */
 }
 .mp-root .mp-overview__info { grid-area: info; min-width: 0; }
@@ -864,13 +826,7 @@ html, body { margin: 0; padding: 0; }
 .mp-root .mp-cta:focus-visible { outline: 2px solid #49D7E2; outline-offset: 2px; }
 
 /* Адаптив для инфоблока */
-@media (max-width: 1024px) {
-  .mp-root .mp-overview__info { order: 2; }
-}
-@media (max-width: 520px) {
-  .mp-root .mp-agent__header { grid-template-columns: 100px 1fr; align-items: center; }
-  .mp-root .mp-agent__photo { width: 100px; height: 100px; }
-}
+/* Адаптив отключён для инфоблока и карточки агента */
 
 /* Подвал: градиент + скруглённые края */
 .mp-root .mp-footer {
@@ -907,6 +863,9 @@ html, body { margin: 0; padding: 0; }
   align-items: center;
   justify-content: center;
   overflow: visible; /* не обрезаем QR */
+  /* Не даём блоку сжиматься в flex-контейнере при узком месте */
+  flex: 0 0 132px;
+  min-width: 132px;
 }
 
 .mp-root .mp-footer__qr-img {
@@ -914,7 +873,7 @@ html, body { margin: 0; padding: 0; }
   height: 100%;
   object-fit: contain; /* не обрезать QR, вписывать целиком */
   background: transparent;
-  /* Для визуально прозрачного фона и белых модулей QR: инвертируем и смешиваем со фоном */
+  display: block;
   filter: invert(1);
   mix-blend-mode: screen;
 }
@@ -1011,114 +970,7 @@ html, body { margin: 0; padding: 0; }
   color: #ffffff; /* currentColor для inline-SVG делает линии белыми */
 }
 
-/* ---------- Адаптив: планшеты и мобильные ---------- */
-@media (max-width: 1024px) {
-  .mp-root { --mp-page-pad: 24px; }
-  .mp-root .mp-overview__content {
-    grid-template-columns: 1fr;
-    grid-template-areas:
-      'gallery'
-      'facts'
-      'info';
-  }
-}
-
-@media (max-width: 768px) {
-  .mp-root {
-    --mp-page-pad: 16px;
-    min-width: 0; /* разрешаем сжиматься на мобильных */
-    /* Базовое уменьшение на мобильных; дальше уточняем контейнер-запросами */
-    --mp-brand-title: 30px;
-    --mp-brand-subtitle: 13px;
-    --mp-share-text: 16px;
-    --mp-logo-size: 50px;
-    --mp-btn-pad-y: 8px;
-    --mp-btn-pad-x: 12px;
-  }
-
-  /* Шапка */
-  .mp-root .mp-squircle {
-    min-height: 96px;
-    height: auto;
-    /* По умолчанию — в строку, но разрешаем перенос при крайней нехватке места */
-    flex-direction: row;
-    flex-wrap: wrap; /* если не влезает — перенос вниз */
-    justify-content: space-between;
-    align-items: center;
-    gap: 8px 12px;
-    margin: var(--mp-page-pad) var(--mp-page-pad) 0; /* верхний равен боковым */
-  }
-  .mp-root .mp-header__left {
-    padding-left: 12px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    text-align: left;
-  }
-  .mp-root .mp-header__right {
-    margin-right: 12px;
-    white-space: nowrap; /* держим кнопку в одну строку, чтобы переносился весь блок */
-  }
-  .mp-root .mp-brand__subtitle { letter-spacing: 0.04em; }
-
-  /* Тело */
-  .mp-root .mp-main { padding: 16px; }
-  .mp-root .mp-section { padding: 16px 0; }
-  .mp-root .mp-gallery { min-height: 180px; }
-  .mp-root .mp-map-placeholder { height: 220px; }
-
-  /* CTA: адаптивные размеры на мобильных */
-  .mp-root .mp-cta {
-    width: 100%;
-    max-width: 398px;
-    height: 56px;
-    padding: 12px 16px;
-    border-radius: 56px;
-  }
-
-  /* Подвал */
-  .mp-root .mp-footer {
-    width: 100%; /* без 100vw, чтобы не появлялась горизонтальная прокрутка */
-    margin-left: 0;
-    margin-right: 0;
-    margin-top: 24px;
-    height: auto;
-    min-height: 88px;
-    padding: 12px 16px;
-  }
-  .mp-root .mp-footer__inner { gap: 16px; }
-  .mp-root .mp-footer__qr { width: 56px; height: 56px; }
-  .mp-root .mp-footer__title { font-size: 20px; }
-}
-
-/* Очень узкие экраны — принудительно колонка и центрирование */
-@media (max-width: 520px) {
-  .mp-root .mp-squircle {
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-  }
-  .mp-root .mp-header__left {
-    padding-left: 0;
-    justify-content: center;
-    text-align: center;
-  }
-  .mp-root .mp-header__right { margin-right: 0; }
-}
-
-@media (max-width: 480px) {
-  .mp-root {
-    --mp-page-pad: 12px;
-    /* Понижаем базовый размер, при этом контейнерные запросы на .mp-squircle соблюдают пороги */
-    --mp-brand-title: 24px;
-    --mp-share-text: 14px;
-    --mp-logo-size: 36px;
-    --mp-btn-pad-y: 6px;
-    --mp-btn-pad-x: 10px;
-  }
-  .mp-root .mp-footer__qr { width: 48px; height: 48px; }
-  .mp-root .mp-main { padding: 16px 12px; }
-}
+/* Адаптивные блоки удалены */
 
 /* -------------------- Секция «Описание» -------------------- */
 .mp-root .mp-description__text {
@@ -1149,8 +1001,8 @@ html, body { margin: 0; padding: 0; }
   top: 50%;
   transform: translate(-50%, -50%);
   width: 902px;
-  /* Вместо фиксированной высоты используем ограничение по максимальной высоте */
-  max-height: min(90vh, 538px);
+  /* Статичная максимальная высота без зависимости от окна */
+  max-height: 538px;
   background: #ffffff;
   border-radius: 20px;
   box-shadow: 0 10px 40px rgba(0,0,0,0.2);
@@ -1163,7 +1015,7 @@ html, body { margin: 0; padding: 0; }
   align-content: start;
   /* Чуть компактнее вертикальные промежутки между рядами */
   row-gap: 12px;
-  /* Если контента больше, чем max-height — показываем скролл внутри модалки, а не за её рамки */
+  /* Если контента больше, чем max-height — показываем скролл внутри модалки */
   overflow: auto;
 }
 .mp-root .mp-modal__close {
@@ -1286,11 +1138,7 @@ html, body { margin: 0; padding: 0; }
   cursor: pointer;
 }
 
-@media (max-width: 980px) {
-  .mp-root .mp-modal__dialog { width: min(902px, 92vw); /* высота по содержимому, ограничение max-height остаётся */ overflow: auto; }
-  .mp-root .mp-share__row { grid-template-columns: 1fr; justify-items: center; gap: 16px; }
-  .mp-root .mp-share__links { width: min(446px, 100%); }
-}
+/* Модалки без адаптива */
 
 /* ==================== Модалка «Оставить заявку» ==================== */
 .mp-root .mp-form { display: grid; gap: 16px; }
@@ -1316,7 +1164,7 @@ html, body { margin: 0; padding: 0; }
   min-height: 96px;
   height: auto;
   resize: vertical;           /* разрешаем только вертикальный ресайз */
-  max-height: 40vh;           /* ограничиваем рост поля внутри модалки */
+  max-height: 320px;          /* фикс. ограничение роста */
 }
 .mp-root .mp-input:focus { outline: none; border-color: #49D7E2; box-shadow: 0 0 0 3px rgba(73,215,226,0.25); }
 .mp-root .mp-field__error {
@@ -1374,4 +1222,105 @@ html, body { margin: 0; padding: 0; }
 .mp-root .mp-toast.is-visible {
   opacity: 1;
   transform: translateX(-50%) translateY(0);
+}
+
+/* ==================== Печать (A4, «как на десктопе») ==================== */
+@media print {
+  /* Формат страницы и поля печати */
+  @page { size: A4 portrait; margin: 10mm; }
+
+  html, body { margin: 0 !important; padding: 0 !important; background: #fff !important; }
+  /* Точная цветопередача для градиентов/фонов в поддерживаемых браузерах */
+  .mp-root, .mp-root * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+  /* Глобальный масштаб печати (по умолчанию 60%) */
+  :root { --mp-print-scale: 0.6; }
+  /* Основной способ для Chromium/Edge */
+  .my-page, .mp-root { zoom: var(--mp-print-scale); }
+  /* Фолбэк для движков без zoom: масштаб через transform */
+  @supports not (zoom: 1) {
+    .my-page, .mp-root {
+      transform: scale(var(--mp-print-scale));
+      transform-origin: top left;
+      /* При scale контент становится меньше — оставляем исходную ширину,
+         чтобы пагинация считалась предсказуемо, а на лист выводилось уменьшенное изображение */
+    }
+  }
+
+  /* Убираем фиксированную «высоту экрана», чтобы не было лишних пустых зон */
+  .mp-root { min-height: auto !important; }
+
+
+  .mp-root .mp-overview__content {
+    display: grid !important;
+    grid-template-columns: 1.4fr 1fr !important;
+    grid-template-areas: 'gallery info' 'facts facts' !important;
+    gap: 24px !important;
+  }
+
+  /* Градиентный текст бренда в печати делает текст прозрачным, даём надёжный фолбэк */
+  .mp-root .mp-brand__title {
+    background: none !important;
+    -webkit-background-clip: initial !important;
+    background-clip: initial !important;
+    -webkit-text-fill-color: initial !important;
+    color: #21779E !important;
+  }
+
+  /* Скрываем то, что не нужно на бумаге */
+  .mp-root .mp-header__print,
+  .mp-root .mp-header__right,
+  .mp-root .mp-gallery__nav,
+  .mp-root .mp-price-info,
+  .mp-root .mp-contact-actions,
+  .mp-root .mp-modal,
+  .mp-root .mp-toast { display: none !important; }
+
+  /* Фиксированные кегли вместо clamp/vw для предсказуемой печати */
+  .mp-root .mp-gallery .mp-title { font-size: 48px !important; }
+  .mp-root .mp-gallery .mp-address { font-size: 20px !important; }
+
+  /* Избегаем разрывов внутри важных блоков */
+  .mp-root .mp-section,
+  .mp-root .mp-squircle,
+  .mp-root .mp-card,
+  .mp-root .mp-agent,
+  .mp-root .mp-price-card,
+  .mp-root .mp-gallery__main,
+  .mp-root .mp-gallery,
+  .mp-root .mp-map,
+  .mp-root .mp-terms__grid,
+  .mp-root .mp-building__grid,
+  .mp-root .mp-about__grid { break-inside: avoid; page-break-inside: avoid; }
+  img, svg { break-inside: avoid; page-break-inside: avoid; }
+
+  /* Заголовки не должны отрываться от следующего блока */
+  .mp-root .mp-section__title { page-break-after: avoid; break-after: avoid; }
+
+  /* Уплотняем отступы контента, чтобы влезать в A4 без «хвостов» */
+  .mp-root .mp-main { padding: 24px 25px !important; }
+
+  /* Карта: делаем чуть компактнее на бумаге */
+  .mp-root .mp-map { height: 300px !important; max-width: 100% !important; }
+  /* На печать: скрываем iframe и показываем статичную картинку ТОЛЬКО если она реально создана */
+  .mp-root .mp-map.has-print-map iframe { display: none !important; }
+  .mp-root .mp-map.has-print-map .mp-map__print { display: block !important; }
+
+  /* Подвал: разумные размеры на листе A4 */
+  .mp-root .mp-footer {
+    height: auto !important;
+    min-height: 100px !important;
+    padding: 16px 24px !important;
+    margin-top: 24px !important;
+    border-top-left-radius: 16px !important;
+    border-top-right-radius: 16px !important;
+  }
+  .mp-root .mp-footer__inner { gap: 16px !important; }
+  .mp-root .mp-footer__qr { width: 80px !important; height: 80px !important; }
+  .mp-root .mp-footer__title { font-size: 20px !important; }
+  /* QR без инверсии/смешивания для печати */
+  .mp-root .mp-footer__qr-img { filter: none !important; mix-blend-mode: normal !important; }
+
+  /* Ссылки — без вывода URL рядом (поведение некоторых движков печати) */
+  a[href]::after { content: '' !important; }
 }

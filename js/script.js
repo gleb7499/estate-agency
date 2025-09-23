@@ -2,6 +2,8 @@
 (() => {
   const root = document.querySelector('.mp-root');
   if (!root) return;
+  // Храним последний набор данных для повторной инициализации карты при печати
+  let __mp_currentData = null;
 
   // Контракт: мок-отправка на сервер — не делает сетевых запросов
   const MP = {
@@ -83,7 +85,19 @@
   root.addEventListener('click', (e) => {
     const printBtn = e.target.closest('.mp-header__print');
     if (!printBtn) return;
-    try { window.print(); } catch (_) {}
+    // Перед печатью готовим карту и по возможности ждём готовности статичного изображения
+    try { prepareMapForPrint(); } catch (_) {}
+    const container = root.querySelector('#mp-map');
+    const img = container?.querySelector('img.mp-map__print');
+    const waitReady = (cb) => {
+      const timeout = Date.now() + 1200;
+      const tick = () => {
+        if (!img || img.complete || img.naturalWidth > 0 || Date.now() > timeout) { cb(); return; }
+        setTimeout(tick, 50);
+      };
+      tick();
+    };
+    waitReady(() => { try { window.print(); } catch (_) {} });
   });
 
   // Генерация QR через публичный энкодер (без JS-библиотек)
@@ -91,6 +105,15 @@
     const s = Math.max(32, Math.min(1024, Math.round(sizePx)));
     const encoded = encodeURIComponent(String(data || ''));
     return `https://api.qrserver.com/v1/create-qr-code/?size=${s}x${s}&data=${encoded}`;
+  };
+  // Построение URL статического изображения карты (Yandex Static Maps)
+  const buildStaticMapUrl = ({ lat, lng, zoom = 16, size = [600, 400] }) => {
+    const [w, h] = size;
+    // Ограничения API по размеру: подберём безопасные дефолты
+    const width = Math.max(200, Math.min(650, Math.round(w)));
+    const height = Math.max(200, Math.min(650, Math.round(h)));
+    // Маркер красный (pm2rdm)
+    return `https://static-maps.yandex.ru/1.x/?ll=${lng},${lat}&z=${zoom}&size=${width},${height}&pt=${lng},${lat},pm2rdm&l=map`;
   };
   const updateQrImages = (scope = 'all') => {
     const href = (typeof window !== 'undefined' && window.location) ? window.location.href : '';
@@ -391,13 +414,19 @@
     }
     if (!address && (lat == null || lng == null)) return;
 
-    const buildIframeWithPoint = (plat, plng) => {
+    const buildIframeWithPoint = (plat, plng, eager = false) => {
       const src = `https://yandex.ru/map-widget/v1/?ll=${plng},${plat}&z=16&pt=${plng},${plat},pm2rdm`;
-      container.innerHTML = `<iframe title="Карта" src="${src}" style="border:0;width:100%;height:100%" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>`;
+      const loading = eager ? 'eager' : 'lazy';
+      container.innerHTML = `<iframe title="Карта" src="${src}" style="border:0;width:100%;height:100%" loading="${loading}" referrerpolicy="no-referrer-when-downgrade"></iframe>`;
+  // Обновим/создадим статичную картинку для печати
+  const img = container.querySelector('img.mp-map__print') || (() => { const i = document.createElement('img'); i.className = 'mp-map__print'; container.appendChild(i); return i; })();
+      try { img.alt = 'Карта'; } catch (_) {}
+      try { img.decoding = 'sync'; img.loading = 'eager'; } catch (_) {}
+  try { img.src = buildStaticMapUrl({ lat: plat, lng: plng, size: [container.clientWidth || 600, container.clientHeight || 400] }); container.classList.add('has-print-map'); } catch (_) {}
     };
 
     // 1) если координаты заданы — рисуем сразу
-    if (lat != null && lng != null) { buildIframeWithPoint(lat, lng); return; }
+  if (lat != null && lng != null) { buildIframeWithPoint(lat, lng); return; }
 
     // 2) есть адрес — JSONP Яндекс → OSM → в крайнем случае поиск (может показать "1 найден")
     jsonpGeocode(address)
@@ -408,8 +437,65 @@
           const q = encodeURIComponent(address || '');
           const src = `https://yandex.ru/map-widget/v1/?text=${q}&z=16`;
           container.innerHTML = `<iframe title="Карта" src="${src}" style="border:0;width:100%;height:100%" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>`;
+          // Нет точных координат — статичную карту формируем без маркера (просто по центру текста не поддерживается API), оставляем только iframe для печати
+          const img = container.querySelector('img.mp-map__print') || (() => { const i = document.createElement('img'); i.className = 'mp-map__print'; container.appendChild(i); return i; })();
+          try { img.removeAttribute('src'); } catch (_) {}
         })
       );
+  };
+
+  // Перед печатью гарантируем, что карта отрисована и не «ленивая»
+  const prepareMapForPrint = () => {
+    const container = root.querySelector('#mp-map');
+    if (!container) return;
+  // Если iframe ещё не вставлен — вставим быстрый поисковый вариант по адресу
+    let iframe = container.querySelector('iframe');
+    if (!iframe) {
+      // Попытка взять адрес из данных/DOM
+      const addrFromData = (__mp_currentData && __mp_currentData.address) || '';
+      const addrFromDom = (root.querySelector('.mp-gallery .mp-address__text')?.textContent || '').trim();
+      const address = addrFromData || addrFromDom || '';
+      if (address) {
+        const q = encodeURIComponent(address);
+        const src = `https://yandex.ru/map-widget/v1/?text=${q}&z=16`;
+        container.innerHTML = `<iframe title="Карта" src="${src}" style="border:0;width:100%;height:100%" loading="eager" referrerpolicy="no-referrer-when-downgrade"></iframe>`;
+        // Попробуем создать статичную картинку, если известны координаты из секции
+        const section = root.querySelector('#location');
+        const latAttr = section?.getAttribute('data-lat');
+        const lngAttr = section?.getAttribute('data-lng');
+        const latNum = latAttr && latAttr !== '[TBD]' ? Number(latAttr) : null;
+        const lngNum = lngAttr && lngAttr !== '[TBD]' ? Number(lngAttr) : null;
+        if (latNum != null && !Number.isNaN(latNum) && lngNum != null && !Number.isNaN(lngNum)) {
+          const img = document.createElement('img');
+          img.className = 'mp-map__print';
+          try { img.alt = 'Карта'; img.decoding = 'sync'; img.loading = 'eager'; } catch (_) {}
+          try { img.src = buildStaticMapUrl({ lat: latNum, lng: lngNum, size: [container.clientWidth || 600, container.clientHeight || 400] }); container.classList.add('has-print-map'); } catch (_) {}
+          container.appendChild(img);
+        }
+        iframe = container.querySelector('iframe');
+      } else {
+        // Если адрес недоступен, пробуем стандартную инициализацию
+        try { initMap(__mp_currentData); } catch (_) {}
+      }
+    }
+    // Принудительно выключаем lazy-загрузку и перезапускаем загрузку
+    if (iframe) {
+      try { iframe.setAttribute('loading', 'eager'); } catch (_) {}
+      try { iframe.src = iframe.src; } catch (_) {}
+    }
+    // Убедимся, что статичное изображение карты готово — подождём недолго
+    const img = container.querySelector('img.mp-map__print');
+    if (img && !img.complete) {
+      try {
+        const t0 = Date.now();
+        const done = (cb) => {
+          if (img.complete || img.naturalWidth > 0 || Date.now() - t0 > 1500) cb();
+          else setTimeout(() => done(cb), 60);
+        };
+        // Печать вызовется внешним кодом, тут мы лишь стараемся успеть прогрузить
+        done(() => {});
+      } catch (_) {}
+    }
   };
 
   // Делегированный клик по превью галереи — один обработчик на корне
@@ -485,6 +571,7 @@
 
   // Рендер всей карточки по переданным данным
   const renderAll = (data) => {
+    __mp_currentData = data || __mp_currentData;
     const gallery = root.querySelector('.mp-gallery');
     if (!gallery || !data) return;
 
@@ -638,4 +725,13 @@
     try { updateQrImages('all'); } catch (_) {}
   }
   root.addEventListener('mp:data', (e) => { if (e && e.detail) renderAll(e.detail); });
+
+  // Хуки печати: до открытия диалога печати прогружаем карту без lazy
+  try { window.addEventListener('beforeprint', prepareMapForPrint); } catch (_) {}
+  try {
+    const mq = window.matchMedia && window.matchMedia('print');
+    if (mq && typeof mq.addEventListener === 'function') {
+      mq.addEventListener('change', (e) => { if (e.matches) prepareMapForPrint(); });
+    }
+  } catch (_) {}
 })();
