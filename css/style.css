@@ -502,6 +502,9 @@ html, body { margin: 0; padding: 0; }
   padding-bottom: 4px;
   scrollbar-width: thin;
 }
+/* Индикаторы-«полоски» под фото (по умолчанию скрыты) */
+.mp-root .mp-gallery__indicators { display: none; }
+.mp-root .mp-gallery__indicator { display: inline-block; }
 .mp-root .mp-gallery__thumbs::-webkit-scrollbar { height: 8px; }
 .mp-root .mp-gallery__thumbs::-webkit-scrollbar-thumb {
   background: rgba(33,119,158,0.4);
@@ -1258,6 +1261,35 @@ html, body { margin: 0; padding: 0; }
     gap: 24px !important;
   }
 
+  /* Явно фиксируем сетки характеристик на печати (многоколонная раскладка) */
+  .mp-root .mp-terms__grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important; /* 2 колонки */
+    column-gap: 40px !important;
+    row-gap: 3px !important;
+  }
+  .mp-root .mp-about__grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important; /* 3 колонки */
+    column-gap: 40px !important;
+    row-gap: 5px !important;
+  }
+  .mp-root .mp-building__grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important; /* 3 колонки */
+    column-gap: 40px !important;
+    row-gap: 5px !important;
+  }
+  /* И сами элементы — подпись слева, значение справа */
+  .mp-root .mp-terms__item,
+  .mp-root .mp-about__item,
+  .mp-root .mp-building__item {
+    grid-template-columns: 1fr auto !important;
+    align-items: center !important;
+    gap: 40px !important;
+    padding: 20px 0 !important;
+  }
+
   /* Градиентный текст бренда в печати делает текст прозрачным, даём надёжный фолбэк */
   .mp-root .mp-brand__title {
     background: none !important;
@@ -1323,4 +1355,411 @@ html, body { margin: 0; padding: 0; }
 
   /* Ссылки — без вывода URL рядом (поведение некоторых движков печати) */
   a[href]::after { content: '' !important; }
+}
+
+
+
+/* ==================== Mobile (≤ 768px) ==================== */
+@media screen and (max-width: 768px) {
+  .mp-root {
+    --mp-brand-title: 24px;
+    --mp-brand-subtitle: 12px;
+    --mp-share-text: 14px;
+    --mp-logo-size: 40px;
+    --mp-page-pad: 16px;
+  }
+
+  /* Шапка компактнее, тексты в кнопках скрываем */
+  .mp-root .mp-squircle {
+    height: auto;
+    width: calc(100% - 24px);
+    margin: 12px;
+    border-radius: 26px;
+    border: 0.5px solid #130F26; /* тонкая рамка по макету */
+    grid-template-columns: 1fr auto auto;
+    gap: 8px;
+    padding: 8px 6px;
+  }
+  .mp-root .mp-header__left { padding-left: 8px; gap: 10px; }
+  .mp-root .mp-header__print { padding: 10px 12px; border-radius: 10px; display: none; }
+  .mp-root .mp-print__text,
+  .mp-root .mp-share__text { display: none; }
+  .mp-root .mp-header__right { margin-right: 8px; padding: 8px; }
+
+  /* Основной отступ страницы */
+  .mp-root .mp-main { padding: 16px 32px; display: flex; flex-direction: column; }
+
+  /* Плоская структура в мобильной версии: позволяем переупорядочивать элементы */
+  .mp-root .mp-overview,
+  .mp-root .mp-overview__content,
+  .mp-root .mp-overview__info,
+  .mp-root .mp-gallery { display: contents; }
+
+  /* Порядок следования (header уже выше по DOM):
+     1) альбом с фото → 2) thumbs → 3) заголовок → 4) цена → 5) факты → 6) адрес →
+     7) карта → 8) карточка специалиста → 9) описание → 10) условия → 11) об объекте → 12) о здании → 13) кнопки */
+  .mp-root .mp-gallery__main { order: 10; }
+  .mp-root .mp-gallery__thumbs { order: 15; }
+  .mp-root .mp-gallery .mp-title { order: 20; }
+  .mp-root .mp-price-card { order: 30; }
+  .mp-root .mp-facts { order: 40; }
+  .mp-root .mp-gallery .mp-address { order: 50; }
+  .mp-root .mp-location { order: 60; }
+  .mp-root .mp-agent { order: 70; }
+  .mp-root .mp-description { order: 80; }
+  .mp-root .mp-terms { order: 90; }
+  .mp-root .mp-about { order: 100; }
+  .mp-root .mp-building { order: 110; }
+  .mp-root .mp-contact-actions { order: 120; }
+
+  /* Небольшие интервалы между логическими блоками */
+  .mp-root .mp-gallery .mp-title,
+  .mp-root .mp-price-card,
+  .mp-root .mp-facts,
+  .mp-root .mp-gallery .mp-address { margin-top: 8px; }
+
+  /* Заголовок и адрес компактнее */
+  .mp-root .mp-gallery .mp-title {
+    font-family: "Open Sans", Arial, sans-serif;
+    font-weight: 600; /* SemiBold */
+    font-style: normal;
+    font-size: 12px;
+    line-height: 100%;
+    letter-spacing: 0;
+    overflow-wrap: anywhere;
+  }
+  .mp-root .mp-gallery .mp-address { font-size: 14px; }
+
+  /* Основное фото и навигация (квадрат с адаптивной шириной ~270px) */
+  .mp-root .mp-gallery__main {
+    position: relative;
+    border-radius: 12px;
+    aspect-ratio: 1 / 1;  /* квадрат */
+    align-self: center;   /* центрируем в колонке */
+    overflow: hidden;     /* скругление и блюр внутри */
+    background: #0b1520;  /* тёмная подложка под блюр */
+  }
+  /* Фоновый img как надёжный фолбэк блюра (под основным изображением) */
+  .mp-root .mp-gallery__main .mp-gallery__bg {
+    position: absolute;
+    top: -36px; left: -36px; right: -36px; bottom: -36px;
+    width: calc(100% + 72px);
+    height: calc(100% + 72px);
+    object-fit: cover;
+    -webkit-filter: blur(26px) saturate(1.12) brightness(1.02);
+    filter: blur(26px) saturate(1.12) brightness(1.02);
+    transform: translateZ(0) scale(1.08);
+    z-index: 0;
+    pointer-events: none;
+    display: block;
+  }
+  /* Блюр-подложка: берёт картинку из CSS-переменной --mp-gallery-bg */
+  .mp-root .mp-gallery__main::before {
+    content: '';
+    position: absolute;
+    inset: -36px;                /* достаточно, чтобы ядро размытия не обрезалось */
+    /* основной путь — CSS-переменная; если не задана, наследуем фон от контейнера */
+    background-image: var(--mp-gallery-bg, inherit);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+  -webkit-filter: blur(26px) saturate(1.12) brightness(1.02);
+  filter: blur(26px) saturate(1.12) brightness(1.02);
+  will-change: filter, transform;
+  transform: translateZ(0) scale(1.08);
+  opacity: 1;                   /* блюр - полностью перекрывает фон контейнера */
+  contain: paint;
+  z-index: 0;
+  }
+  /* Само изображение — без кропа, поверх блюра */
+  .mp-root .mp-gallery__image {
+    position: relative;
+    z-index: 1;
+    object-fit: contain;  /* без обрезки */
+    background: transparent;
+  }
+  .mp-root .mp-gallery__nav { width: 36px; height: 36px; }
+  .mp-root .mp-gallery__nav { z-index: 3; }
+  .mp-root .mp-gallery__nav img { width: 24px; height: 12px; }
+
+  /* Превью фото компактнее */
+  .mp-root .mp-gallery__thumb { height: 48px; }
+  /* На мобилке используем индикаторы вместо мини-превью */
+  .mp-root .mp-gallery__thumbs { display: none; }
+  .mp-root .mp-gallery__indicators {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;                 /* между индикаторами 7px */
+    width: 100%;
+    margin-top: 10px;
+    order: 14; /* после основного фото, перед прочим */
+  }
+  .mp-root .mp-gallery__indicator {
+    flex: 1 1 0%;            /* ширина делится поровну по доступному пространству */
+    min-width: 8px;          /* страховка, если фото очень много */
+    height: 5px;             /* высота по макету */
+    border-radius: 2px;      /* скругление по макету */
+    background: #21779E;     /* цвет заливки по макету */
+    opacity: 0.32;           /* неактивные — менее заметны, но тот же цвет */
+    border: 0;               /* без границы */
+    padding: 0;
+    transition: opacity .18s ease;
+  }
+  .mp-root .mp-gallery__indicator.is-active {
+    opacity: 1;
+  }
+  .mp-root .mp-gallery__indicator:focus-visible { outline: 2px solid #49D7E2; outline-offset: 2px; }
+
+  /* Бейджи: скрыть левый верхний, ID — вправо вверх, Планировка — вниз по центру */
+  .mp-root .mp-gallery__badge { z-index: 2; }
+  .mp-root .mp-gallery__badge--tl { display: none; }
+  .mp-root .mp-gallery__badge--bl {
+    top: 8px; right: 8px;
+    bottom: auto; left: auto;
+    width: 124px; height: 24px;
+    padding: 4px 8px; gap: 6px;
+    justify-content: space-between;
+  }
+  .mp-root .mp-gallery__badge--br {
+    top: auto; bottom: 8px;
+    left: 50%; right: auto;
+    transform: translateX(-50%);
+    width: 127px; height: 26px;
+    padding: 4px 8px; gap: 6px;
+    justify-content: center;
+  }
+  /* Размеры иконок в бейджах */
+  .mp-root .mp-gallery__badge--bl .mp-badge__icon,
+  .mp-root .mp-gallery__badge--br .mp-badge__icon { width: 14px; height: 14px; flex: 0 0 14px; }
+  .mp-root .mp-gallery__badge--bl .mp-badge__copy { width: 14px; height: 14px; }
+  /* Типографика текста бейджей */
+  .mp-root .mp-gallery__badge--bl .mp-badge__text,
+  .mp-root .mp-gallery__badge--br .mp-badge__text {
+    font-family: "Open Sans", Arial, sans-serif;
+    font-weight: 600; /* SemiBold */
+    font-size: 12px;
+    line-height: 100%;
+    letter-spacing: 0;
+  }
+
+  /* Факты — 4 элемента в одну строку, без иконок, центрирование текста */
+  .mp-root .mp-facts {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    padding: 8px 0;
+  }
+  /* скрываем факт «Этаж» целиком на мобилке */
+  .mp-root .mp-fact[data-label^="Этаж"] { display: none; }
+  .mp-root .mp-fact {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: max-content max-content;
+    gap: 3px;
+    justify-items: center;
+    align-items: center;
+    padding: 6px 0;
+    border: 0;
+  }
+  .mp-root .mp-fact__icon { display: none !important; }
+  .mp-root .mp-fact__text { display: contents; }
+  /* значение сверху */
+  .mp-root .mp-fact__value {
+    grid-row: 1;
+    font-family: "Open Sans", Arial, sans-serif;
+    font-weight: 700;
+    font-style: normal;
+    font-size: 18px;
+    line-height: 100%;
+    letter-spacing: 0;
+    color: #130F26;
+    text-align: center;
+  }
+  /* подпись снизу */
+  .mp-root .mp-fact__label {
+    grid-row: 2;
+    font-family: "Open Sans", Arial, sans-serif;
+    font-weight: 400;
+    font-style: normal;
+    /* Скрываем оригинальный длинный текст, чтобы не влиял на ширину */
+    font-size: 0;
+    line-height: 0;
+    letter-spacing: 0;
+    color: inherit;
+    display: block;
+    width: 100%;
+    text-align: center;
+    margin-top: 2px;
+    position: relative;
+  }
+  .mp-root .mp-fact__label::before {
+    content: attr(data-label-short);
+    display: inline-block;
+    font-size: 12px; /* фактический размер шрифта подписи */
+    line-height: 1;
+    color: #989898;
+    white-space: nowrap;
+  }
+
+  /* Инфоблок справа — теперь сверху */
+  .mp-root .mp-overview__info { gap: 10px; }
+
+  /* Цена */
+  .mp-root .mp-price-card { padding: 16px 16px 16px 0; border: 0 !important; }
+  .mp-root .mp-price {
+    font-family: "Open Sans", Arial, sans-serif;
+    font-weight: 400; /* Regular */
+    font-style: normal;
+    font-size: 11px;
+    line-height: 100%;
+    letter-spacing: 0;
+    white-space: normal;
+  }
+  .mp-root .mp-price-info img { width: 14px; height: 14px; }
+  .mp-root .mp-price-per { font-size: 16px; }
+
+  /* Агент: компактнее аватар и сетка */
+  .mp-root .mp-agent {
+    gap: 16px;
+    padding: 16px 14px 18px 14px;
+    border-width: 2px;
+    border-radius: 12px;
+  }
+  .mp-root .mp-agent__header {
+    grid-template-columns: 72px 1fr;
+    gap: 10px;
+  }
+  .mp-root .mp-agent__photo { width: 72px; height: 72px; border-radius: 8px; }
+  .mp-root .mp-agent__role { font-size: 14px; }
+  .mp-root .mp-agent__name { font-size: 18px; }
+  .mp-root .mp-agent__contacts {
+    grid-template-columns: 1fr;
+    row-gap: 12px;
+    column-gap: 0;
+  }
+  .mp-root .mp-agent__contacts-title,
+  .mp-root .mp-agent__phone-row,
+  .mp-root .mp-agent__socials { grid-column: 1; }
+  .mp-root .mp-agent__phone { font-size: 18px; }
+
+  /* CTA — на всю ширину */
+  .mp-root .mp-contact-actions {
+    grid-template-columns: 1fr;
+    justify-items: stretch;
+    gap: 10px;
+  }
+  .mp-root .mp-cta {
+    width: 100%;
+    max-width: 100%;
+    height: 56px;
+    padding: 16px 20px;
+    border-radius: 12px;
+    font-size: 18px;
+  }
+
+  /* Сетки характеристик → одна колонка */
+  .mp-root .mp-terms__grid,
+  .mp-root .mp-about__grid,
+  .mp-root .mp-building__grid {
+    grid-template-columns: 1fr;
+    column-gap: 0;
+    row-gap: 0;
+  }
+  .mp-root .mp-terms__item,
+  .mp-root .mp-about__item,
+  .mp-root .mp-building__item {
+    grid-template-columns: 1fr;
+    align-items: start;
+    gap: 6px;
+    padding: 12px 0;
+  }
+  .mp-root .mp-terms__label,
+  .mp-root .mp-about__label,
+  .mp-root .mp-building__label {
+    padding-left: 10px;
+    font-size: 16px;
+  }
+  .mp-root .mp-terms__value,
+  .mp-root .mp-about__value,
+  .mp-root .mp-building__value {
+    justify-self: start;
+    padding-right: 10px;
+    font-size: 16px;
+  }
+
+  /* Описание */
+  .mp-root .mp-description__text { font-size: 16px; line-height: 1.4; }
+
+  /* Карта компактнее */
+  .mp-root .mp-map { height: 260px; border-radius: 16px; }
+
+  /* Подвал в колонку */
+  .mp-root .mp-footer {
+    height: auto;
+    padding: 24px 16px;
+    margin-top: 24px;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+  }
+  .mp-root .mp-footer__inner {
+    flex-direction: column;
+    justify-content: center;
+    gap: 12px;
+    text-align: center;
+  }
+  .mp-root .mp-footer__qr { width: 96px; height: 96px; flex: 0 0 auto; }
+  .mp-root .mp-footer__title { font-size: 18px; }
+  .mp-root .mp-footer__content { align-items: center; gap: 12px; }
+  .mp-root .mp-footer__content > button {
+    width: 100%;
+    max-width: 320px;
+    height: 52px;
+    padding: 14px 16px;
+  }
+
+  /* Модалки: ширина под экран, внутренняя сетка — в колонку */
+  .mp-root .mp-modal__dialog {
+    width: min(92vw, 640px);
+    padding: 16px;
+    row-gap: 16px;
+  }
+  .mp-root .mp-share__title { font-size: 24px; }
+  .mp-root .mp-share__row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    justify-items: center;
+  }
+  .mp-root .mp-share__qr img { width: 132px; height: 132px; }
+  .mp-root .mp-share__or { font-size: 16px; }
+  .mp-root .mp-share__links {
+    width: auto;
+    height: auto;
+    padding: 12px 10px;
+    border-radius: 16px;
+    border-width: 2px;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .mp-root .mp-share__input {
+    width: 100%;
+    min-height: 48px;
+    padding: 12px 14px;
+    font-size: 14px;
+  }
+  .mp-root .mp-share__copy {
+    grid-template-columns: 1fr auto;
+    gap: 10px;
+    width: 100%;
+  }
+  .mp-root .mp-share__copy-btn { font-size: 16px; }
+}
+
+/* ==================== Narrow phones (≤ 480px) ==================== */
+@media screen and (max-width: 480px) {
+  .mp-root .mp-main { padding: 12px 24px; }
+  .mp-root .mp-price { font-size: 28px; }
+  .mp-root .mp-gallery .mp-title { font-size: clamp(18px, 7vw, 26px); }
+  .mp-root .mp-cta { height: 50px; font-size: 16px; }
+  .mp-root .mp-footer__qr { width: 84px; height: 84px; }
 }

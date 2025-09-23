@@ -508,6 +508,26 @@
     const full = btn.getAttribute('data-full');
     if (full && mainImg) {
       mainImg.src = full;
+      // обновим фон-блюр для квадратной области
+      const mainWrap = gallery.querySelector('.mp-gallery__main');
+      if (mainWrap) {
+        try {
+          mainWrap.style.setProperty('--mp-gallery-bg', `url("${full}")`);
+          mainWrap.style.backgroundImage = `url('${full}')`;
+          mainWrap.style.backgroundSize = 'cover';
+          mainWrap.style.backgroundPosition = 'center';
+          // Фолбэк-фоновый <img> с блюром
+          let bg = mainWrap.querySelector('img.mp-gallery__bg');
+          if (!bg) {
+            bg = document.createElement('img');
+            bg.className = 'mp-gallery__bg';
+            bg.alt = '';
+            bg.setAttribute('aria-hidden', 'true');
+            mainWrap.insertBefore(bg, mainWrap.firstChild);
+          }
+          bg.src = full;
+        } catch (_) {}
+      }
       gallery.querySelectorAll('.mp-gallery__thumb.is-active').forEach((el) => el.classList.remove('is-active'));
       btn.classList.add('is-active');
       MP.emit('mp:gallery:change', { src: full });
@@ -566,6 +586,30 @@
   };
   // Обновляем видимость при изменении галереи
   root.addEventListener('mp:gallery:change', updateGalleryNavVisibility);
+  // Синхронизируем активное состояние индикаторов при смене фото
+  root.addEventListener('mp:gallery:change', () => {
+    const gallery = root.querySelector('.mp-gallery');
+    if (!gallery) return;
+    const thumbs = Array.from(gallery.querySelectorAll('.mp-gallery__thumbs .mp-gallery__thumb'));
+    const activeIndex = Math.max(0, thumbs.findIndex((t) => t.classList.contains('is-active')));
+    const indicators = Array.from(gallery.querySelectorAll('.mp-gallery__indicator'));
+    indicators.forEach((el, i) => {
+      const on = i === activeIndex;
+      el.classList.toggle('is-active', on);
+      try { el.setAttribute('aria-current', on ? 'true' : 'false'); } catch (_) {}
+    });
+  });
+
+  // Клик по индикатору → переключение фото
+  root.addEventListener('click', (e) => {
+    const ind = e.target.closest('.mp-gallery__indicator');
+    if (!ind) return;
+    const idx = Number(ind.getAttribute('data-index')) || 0;
+    const gallery = root.querySelector('.mp-gallery');
+    if (!gallery) return;
+    const thumbs = Array.from(gallery.querySelectorAll('.mp-gallery__thumbs .mp-gallery__thumb'));
+    if (thumbs[idx]) thumbs[idx].click();
+  });
   // И при первичном рендере данных
   root.addEventListener('mp:data', () => setTimeout(updateGalleryNavVisibility, 0));
 
@@ -587,6 +631,26 @@
       if (mainImg) {
         mainImg.src = data.photos[0];
         try { mainImg.setAttribute('loading', 'eager'); } catch (_) {}
+        // фон для блюра
+        const mainWrap = gallery.querySelector('.mp-gallery__main');
+        if (mainWrap) {
+          try {
+            mainWrap.style.setProperty('--mp-gallery-bg', `url("${data.photos[0]}")`);
+            mainWrap.style.backgroundImage = `url('${data.photos[0]}')`;
+            mainWrap.style.backgroundSize = 'cover';
+            mainWrap.style.backgroundPosition = 'center';
+            // Фолбэк-фоновый <img> с блюром
+            let bg = mainWrap.querySelector('img.mp-gallery__bg');
+            if (!bg) {
+              bg = document.createElement('img');
+              bg.className = 'mp-gallery__bg';
+              bg.alt = '';
+              bg.setAttribute('aria-hidden', 'true');
+              mainWrap.insertBefore(bg, mainWrap.firstChild);
+            }
+            bg.src = data.photos[0];
+          } catch (_) {}
+        }
       }
       const thumbsWrap = gallery.querySelector('.mp-gallery__thumbs');
       if (thumbsWrap) {
@@ -596,6 +660,21 @@
           </button>`
         )).join('');
       }
+      // Индикаторы карусели (мобайл): создаём/обновляем
+      let indicators = gallery.querySelector('.mp-gallery__indicators');
+      if (!indicators) {
+        indicators = document.createElement('div');
+        indicators.className = 'mp-gallery__indicators';
+        const main = gallery.querySelector('.mp-gallery__main');
+        if (main && main.parentNode) {
+          main.parentNode.insertBefore(indicators, main.nextSibling);
+        } else {
+          gallery.appendChild(indicators);
+        }
+      }
+      indicators.innerHTML = data.photos.map((_, i) => (
+        `<button type="button" class="mp-gallery__indicator${i === 0 ? ' is-active' : ''}" aria-label="Показать фото ${i + 1}" data-index="${i}"></button>`
+      )).join('');
       // Обновляем бейдж количества фото
       const badge = gallery.querySelector('.mp-gallery__badge .mp-badge__text');
       if (badge) badge.textContent = `${data.photos.length} фото`;
@@ -627,15 +706,23 @@
         'assets/img/floor.svg',
         'assets/img/construction-year.svg',
       ];
-      factsWrap.innerHTML = data.facts.map(({ label, value }, i) => (
-        `<li class="mp-fact">
-          <span class="mp-fact__icon" aria-hidden="true">${iconByIndex[i] ? `<img src="${iconByIndex[i]}" alt="" aria-hidden="true">` : ''}</span>
-          <div class="mp-fact__text">
-            <div class="mp-fact__label">${label}</div>
-            <div class="mp-fact__value">${value}</div>
-          </div>
-        </li>`
-      )).join('');
+      factsWrap.innerHTML = data.facts.map(({ label, value }, i) => {
+        const shortMap = {
+          'Общая площадь': 'Общая пл.',
+          'Жилая площадь': 'Жилая пл.',
+          // Другие потенциальные сокращения можно добавить здесь при необходимости
+        };
+        const labelShort = shortMap[label] || label;
+        return (
+          `<li class="mp-fact" data-label="${label}">
+            <span class="mp-fact__icon" aria-hidden="true">${iconByIndex[i] ? `<img src="${iconByIndex[i]}" alt="" aria-hidden="true">` : ''}</span>
+            <div class="mp-fact__text">
+              <div class="mp-fact__label" data-label-short="${labelShort}">${label}</div>
+              <div class="mp-fact__value">${value}</div>
+            </div>
+          </li>`
+        );
+      }).join('');
       factsWrap.querySelectorAll('.mp-fact__icon img').forEach((img) => {
         img.addEventListener('error', () => { img.remove(); });
       });
