@@ -490,9 +490,12 @@ html, body { margin: 0; padding: 0; }
   overflow: hidden;         /* обрезаем лишнее */
   text-overflow: ellipsis;  /* многоточие при нехватке места */
   min-width: 0;             /* разрешаем сжиматься внутри flex-контейнера */
-  object-fit: cover;
+  object-fit: cover;        /* на десктопе — кропим, чтобы заполнить контейнер */
+  object-position: center;  /* кадрируем из центра */
   display: block;
 }
+/* На десктопе фоновый img для блюра не используем */
+.mp-root .mp-gallery__main .mp-gallery__bg { display: none; }
 .mp-root .mp-gallery__thumbs {
   display: grid;
   grid-auto-flow: column;
@@ -1451,7 +1454,7 @@ html, body { margin: 0; padding: 0; }
     transform: translateZ(0) scale(1.08);
     z-index: 0;
     pointer-events: none;
-    display: block;
+    display: block; /* переопределяет десктопное display:none */
   }
   /* Блюр-подложка: берёт картинку из CSS-переменной --mp-gallery-bg */
   .mp-root .mp-gallery__main::before {
