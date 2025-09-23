@@ -914,6 +914,9 @@ html, body { margin: 0; padding: 0; }
   height: 100%;
   object-fit: contain; /* не обрезать QR, вписывать целиком */
   background: transparent;
+  /* Для визуально прозрачного фона и белых модулей QR: инвертируем и смешиваем со фоном */
+  filter: invert(1);
+  mix-blend-mode: screen;
 }
 
 .mp-root .mp-footer__title {
@@ -1181,6 +1184,19 @@ html, body { margin: 0; padding: 0; }
   font-size: 36px;
   line-height: 100%;
 }
+/* Увеличенный вертикальный интервал и левый отступ только для модалки "Поделиться" */
+.mp-root .mp-share-modal .mp-modal__dialog {
+  /* базовый интервал строк в 2.5 раза больше исходного 12px */
+  row-gap: 30px;
+  /* дополнительный левый отступ для внутренних ключевых блоков */
+  --mp-share-indent-x: 20px;
+}
+.mp-root .mp-share-modal .mp-share__title,
+.mp-root .mp-share-modal .mp-share__row,
+.mp-root .mp-share-modal .mp-share__link-title,
+.mp-root .mp-share-modal .mp-share__copy {
+  margin-left: var(--mp-share-indent-x);
+}
 .mp-root .mp-share__row {
   display: grid;
   grid-template-columns: 157px auto 1fr;
@@ -1242,16 +1258,21 @@ html, body { margin: 0; padding: 0; }
 }
 .mp-root .mp-share__input {
   width: 340px;
-  height: 56px;
+  min-height: 56px;
   border-radius: 4px;
   padding: 16px 20px;
-  display: flex;
-  align-items: center;
+  display: block;                 /* даём обычный блочный поток для переноса строк */
   background: #F2F4F7;
   color: #130F26;
   font-family: "Nunito Sans", "Open Sans", Arial, sans-serif;
   font-size: 16px;
   line-height: 24px;
+  /* перенос длинных ссылок и percent-encoding без выхода за рамки */
+  white-space: normal;
+  overflow-wrap: anywhere;        /* современный способ переносить в любом месте */
+  word-break: break-word;         /* совместимость */
+  max-height: 160px;              /* ограничение роста, если текст очень длинный */
+  overflow: auto;                 /* внутренний скролл при переполнении */
 }
 .mp-root .mp-share__copy-btn {
   background: transparent;

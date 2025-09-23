@@ -31,6 +31,8 @@
       const href = window.location?.href || '';
       const box = modal.querySelector('.mp-share__input');
       if (box) box.textContent = href;
+      // Обновляем QR в модалке
+      try { updateQrImages('modal'); } catch (_) {}
     } catch (_) {}
     modal.hidden = false;
     document.body.style.overflow = 'hidden';
@@ -83,6 +85,31 @@
     if (!printBtn) return;
     try { window.print(); } catch (_) {}
   });
+
+  // Генерация QR через публичный энкодер (без JS-библиотек)
+  const buildQrUrl = (data, sizePx = 160) => {
+    const s = Math.max(32, Math.min(1024, Math.round(sizePx)));
+    const encoded = encodeURIComponent(String(data || ''));
+    return `https://api.qrserver.com/v1/create-qr-code/?size=${s}x${s}&data=${encoded}`;
+  };
+  const updateQrImages = (scope = 'all') => {
+    const href = (typeof window !== 'undefined' && window.location) ? window.location.href : '';
+    if (!href) return;
+    if (scope === 'all' || scope === 'modal') {
+      const modalQrImg = root.querySelector('.mp-share-modal .mp-share__qr img');
+      if (modalQrImg) {
+        modalQrImg.src = buildQrUrl(href, 157);
+        modalQrImg.alt = 'QR код для обмена ссылкой';
+      }
+    }
+    if (scope === 'all' || scope === 'footer') {
+      const footerQrImg = root.querySelector('.mp-footer .mp-footer__qr-img');
+      if (footerQrImg) {
+        footerQrImg.src = buildQrUrl(href, 132);
+        footerQrImg.alt = 'QR код для обмена ссылкой';
+      }
+    }
+  };
 
   // Простая функция показа тоста
   const showToast = (message, ms = 1400) => {
@@ -607,6 +634,8 @@
     setTimeout(() => {
       try { updateGalleryNavVisibility(); } catch (_) {}
     }, 0);
+    // Инициализация QR картинок
+    try { updateQrImages('all'); } catch (_) {}
   }
   root.addEventListener('mp:data', (e) => { if (e && e.detail) renderAll(e.detail); });
 })();
