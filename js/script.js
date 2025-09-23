@@ -84,6 +84,22 @@
     try { window.print(); } catch (_) {}
   });
 
+  // Простая функция показа тоста
+  const showToast = (message, ms = 1400) => {
+    let toast = root.querySelector('.mp-toast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.className = 'mp-toast';
+      root.appendChild(toast);
+    }
+    toast.textContent = message;
+    toast.classList.add('is-visible');
+    window.clearTimeout(showToast._t);
+    showToast._t = window.setTimeout(() => {
+      toast.classList.remove('is-visible');
+    }, ms);
+  };
+
   // =================== Модалка «Оставить заявку» ===================
   const openInterestModal = () => {
     const modal = root.querySelector('.mp-interest-modal');
@@ -203,6 +219,33 @@
     if (el) {
       e.preventDefault();
       el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+
+  // Копирование ID по клику на иконку в левом нижнем бейдже
+  root.addEventListener('click', async (e) => {
+    const btn = e.target.closest('.mp-gallery__badge--bl .mp-badge__copy');
+    if (!btn) return;
+    const wrap = btn.closest('.mp-gallery__badge--bl');
+    const textEl = wrap?.querySelector('.mp-badge__text');
+    const raw = textEl?.textContent || '';
+    const match = raw.match(/\b(\d{1,})\b/);
+    const idStr = match ? match[1] : '';
+    if (!idStr) return;
+    try {
+      await navigator.clipboard.writeText(idStr);
+      showToast('Скопировано!');
+    } catch (_) {
+      // Фолбэк: создаём временный input
+      const tmp = document.createElement('input');
+      tmp.value = idStr;
+      tmp.style.position = 'fixed';
+      tmp.style.opacity = '0';
+      document.body.appendChild(tmp);
+      tmp.select();
+      try { document.execCommand('copy'); } catch (_) {}
+      document.body.removeChild(tmp);
+      showToast('Скопировано!');
     }
   });
 
@@ -355,8 +398,63 @@
       gallery.querySelectorAll('.mp-gallery__thumb.is-active').forEach((el) => el.classList.remove('is-active'));
       btn.classList.add('is-active');
       MP.emit('mp:gallery:change', { src: full });
+      updateGalleryNavVisibility();
     }
   });
+
+  // Кнопка «следующее фото» на текущем изображении
+  root.addEventListener('click', (e) => {
+    const nextBtn = e.target.closest('.mp-gallery__next');
+    if (!nextBtn) return;
+    const gallery = root.querySelector('.mp-gallery');
+    if (!gallery) return;
+    const thumbsWrap = gallery.querySelector('.mp-gallery__thumbs');
+    if (!thumbsWrap) return;
+    const thumbs = Array.from(thumbsWrap.querySelectorAll('.mp-gallery__thumb'));
+    if (!thumbs.length) return;
+    const currentIndex = thumbs.findIndex((t) => t.classList.contains('is-active'));
+    const nextIndex = Math.min((currentIndex >= 0 ? currentIndex + 1 : 1), thumbs.length - 1);
+    // клик по следующему превью — переиспользуем имеющуюся логику
+    thumbs[nextIndex].click();
+  });
+
+  // Кнопка «предыдущее фото»
+  root.addEventListener('click', (e) => {
+    const prevBtn = e.target.closest('.mp-gallery__prev');
+    if (!prevBtn) return;
+    const gallery = root.querySelector('.mp-gallery');
+    if (!gallery) return;
+    const thumbsWrap = gallery.querySelector('.mp-gallery__thumbs');
+    if (!thumbsWrap) return;
+    const thumbs = Array.from(thumbsWrap.querySelectorAll('.mp-gallery__thumb'));
+    if (!thumbs.length) return;
+    const currentIndex = thumbs.findIndex((t) => t.classList.contains('is-active'));
+    const prevIndex = Math.max((currentIndex >= 0 ? currentIndex - 1 : 0), 0);
+    thumbs[prevIndex].click();
+  });
+
+  // Показываем/скрываем стрелки на первом/последнем фото
+  const updateGalleryNavVisibility = () => {
+    const gallery = root.querySelector('.mp-gallery');
+    if (!gallery) return;
+    const thumbs = Array.from(gallery.querySelectorAll('.mp-gallery__thumbs .mp-gallery__thumb'));
+    const prevBtn = gallery.querySelector('.mp-gallery__prev');
+    const nextBtn = gallery.querySelector('.mp-gallery__next');
+    if (!thumbs.length) {
+      if (prevBtn) prevBtn.hidden = true;
+      if (nextBtn) nextBtn.hidden = true;
+      return;
+    }
+    const currentIndex = thumbs.findIndex((t) => t.classList.contains('is-active'));
+    const isFirst = currentIndex <= 0;
+    const isLast = currentIndex >= thumbs.length - 1;
+    if (prevBtn) prevBtn.hidden = isFirst;
+    if (nextBtn) nextBtn.hidden = isLast;
+  };
+  // Обновляем видимость при изменении галереи
+  root.addEventListener('mp:gallery:change', updateGalleryNavVisibility);
+  // И при первичном рендере данных
+  root.addEventListener('mp:data', () => setTimeout(updateGalleryNavVisibility, 0));
 
   // Рендер всей карточки по переданным данным
   const renderAll = (data) => {
@@ -384,7 +482,26 @@
           </button>`
         )).join('');
       }
+      // Обновляем бейдж количества фото
+      const badge = gallery.querySelector('.mp-gallery__badge .mp-badge__text');
+      if (badge) badge.textContent = `${data.photos.length} фото`;
     }
+
+    // Бейдж с ID (внизу слева): берём из параметра id в URL
+    try {
+      const url = new URL(window.location.href);
+      const objectId = url.searchParams.get('id');
+      const idBadge = gallery.querySelector('.mp-gallery__badge--bl');
+      if (idBadge) {
+        const textSpan = idBadge.querySelector('.mp-badge__text');
+        if (objectId && /^\d{1,}$/.test(objectId)) {
+          if (textSpan) textSpan.textContent = `ID ${objectId}`;
+          idBadge.hidden = false;
+        } else {
+          idBadge.hidden = true;
+        }
+      }
+    } catch (_) { /* no-op */ }
 
     // Факты
     const factsWrap = root.querySelector('#overview .mp-facts');
@@ -484,6 +601,12 @@
 
   // Инициализация: если данные уже глобально доступны — рендерим; иначе ждём события mp:data
   const initialData = (typeof window !== 'undefined' && window.MP_MOCK) ? window.MP_MOCK : null;
-  if (initialData) renderAll(initialData);
+  if (initialData) {
+    renderAll(initialData);
+    // после первичного рендера сразу скорректируем видимость стрелок
+    setTimeout(() => {
+      try { updateGalleryNavVisibility(); } catch (_) {}
+    }, 0);
+  }
   root.addEventListener('mp:data', (e) => { if (e && e.detail) renderAll(e.detail); });
 })();

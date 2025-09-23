@@ -432,9 +432,101 @@ html, body { margin: 0; padding: 0; }
   border-radius: 12px;
   background: #f2f6f8;
 }
+.mp-root .mp-gallery__badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  width: 126px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.5);
+  backdrop-filter: saturate(120%) blur(2px);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+}
+.mp-root .mp-gallery__badge--br { top: auto; left: auto; right: 12px; bottom: 12px; width: 139px; }
+.mp-root .mp-gallery__badge--bl {
+  top: auto;
+  right: auto;
+  left: 12px;
+  bottom: 12px;
+  width: 161px;
+  height: 34px;
+  border-radius: 10px;
+  background: #FFFFFFA8; /* exact A8 alpha from spec */
+  /* layout: text on the left, icon on the right */
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 12px;
+}
+/* ID badge uses 23x23 icon as per spec */
+.mp-root .mp-gallery__badge--bl .mp-badge__icon { width: 22px; height: 22px; flex: 0 0 22px; }
+.mp-root .mp-gallery__badge--bl .mp-badge__text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mp-root .mp-gallery__badge--bl .mp-badge__copy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.mp-root .mp-gallery__badge--bl .mp-badge__copy:focus-visible { outline: 2px solid #49D7E2; outline-offset: 2px; border-radius: 4px; }
+
+/* Top-left badge (photos): 24x24 icon, SemiBold text */
+.mp-root .mp-gallery__badge--tl .mp-badge__icon { width: 24px; height: 24px; flex: 0 0 24px; }
+.mp-root .mp-gallery__badge--tl .mp-badge__text { font-weight: 600; }
+
+/* Bottom-right badge (plan): 18.5x18.5 icon, Regular text */
+.mp-root .mp-gallery__badge--br .mp-badge__icon { width: 18.5px; height: 18.5px; flex: 0 0 18.5px; }
+.mp-root .mp-gallery__badge--br .mp-badge__text { font-weight: 400; }
+.mp-root .mp-badge__icon { width: 18.5px; height: 18.5px; display: block; }
+.mp-root .mp-badge__text {
+  font-family: "Open Sans", Arial, sans-serif;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 100%;
+  letter-spacing: 0;
+  color: #000000;
+}
+.mp-root .mp-gallery__nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 43px;
+  height: 43px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-sizing: border-box;
+  padding: 0 8px;           /* внутренний отступ, чтобы контент не прилипал к краям */
+  overflow: hidden;         /* страховка от выхода контента за границы */
+}
+.mp-root .mp-badge__icon { width: 18.5px; height: 18.5px; display: block; flex: 0 0 18.5px; }
+.mp-root .mp-gallery__prev { left: 12px; }
+.mp-root .mp-gallery__next { right: 12px; }
+.mp-root .mp-gallery__nav img { width: 30px; height: 14px; display: block; }
+.mp-root .mp-gallery__nav:hover { background: rgba(255, 255, 255, 0.2);}
+.mp-root .mp-gallery__nav:focus-visible { outline: 2px solid #49D7E2; outline-offset: 2px; }
 .mp-root .mp-gallery__image {
   width: 100%;
   height: 100%;
+  white-space: nowrap;      /* одна строка */
+  overflow: hidden;         /* обрезаем лишнее */
+  text-overflow: ellipsis;  /* многоточие при нехватке места */
+  min-width: 0;             /* разрешаем сжиматься внутри flex-контейнера */
   object-fit: cover;
   display: block;
 }
@@ -1233,3 +1325,32 @@ html, body { margin: 0; padding: 0; }
   text-align: center;
 }
 .mp-root .mp-interest-state__icon { width: 50px; height: 50px; display: block; }
+
+/* ==================== Toast (всплывающее уведомление) ==================== */
+.mp-root .mp-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%) translateY(12px);
+  z-index: 1500; /* поверх контента и модалок */
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(33, 119, 158, 0.4);
+  background: #130F26; /* фирменный тёмный */
+  color: #ffffff;
+  font-family: "Open Sans", Arial, sans-serif;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 140%;
+  letter-spacing: 0;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .18s ease, transform .18s ease;
+}
+.mp-root .mp-toast.is-visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}

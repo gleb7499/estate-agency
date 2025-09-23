@@ -46,7 +46,27 @@
               </p>
 
               <figure class="mp-gallery__main" aria-label="Текущее фото">
+                <div class="mp-gallery__badge mp-gallery__badge--tl" role="status" aria-live="polite">
+                  <img class="mp-badge__icon" src="assets/img/camera.svg" alt="" aria-hidden="true" />
+                  <span class="mp-badge__text">0 фото</span>
+                </div>
+                <div class="mp-gallery__badge mp-gallery__badge--bl" role="note" hidden>
+                  <span class="mp-badge__text">ID —</span>
+                  <button class="mp-badge__copy" type="button" aria-label="Скопировать ID" title="Скопировать ID">
+                    <img class="mp-badge__icon" src="assets/img/id.svg" alt="" aria-hidden="true" />
+                  </button>
+                </div>
+                <div class="mp-gallery__badge mp-gallery__badge--br" role="note">
+                  <img class="mp-badge__icon" src="assets/img/living-area.svg" alt="" aria-hidden="true" />
+                  <span class="mp-badge__text">Планировка</span>
+                </div>
                 <img class="mp-gallery__image" alt="Фото объекта" />
+                <button class="mp-gallery__nav mp-gallery__prev" type="button" aria-label="Предыдущее фото">
+                  <img src="assets/img/prev.svg" alt="" aria-hidden="true" />
+                </button>
+                <button class="mp-gallery__nav mp-gallery__next" type="button" aria-label="Следующее фото">
+                  <img src="assets/img/next.svg" alt="" aria-hidden="true" />
+                </button>
               </figure>
 
               <div class="mp-gallery__thumbs" role="list" aria-label="Превью фотографий"></div>
