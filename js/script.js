@@ -58,6 +58,7 @@
       // Закрыть любую открытую модалку
       closeShareModal();
       closeInterestModal();
+      try { closePhotoModal(); } catch (_) {}
       return;
     }
   });
@@ -534,6 +535,120 @@
       updateGalleryNavVisibility();
     }
   });
+
+  // =================== Лайтбокс фотографий ===================
+  const openPhotoModal = () => {
+    const modal = root.querySelector('.mp-photo-modal');
+    const gallery = root.querySelector('.mp-gallery');
+    if (!modal || !gallery) return;
+    // Заголовок
+    const title = (gallery.querySelector('.mp-title')?.textContent || '').trim();
+    const titleEl = modal.querySelector('.mp-photo__title');
+    if (titleEl) titleEl.textContent = title;
+    // Кнопка «Позвонить» — используем номер из карточки агента, если есть
+    const phoneLink = root.querySelector('.mp-agent .mp-agent__phone');
+    const callBtn = modal.querySelector('.mp-photo__call');
+    if (callBtn) {
+      const href = phoneLink?.getAttribute('href') || '#';
+      callBtn.setAttribute('href', href);
+    }
+    // Список фото и активный индекс
+    const thumbs = Array.from(gallery.querySelectorAll('.mp-gallery__thumbs .mp-gallery__thumb'));
+    const activeIndex = Math.max(0, thumbs.findIndex((t) => t.classList.contains('is-active')));
+    const mainSrc = gallery.querySelector('.mp-gallery__image')?.getAttribute('src') || '';
+    const img = modal.querySelector('.mp-photo__image');
+    if (img && mainSrc) img.src = mainSrc;
+    // Превью в модалке
+    const thumbsWrap = modal.querySelector('.mp-photo__thumbs');
+    if (thumbsWrap) {
+      if (thumbs.length) {
+        thumbsWrap.innerHTML = thumbs.map((t, i) => {
+          const src = t.querySelector('img')?.getAttribute('src') || t.getAttribute('data-full') || '';
+          return `<button class="mp-gallery__thumb${i === activeIndex ? ' is-active' : ''}" type="button" data-full="${src}"><img src="${src}" alt="Превью ${i + 1}"></button>`;
+        }).join('');
+      } else {
+        // Фолбэк — если нет миниатюр, но есть основной src
+        thumbsWrap.innerHTML = mainSrc ? `<button class="mp-gallery__thumb is-active" type="button" data-full="${mainSrc}"><img src="${mainSrc}" alt="Превью"></button>` : '';
+      }
+    }
+    updatePhotoNavVisibility();
+    // Прокрутить миниатюры так, чтобы активная была видна
+    try {
+      const activeThumb = modal.querySelector('.mp-photo__thumbs .mp-gallery__thumb.is-active');
+      activeThumb?.scrollIntoView({ behavior: 'instant', inline: 'center', block: 'nearest' });
+    } catch (_) {}
+    // Показать модалку
+    modal.hidden = false;
+    document.body.style.overflow = 'hidden';
+    try { modal.querySelector('.mp-photo__image')?.focus?.(); } catch (_) {}
+  };
+  const closePhotoModal = () => {
+    const modal = root.querySelector('.mp-photo-modal');
+    if (!modal) return;
+    modal.hidden = true;
+    document.body.style.overflow = '';
+  };
+
+  // Открытие: клик по текущей фотографии (не по стрелкам/бейджам)
+  root.addEventListener('click', (e) => {
+    const img = e.target.closest('.mp-gallery__main .mp-gallery__image');
+    if (!img) return;
+    e.preventDefault();
+    openPhotoModal();
+  });
+  // Навигация внутри лайтбокса
+  root.addEventListener('click', (e) => {
+    const prev = e.target.closest('.mp-photo-modal .mp-photo__prev');
+    const next = e.target.closest('.mp-photo-modal .mp-photo__next');
+    if (!prev && !next) return;
+    const modal = root.querySelector('.mp-photo-modal');
+    if (!modal || modal.hidden) return;
+    const thumbs = Array.from(modal.querySelectorAll('.mp-photo__thumbs .mp-gallery__thumb'));
+    if (!thumbs.length) return;
+    const idx = Math.max(0, thumbs.findIndex((t) => t.classList.contains('is-active')));
+    const target = next ? Math.min(idx + 1, thumbs.length - 1) : Math.max(idx - 1, 0);
+    if (thumbs[target]) thumbs[target].click();
+  });
+  // Клик по миниатюре внутри лайтбокса
+  root.addEventListener('click', (e) => {
+    const btn = e.target.closest('.mp-photo-modal .mp-photo__thumbs .mp-gallery__thumb');
+    if (!btn) return;
+    const modal = root.querySelector('.mp-photo-modal');
+    const img = modal?.querySelector('.mp-photo__image');
+    const src = btn.getAttribute('data-full') || btn.querySelector('img')?.getAttribute('src');
+    if (img && src) img.src = src;
+    btn.parentElement?.querySelectorAll('.mp-gallery__thumb.is-active').forEach((el) => el.classList.remove('is-active'));
+    btn.classList.add('is-active');
+    updatePhotoNavVisibility();
+    try { btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' }); } catch (_) {}
+  });
+  // Закрытие по Esc дополнительно
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') { closePhotoModal(); return; }
+    const modal = root.querySelector('.mp-photo-modal');
+    if (!modal || modal.hidden) return;
+    if (e.key === 'ArrowRight') {
+      const next = modal.querySelector('.mp-photo__next');
+      next?.click();
+    } else if (e.key === 'ArrowLeft') {
+      const prev = modal.querySelector('.mp-photo__prev');
+      prev?.click();
+    }
+  });
+  // Клик по оверлею обрабатывается общим обработчиком data-close="true" выше
+
+  function updatePhotoNavVisibility() {
+    const modal = root.querySelector('.mp-photo-modal');
+    if (!modal || modal.hidden) return;
+    const thumbs = Array.from(modal.querySelectorAll('.mp-photo__thumbs .mp-gallery__thumb'));
+    const prevBtn = modal.querySelector('.mp-photo__prev');
+    const nextBtn = modal.querySelector('.mp-photo__next');
+    if (!thumbs.length) { if (prevBtn) prevBtn.hidden = true; if (nextBtn) nextBtn.hidden = true; return; }
+    const idx = Math.max(0, thumbs.findIndex((t) => t.classList.contains('is-active')));
+    const isFirst = idx <= 0; const isLast = idx >= thumbs.length - 1;
+    if (prevBtn) prevBtn.hidden = isFirst;
+    if (nextBtn) nextBtn.hidden = isLast;
+  }
 
   // Кнопка «следующее фото» на текущем изображении
   root.addEventListener('click', (e) => {

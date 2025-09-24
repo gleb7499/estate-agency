@@ -494,6 +494,8 @@ html, body { margin: 0; padding: 0; }
   object-position: center;  /* кадрируем из центра */
   display: block;
 }
+/* Клик по текущей фотографии открывает лайтбокс */
+.mp-root .mp-gallery__main { cursor: zoom-in; }
 /* На десктопе фоновый img для блюра не используем */
 .mp-root .mp-gallery__main .mp-gallery__bg { display: none; }
 .mp-root .mp-gallery__thumbs {
@@ -1914,4 +1916,116 @@ html, body { margin: 0; padding: 0; }
     -webkit-mask-size: contain; mask-size: contain;
   }
   .mp-root .mp-icon.mp-icon--phone img { display: none !important; }
+}
+
+/* ==================== Модалка просмотра фотографий (Lightbox) ==================== */
+.mp-root .mp-photo-modal { z-index: 1200; }
+.mp-root .mp-photo-modal .mp-modal__overlay { background: rgba(6, 7, 16, 0.9); }
+.mp-root .mp-photo-modal .mp-modal__dialog {
+  width: min(96vw, 1180px);
+  max-height: 94dvh;
+  background: #0F1020; /* глубокий тёмный */
+  color: #F5F7FA;
+  border-radius: 12px;
+  padding: 16px 16px 20px;
+  display: grid;
+  grid-template-rows: max-content minmax(280px, 1fr) max-content;
+  row-gap: 14px;
+}
+.mp-root .mp-photo__header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  column-gap: 12px;
+}
+.mp-root .mp-photo__title {
+  font-family: "Open Sans", Arial, sans-serif;
+  font-weight: 700;
+  font-size: clamp(18px, 2.6vw, 28px);
+  line-height: 1.2;
+  color: #F5F7FA;
+}
+.mp-root .mp-photo__actions { display: inline-flex; align-items: center; gap: 12px; }
+.mp-root .mp-photo__call {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  padding: 0 18px;
+  border-radius: 8px;
+  background: #21779E;
+  color: #fff;
+  text-decoration: none;
+  font: 600 16px/1 "Open Sans", Arial, sans-serif;
+}
+.mp-root .mp-photo-modal .mp-modal__close {
+  position: static; /* в шапке */
+  width: 40px; height: 40px;
+  margin-left: 4px;
+}
+.mp-root .mp-photo-modal .mp-modal__close img { filter: invert(1) contrast(1.1); }
+.mp-root .mp-photo__viewport {
+  position: relative;
+  display: grid;
+  place-items: center; /* по центру и по вертикали, и по горизонтали */
+  background: #0B0C18;
+  border-radius: 12px;
+  overflow: hidden; /* без скролла — картинка подгоняется под рамку */
+  min-height: 0; /* важно для grid: разрешить сжиматься внутри 1fr-трека */
+  height: 100%;  /* занять всю высоту строки сетки */
+}
+.mp-root .mp-photo__image {
+  max-width: 100%;      /* не выходить за рамку по ширине */
+  max-height: 100%;     /* не выходить за рамку по высоте */
+  width: auto;          /* не растягивать больше натурального */
+  height: auto;         /* не растягивать больше натурального */
+  object-fit: contain;  /* вписать без обрезания */
+  object-position: center center; /* строго по центру */
+  display: block;
+}
+.mp-root .mp-photo__nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 48px; height: 48px;
+  border: 0; border-radius: 50%;
+  background: rgba(255,255,255,0.12);
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  z-index: 2; /* поверх изображения */
+}
+.mp-root .mp-photo__prev { left: 16px; }
+.mp-root .mp-photo__next { right: 16px; }
+.mp-root .mp-photo__nav img { width: 28px; height: 14px; filter: invert(1) contrast(1.2); }
+
+.mp-root .mp-photo__thumbs {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(96px, 1fr);
+  gap: 8px;
+  overflow-x: auto;
+}
+.mp-root .mp-photo__thumbs .mp-gallery__thumb { height: 64px; background: #0B0C18; border-color: rgba(255,255,255,0.15); }
+.mp-root .mp-photo__thumbs .mp-gallery__thumb.is-active { outline-color: #49D7E2; }
+
+/* Мобильная адаптация лайтбокса */
+@media (max-width: 768px) {
+  .mp-root .mp-photo-modal .mp-modal__dialog {
+    width: 100vw; max-height: 100dvh; height: 100dvh; border-radius: 0;
+    padding: 12px 12px calc(12px + env(safe-area-inset-bottom));
+    grid-template-rows: max-content 1fr max-content;
+  }
+  .mp-root .mp-photo__title { font-size: 16px; }
+  .mp-root .mp-photo__call { height: 40px; padding: 0 14px; font-size: 15px; }
+  .mp-root .mp-photo__nav { width: 40px; height: 40px; }
+  .mp-root .mp-photo__nav img { width: 22px; height: 12px; }
+  .mp-root .mp-photo__thumbs .mp-gallery__thumb { height: 52px; }
+}
+
+/* Десктоп: резервируем место для стрелок, чтобы они не перекрывали изображение */
+@media (min-width: 769px) {
+  .mp-root .mp-photo__viewport { padding: 0 56px; }
+  .mp-root .mp-photo__image { max-width: calc(100% - 112px); }
+  .mp-root .mp-photo__prev { left: 16px; }
+  .mp-root .mp-photo__next { right: 16px; }
 }

@@ -249,6 +249,32 @@
           </form>
         </div>
       </div>
+
+      <!-- Модалка просмотра фотографий (Lightbox) -->
+      <div class="mp-modal mp-photo-modal" role="dialog" aria-modal="true" aria-labelledby="mp-photo-modal-title" hidden>
+        <div class="mp-modal__overlay" data-close="true"></div>
+        <div class="mp-modal__dialog" role="document">
+          <header class="mp-photo__header">
+            <h3 class="mp-photo__title" id="mp-photo-modal-title"></h3>
+            <div class="mp-photo__actions">
+              <a class="mp-photo__call" href="#" role="button">Позвонить</a>
+              <button class="mp-modal__close" type="button" aria-label="Закрыть окно" data-close="true">
+                <img src="assets/img/close.svg" alt="" aria-hidden="true" />
+              </button>
+            </div>
+          </header>
+          <div class="mp-photo__viewport" aria-live="polite">
+            <button class="mp-photo__nav mp-photo__prev" type="button" aria-label="Предыдущее фото">
+              <img src="assets/img/prev.svg" alt="" aria-hidden="true" />
+            </button>
+            <img class="mp-photo__image" alt="Фото объекта в крупном размере" />
+            <button class="mp-photo__nav mp-photo__next" type="button" aria-label="Следующее фото">
+              <img src="assets/img/next.svg" alt="" aria-hidden="true" />
+            </button>
+          </div>
+          <div class="mp-photo__thumbs" role="list" aria-label="Превью фотографий"></div>
+        </div>
+      </div>
     </div>
 
   <!-- JS карточки (дефер, без inline) -->
