@@ -13,6 +13,9 @@
       'assets/mock/apartment-4.jpg',
       'assets/mock/apartment-5.jpg',
     ],
+    // Видео для первого элемента карусели
+    video: 'assets/mock/video.mp4',
+    // Постер будет извлекаться автоматически из самого видео
     facts: [
       { label: 'Общая площадь', value: '55 м²' },
       { label: 'Жилая площадь', value: '32 м²' },

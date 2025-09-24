@@ -395,6 +395,23 @@ html, body { margin: 0; padding: 0; }
   border-radius: 12px;
   background: #f2f6f8;
 }
+/* Кнопка запуска видео поверх фото */
+.mp-root .mp-gallery__play {
+  position: absolute;
+  left: 50%; top: 50%; transform: translate(-50%, -50%);
+  width: 80px; height: 80px; /* десктоп */
+  border: 0; padding: 0; background: transparent; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  z-index: 4; /* поверх изображения, бейджей и стрелок */
+}
+.mp-root .mp-gallery__play img { width: 100%; height: 100%; display: block; }
+/* Скрытие кнопки play когда не нужна */
+.mp-root .mp-gallery__play[hidden] { 
+  display: none !important; 
+  visibility: hidden !important; 
+  opacity: 0 !important; 
+  pointer-events: none !important; 
+}
 .mp-root .mp-gallery__badge {
   position: absolute;
   top: 12px;
@@ -1368,8 +1385,8 @@ html, body { margin: 0; padding: 0; }
 
 
 
-/* ==================== Mobile (≤ 768px) ==================== */
-@media screen and (max-width: 768px) {
+/* ==================== Mobile (≤ 850px) ==================== */
+@media screen and (max-width: 850px) {
   .mp-root {
     --mp-brand-title: 24px;
     --mp-brand-subtitle: 12px;
@@ -1431,7 +1448,7 @@ html, body { margin: 0; padding: 0; }
     font-family: "Open Sans", Arial, sans-serif;
     font-weight: 600; /* SemiBold */
     font-style: normal;
-    font-size: clamp(9px, 7vw, 14px);
+    font-size: clamp(9px, 7vw, 18px);
     line-height: 100%;
     letter-spacing: 0;
     overflow-wrap: anywhere;
@@ -1489,6 +1506,8 @@ html, body { margin: 0; padding: 0; }
   .mp-root .mp-gallery__nav { width: 36px; height: 36px; }
   .mp-root .mp-gallery__nav { z-index: 3; }
   .mp-root .mp-gallery__nav img { width: 24px; height: 12px; }
+  .mp-root .mp-gallery__play { width: 60px; height: 60px; } /* мобилы */
+  .mp-root .mp-gallery__play { z-index: 4; }
 
   /* Превью фото компактнее */
   .mp-root .mp-gallery__thumb { height: 48px; }
@@ -1578,7 +1597,7 @@ html, body { margin: 0; padding: 0; }
     font-family: "Open Sans", Arial, sans-serif;
     font-weight: 700;
     font-style: normal;
-    font-size: 14px;
+    font-size: 18px;
     line-height: 100%;
     letter-spacing: 0;
     color: #130F26;
@@ -1619,12 +1638,12 @@ html, body { margin: 0; padding: 0; }
     font-family: "Open Sans", Arial, sans-serif;
     font-weight: 700; /* Regular */
     font-style: normal;
-    font-size: 20px;
+    font-size: 22px;
     line-height: 100%;
     letter-spacing: 0;
     white-space: normal;
   }
-  .mp-root .mp-price-info img { width: 14px; height: 14px; }
+  .mp-root .mp-price-info img { width: 16px; height: 16px; }
   .mp-root .mp-price-per { font-size: 13px; }
 
   /* Агент: компактнее аватар и сетка */
@@ -1998,6 +2017,10 @@ html, body { margin: 0; padding: 0; }
 .mp-root .mp-photo__next { right: 16px; }
 .mp-root .mp-photo__nav img { width: 28px; height: 14px; filter: invert(1) contrast(1.2); }
 
+/* В лайтбоксе используем чисто белые стрелки через CSS mask, не затрагивая основную галерею */
+.mp-root .mp-photo-modal .mp-photo__nav img { display: block !important; filter: invert(1) brightness(1.2) contrast(1.05); }
+.mp-root .mp-photo-modal .mp-photo__nav::before { content: none !important; }
+
 .mp-root .mp-photo__thumbs {
   display: grid;
   grid-auto-flow: column;
@@ -2022,10 +2045,50 @@ html, body { margin: 0; padding: 0; }
   .mp-root .mp-photo__thumbs .mp-gallery__thumb { height: 52px; }
 }
 
+/* Мобильные размеры маскированных стрелок */
+@media (max-width: 768px) {
+  /* размеры img уже переопределены выше (22x12) через общий блок мобилок */
+}
+
 /* Десктоп: резервируем место для стрелок, чтобы они не перекрывали изображение */
 @media (min-width: 769px) {
   .mp-root .mp-photo__viewport { padding: 0 56px; }
   .mp-root .mp-photo__image { max-width: calc(100% - 112px); }
   .mp-root .mp-photo__prev { left: 16px; }
   .mp-root .mp-photo__next { right: 16px; }
+}
+
+/* ==================== Модалка видео ==================== */
+.mp-root .mp-video-modal .mp-modal__dialog {
+  width: min(96vw, 1180px);
+  max-height: 94dvh;
+  background: #0F1020;
+  color: #F5F7FA;
+  border-radius: 12px;
+  padding: 16px;
+  display: grid;
+  grid-template-rows: max-content 1fr;
+  row-gap: 12px;
+}
+.mp-root .mp-video__title {
+  font: 700 20px/1.2 "Open Sans", Arial, sans-serif;
+  margin: 0 0 4px 0;
+}
+.mp-root .mp-video__player {
+  position: relative;
+  background: #0B0C18;
+  border-radius: 12px;
+  overflow: hidden;
+  display: grid; place-items: center;
+}
+.mp-root .mp-video__el {
+  width: 100%;
+  height: 100%;
+  max-height: 80vh;
+  object-fit: contain;
+  background: #000;
+}
+@media (max-width: 768px) {
+  .mp-root .mp-video-modal .mp-modal__dialog { width: 100vw; max-height: 100dvh; height: 100dvh; border-radius: 0; }
+  .mp-root .mp-video__el { max-height: calc(100dvh - 80px); }
 }

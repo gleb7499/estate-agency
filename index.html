@@ -61,6 +61,10 @@
                   <span class="mp-badge__text">Планировка</span>
                 </div>
                 <img class="mp-gallery__image" alt="Фото объекта" />
+                <!-- Кнопка запуска видео поверх изображения -->
+                <button class="mp-gallery__play" type="button" aria-label="Смотреть видео">
+                  <img src="assets/img/start-video.svg" alt="" aria-hidden="true" />
+                </button>
                 <button class="mp-gallery__nav mp-gallery__prev" type="button" aria-label="Предыдущее фото">
                   <img src="assets/img/prev.svg" alt="" aria-hidden="true" />
                 </button>
@@ -247,6 +251,20 @@
               <button type="submit" class="mp-cta mp-cta--primary">Подтвердить</button>
             </div>
           </form>
+        </div>
+      </div>
+
+      <!-- Модалка воспроизведения видео -->
+      <div class="mp-modal mp-video-modal" role="dialog" aria-modal="true" aria-labelledby="mp-video-modal-title" hidden>
+        <div class="mp-modal__overlay" data-close="true"></div>
+        <div class="mp-modal__dialog" role="document">
+          <button class="mp-modal__close" type="button" aria-label="Закрыть окно" data-close="true">
+            <img src="assets/img/close.svg" alt="" aria-hidden="true" />
+          </button>
+          <h3 class="mp-video__title" id="mp-video-modal-title">Видео</h3>
+          <div class="mp-video__player">
+            <video class="mp-video__el" controls playsinline preload="metadata"></video>
+          </div>
         </div>
       </div>
 

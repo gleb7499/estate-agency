@@ -507,6 +507,7 @@
     if (!gallery) return;
     const mainImg = gallery.querySelector('.mp-gallery__image');
     const full = btn.getAttribute('data-full');
+    const isVideo = btn.getAttribute('data-type') === 'video';
     if (full && mainImg) {
       mainImg.src = full;
       // обновим фон-блюр для квадратной области
@@ -529,9 +530,12 @@
           bg.src = full;
         } catch (_) {}
       }
+      // показываем кнопку play только на видео-кадре
+      const playBtn = gallery.querySelector('.mp-gallery__play');
+      if (playBtn) playBtn.hidden = !isVideo;
       gallery.querySelectorAll('.mp-gallery__thumb.is-active').forEach((el) => el.classList.remove('is-active'));
       btn.classList.add('is-active');
-      MP.emit('mp:gallery:change', { src: full });
+      MP.emit('mp:gallery:change', { src: full, type: isVideo ? 'video' : 'photo' });
       updateGalleryNavVisibility();
     }
   });
@@ -552,19 +556,24 @@
       const href = phoneLink?.getAttribute('href') || '#';
       callBtn.setAttribute('href', href);
     }
-    // Список фото и активный индекс
-    const thumbs = Array.from(gallery.querySelectorAll('.mp-gallery__thumbs .mp-gallery__thumb'));
-    const activeIndex = Math.max(0, thumbs.findIndex((t) => t.classList.contains('is-active')));
-    const mainSrc = gallery.querySelector('.mp-gallery__image')?.getAttribute('src') || '';
+    // Список превью (в галерее) и активный индекс — исключаем видео
+    const allThumbs = Array.from(gallery.querySelectorAll('.mp-gallery__thumbs .mp-gallery__thumb'));
+    const photoThumbs = allThumbs.filter((t) => t.getAttribute('data-type') !== 'video');
+    const activePhotoIndex = Math.max(0, photoThumbs.findIndex((t) => t.classList.contains('is-active')));
+    // Если активен видео-элемент, в модалку подставим первую фотографию
+    const activeIsVideo = !!allThumbs.find((t) => t.classList.contains('is-active') && t.getAttribute('data-type') === 'video');
+    const mainSrc = activeIsVideo
+      ? (photoThumbs[0]?.getAttribute('data-full') || photoThumbs[0]?.querySelector('img')?.getAttribute('src') || '')
+      : (gallery.querySelector('.mp-gallery__image')?.getAttribute('src') || '');
     const img = modal.querySelector('.mp-photo__image');
     if (img && mainSrc) img.src = mainSrc;
     // Превью в модалке
     const thumbsWrap = modal.querySelector('.mp-photo__thumbs');
     if (thumbsWrap) {
-      if (thumbs.length) {
-        thumbsWrap.innerHTML = thumbs.map((t, i) => {
+      if (photoThumbs.length) {
+        thumbsWrap.innerHTML = photoThumbs.map((t, i) => {
           const src = t.querySelector('img')?.getAttribute('src') || t.getAttribute('data-full') || '';
-          return `<button class="mp-gallery__thumb${i === activeIndex ? ' is-active' : ''}" type="button" data-full="${src}"><img src="${src}" alt="Превью ${i + 1}"></button>`;
+          return `<button class="mp-gallery__thumb${i === activePhotoIndex ? ' is-active' : ''}" type="button" data-full="${src}"><img src="${src}" alt="Превью ${i + 1}"></button>`;
         }).join('');
       } else {
         // Фолбэк — если нет миниатюр, но есть основной src
@@ -591,11 +600,68 @@
 
   // Открытие: клик по текущей фотографии (не по стрелкам/бейджам)
   root.addEventListener('click', (e) => {
+    if (e.target.closest('.mp-gallery__play')) return; // не открывать фото, если клик по play
     const img = e.target.closest('.mp-gallery__main .mp-gallery__image');
     if (!img) return;
     e.preventDefault();
-    openPhotoModal();
+    const gallery = root.querySelector('.mp-gallery');
+    const activeThumb = gallery?.querySelector('.mp-gallery__thumb.is-active');
+    const isVideoActive = activeThumb?.getAttribute('data-type') === 'video';
+    if (isVideoActive) {
+      const src = activeThumb.getAttribute('data-video') || gallery?.getAttribute('data-video') || '';
+      openVideoModal(src);
+    } else {
+      openPhotoModal();
+    }
   });
+
+  // =================== Видео: открытие/закрытие модалки ===================
+  const openVideoModal = (src) => {
+    const modal = root.querySelector('.mp-video-modal');
+    if (!modal) return;
+    const video = modal.querySelector('.mp-video__el');
+    const title = modal.querySelector('#mp-video-modal-title');
+    const pageTitle = (root.querySelector('.mp-gallery .mp-title')?.textContent || '').trim();
+    if (title) title.textContent = pageTitle ? `Видео — ${pageTitle}` : 'Видео';
+    if (video) {
+      try { video.src = src || ''; } catch (_) { /* noop */ }
+      try { video.currentTime = 0; } catch (_) {}
+    }
+    modal.hidden = false;
+    document.body.style.overflow = 'hidden';
+  };
+  const closeVideoModal = () => {
+    const modal = root.querySelector('.mp-video-modal');
+    if (!modal) return;
+    const video = modal.querySelector('.mp-video__el');
+    modal.hidden = true;
+    document.body.style.overflow = '';
+    // Останавливаем и очищаем источник
+    if (video) {
+      try { video.pause(); } catch (_) {}
+      try { video.removeAttribute('src'); video.load?.(); } catch (_) {}
+    }
+  };
+  // Кнопка play на главном фото
+  root.addEventListener('click', (e) => {
+    const btn = e.target.closest('.mp-gallery__play');
+    if (!btn) return;
+    e.preventDefault();
+    // Источник видео: data-video на кнопке или на .mp-gallery, далее фолбэк (пусто)
+    const gallery = root.querySelector('.mp-gallery');
+    const src = btn.getAttribute('data-video')
+      || gallery?.getAttribute('data-video')
+      || '';
+    openVideoModal(src);
+  });
+  // Закрытие видео по overlay/крестику уже обрабатывается общим обработчиком; добавим явный вызов
+  root.addEventListener('click', (e) => {
+    const isClose = e.target.closest('.mp-video-modal [data-close="true"]');
+    if (!isClose) return;
+    closeVideoModal();
+  });
+  // ESC закрывает видео
+  window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeVideoModal(); });
   // Навигация внутри лайтбокса
   root.addEventListener('click', (e) => {
     const prev = e.target.closest('.mp-photo-modal .mp-photo__prev');
@@ -740,21 +806,98 @@
     if (titleEl) titleEl.textContent = data.name || '';
     if (addrEl) addrEl.textContent = data.address || '';
 
-    // Главная фотка и превью
+    // Главная фотка/видео и превью
     const mainImg = gallery.querySelector('.mp-gallery__image');
-    if (Array.isArray(data.photos) && data.photos.length) {
+    const playBtn = gallery.querySelector('.mp-gallery__play');
+    const videoSrc = (typeof data.video === 'string' && data.video.trim()) ? data.video.trim() : (gallery.getAttribute('data-video') || '').trim();
+    const hasPhotos = Array.isArray(data.photos) && data.photos.length;
+    const hasVideo = !!videoSrc;
+    
+    // Функция для извлечения постера из видео
+    const extractVideoPoster = (videoUrl, callback) => {
+      const video = document.createElement('video');
+      video.crossOrigin = 'anonymous';
+      video.preload = 'metadata';
+      video.muted = true; // обязательно для автовоспроизведения
+      video.currentTime = 1.5; // берём кадр с 1.5 секунды
+      
+      video.addEventListener('loadeddata', () => {
+        try {
+          // Пробуем извлечь через Canvas
+          const canvas = document.createElement('canvas');
+          canvas.width = video.videoWidth || 320;
+          canvas.height = video.videoHeight || 240;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          const posterUrl = canvas.toDataURL('image/jpeg', 0.8);
+          callback(posterUrl);
+        } catch (err) {
+          console.warn('Canvas extraction failed, trying video poster approach:', err);
+          // Фолбэк: используем сам видео элемент как источник
+          callback(videoUrl + '#t=1'); // URL с тайм-кодом для постера
+        }
+      });
+      
+      video.addEventListener('error', (e) => {
+        console.warn('Ошибка загрузки видео для постера:', e);
+        callback(hasPhotos ? data.photos[0] : ''); // финальный фолбэк
+      });
+      
+      // Тайм-аут на случай долгой загрузки
+      setTimeout(() => {
+        if (video.readyState < 2) { // если видео не загрузилось за 3 сек
+          callback(hasPhotos ? data.photos[0] : '');
+        }
+      }, 3000);
+      
+      video.src = videoUrl;
+    };
+
+    if (hasPhotos || hasVideo) {
+      // Установить основной кадр
       if (mainImg) {
-        mainImg.src = data.photos[0];
+        if (hasVideo) {
+          // Временно устанавливаем фолбэк, пока извлекаем постер из видео
+          const fallbackPoster = hasPhotos ? data.photos[0] : '';
+          mainImg.src = fallbackPoster;
+          
+          // Извлекаем настоящий постер из видео
+          extractVideoPoster(videoSrc, (posterUrl) => {
+            if (posterUrl && mainImg) {
+              mainImg.src = posterUrl;
+              // Обновляем фон тоже
+              const mainWrap = gallery.querySelector('.mp-gallery__main');
+              if (mainWrap) {
+                try {
+                  mainWrap.style.setProperty('--mp-gallery-bg', `url("${posterUrl}")`);
+                  mainWrap.style.backgroundImage = `url('${posterUrl}')`;
+                  const bg = mainWrap.querySelector('img.mp-gallery__bg');
+                  if (bg) bg.src = posterUrl;
+                } catch (_) {}
+              }
+              // Обновляем превью видео в карусели
+              const videoThumb = gallery.querySelector('.mp-gallery__thumb[data-type="video"]');
+              if (videoThumb) {
+                const thumbImg = videoThumb.querySelector('img');
+                if (thumbImg) thumbImg.src = posterUrl;
+                videoThumb.setAttribute('data-full', posterUrl);
+              }
+            }
+          });
+        } else {
+          mainImg.src = data.photos[0];
+        }
         try { mainImg.setAttribute('loading', 'eager'); } catch (_) {}
-        // фон для блюра
+        
+        // Настройка фона (будет обновлена асинхронно для видео)
         const mainWrap = gallery.querySelector('.mp-gallery__main');
         if (mainWrap) {
+          const initialBgSrc = hasVideo ? (hasPhotos ? data.photos[0] : '') : data.photos[0];
           try {
-            mainWrap.style.setProperty('--mp-gallery-bg', `url("${data.photos[0]}")`);
-            mainWrap.style.backgroundImage = `url('${data.photos[0]}')`;
+            mainWrap.style.setProperty('--mp-gallery-bg', `url("${initialBgSrc}")`);
+            mainWrap.style.backgroundImage = `url('${initialBgSrc}')`;
             mainWrap.style.backgroundSize = 'cover';
             mainWrap.style.backgroundPosition = 'center';
-            // Фолбэк-фоновый <img> с блюром
             let bg = mainWrap.querySelector('img.mp-gallery__bg');
             if (!bg) {
               bg = document.createElement('img');
@@ -763,17 +906,37 @@
               bg.setAttribute('aria-hidden', 'true');
               mainWrap.insertBefore(bg, mainWrap.firstChild);
             }
-            bg.src = data.photos[0];
+            bg.src = initialBgSrc;
           } catch (_) {}
         }
       }
+      // Видимость и источник play-кнопки: показываем только при загрузке, если первым идёт видео
+      if (playBtn) {
+        playBtn.hidden = !hasVideo; // при загрузке: если есть видео, показываем (так как первым будет видео)
+        if (hasVideo) playBtn.setAttribute('data-video', videoSrc); else playBtn.removeAttribute('data-video');
+      }
+      // Собираем превью: сначала видео (если есть), затем фото
       const thumbsWrap = gallery.querySelector('.mp-gallery__thumbs');
       if (thumbsWrap) {
-        thumbsWrap.innerHTML = data.photos.map((src, i) => (
-          `<button class="mp-gallery__thumb${i === 0 ? ' is-active' : ''}" type="button" role="listitem" aria-label="Фото ${i + 1}" data-full="${src}">
-            <img src="${src}" alt="Превью ${i + 1}" loading="lazy">
-          </button>`
-        )).join('');
+        const parts = [];
+        if (hasVideo) {
+          const thumbPosterFallback = hasPhotos ? data.photos[0] : '';
+          parts.push(
+            `<button class="mp-gallery__thumb is-active" type="button" role="listitem" aria-label="Видео" data-type="video" data-video="${videoSrc}" data-full="${thumbPosterFallback}">
+              <img src="${thumbPosterFallback}" alt="Видео превью" loading="lazy">
+            </button>`
+          );
+        }
+        if (hasPhotos) {
+          parts.push(
+            data.photos.map((src, i) => (
+              `<button class="mp-gallery__thumb${!hasVideo && i === 0 ? ' is-active' : ''}" type="button" role="listitem" aria-label="Фото ${i + 1}" data-full="${src}">
+                <img src="${src}" alt="Превью ${i + 1}" loading="lazy">
+              </button>`
+            )).join('')
+          );
+        }
+        thumbsWrap.innerHTML = parts.join('');
       }
       // Индикаторы карусели (мобайл): создаём/обновляем
       let indicators = gallery.querySelector('.mp-gallery__indicators');
@@ -787,12 +950,13 @@
           gallery.appendChild(indicators);
         }
       }
-      indicators.innerHTML = data.photos.map((_, i) => (
-        `<button type="button" class="mp-gallery__indicator${i === 0 ? ' is-active' : ''}" aria-label="Показать фото ${i + 1}" data-index="${i}"></button>`
+      const totalItems = (hasPhotos ? data.photos.length : 0) + (hasVideo ? 1 : 0);
+      indicators.innerHTML = Array.from({ length: totalItems }).map((_, i) => (
+        `<button type="button" class="mp-gallery__indicator${i === 0 ? ' is-active' : ''}" aria-label="Показать элемент ${i + 1}" data-index="${i}"></button>`
       )).join('');
-      // Обновляем бейдж количества фото
+      // Обновляем бейдж количества (включая видео)
       const badge = gallery.querySelector('.mp-gallery__badge .mp-badge__text');
-      if (badge) badge.textContent = `${data.photos.length} фото`;
+      if (badge) badge.textContent = `${totalItems} фото`;
     }
 
     // Бейдж с ID (внизу слева): берём из параметра id в URL
