@@ -706,6 +706,63 @@ html, body { margin: 0; padding: 0; }
   color: #989898;
 }
 
+/* Раскрывающаяся таблица цены */
+.mp-root .mp-price-card {
+  --mp-breakdown-height: 0px;
+}
+.mp-root .mp-price-info img { transition: transform .25s ease; }
+.mp-root .mp-price-card[data-breakdown="expanded"] .mp-price-info img { transform: rotate(180deg); }
+.mp-root .mp-price-card[data-breakdown="expanded"] .mp-price-info::after { opacity: 0 !important; }
+
+.mp-root .mp-price-breakdown {
+  overflow: hidden;
+  max-height: var(--mp-breakdown-height, 0px);
+  opacity: 0;
+  transform: translateY(-8px);
+  margin-top: 0;
+  border-radius: 12px;
+  transition:
+    max-height .35s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    opacity .25s ease,
+    transform .25s ease,
+    margin-top .25s ease;
+  will-change: max-height, transform, opacity;
+  /* Цвет фона шапки сетки (первая строка) можно переопределить извне */
+  --mp-pb-head-bg: #E6EAEE;
+}
+.mp-root .mp-price-card[data-breakdown="expanded"] .mp-price-breakdown {
+  opacity: 1;
+  transform: translateY(0);
+  margin-top: 16px;
+}
+.mp-root .mp-price-breakdown__inner {
+  padding: 12px 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.mp-root .mp-price-breakdown__grid { display: flex; flex-direction: column; gap: 0; }
+.mp-root .mp-pb-row { display: grid; grid-template-columns: 1fr repeat(3, 1fr); column-gap: 24px; align-items: center; min-height: 45px; height: 45px; position: relative; padding: 0 12px; }
+/* Шапка */
+.mp-root .mp-pb-row--head { background: var(--mp-pb-head-bg); padding: 0 8px; }
+/* Разделители под второй и третьей строкой */
+.mp-root .mp-pb-row--price::after,
+.mp-root .mp-pb-row--sqm::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: #E6EAEE; }
+.mp-root .mp-pb-head, .mp-root .mp-pb-label, .mp-root .mp-pb-val, .mp-root .mp-price-breakdown__footnote { font-family: "Open Sans", Arial, sans-serif; font-size: 18px; line-height: 1.2; }
+.mp-root .mp-pb-head { font-weight: 600; text-align: center; color: #000000; letter-spacing: 0.02em; }
+.mp-root .mp-pb-head--empty { text-align: left; }
+.mp-root .mp-pb-label { font-weight: 400; color: #130F26; text-align: left; }
+.mp-root .mp-pb-val { font-weight: 400; color: #000000; text-align: center; white-space: nowrap; }
+.mp-root .mp-price-breakdown__footnote { margin-top: 4px; color: #989898; font-weight: 400; }
+
+@media (max-width: 850px) {
+  .mp-root .mp-pb-row { column-gap: 12px; }
+  .mp-root .mp-pb-row--head { column-gap: 12px; padding: 0 6px; }
+  .mp-root .mp-pb-head, .mp-root .mp-pb-label, .mp-root .mp-pb-val, .mp-root .mp-price-breakdown__footnote { font-size: 14px; }
+}
+/* (title removed in new layout) */
+/* Старые стили таблицы цены удалены */
+
 /* Агент */
 .mp-root .mp-agent { padding: 0; }
 .mp-root .mp-agent {
@@ -1344,7 +1401,7 @@ html, body { margin: 0; padding: 0; }
   .mp-root .mp-toast { display: none !important; }
 
   /* Фиксированные кегли вместо clamp/vw для предсказуемой печати */
-  .mp-root .mp-gallery .mp-title { font-size: 48px !important; }
+  .mp-root .mp-gallery .mp-title { white-space: nowrap !important; overflow: visible !important; max-width: 100% !important; }
   .mp-root .mp-gallery .mp-address { font-size: 20px !important; }
 
   /* Избегаем разрывов внутри важных блоков */
@@ -1450,7 +1507,7 @@ html, body { margin: 0; padding: 0; }
   /* Небольшие интервалы между логическими блоками */
   .mp-root .mp-gallery .mp-title,
   .mp-root .mp-price-card,
-  .mp-root .mp-gallery .mp-address { margin-top: 16px; }
+  .mp-root .mp-gallery .mp-address { margin-top: 16px; margin-bottom: 5px; }
 
   /* Заголовок и адрес компактнее */
   .mp-root .mp-gallery .mp-title {
@@ -1465,7 +1522,10 @@ html, body { margin: 0; padding: 0; }
     white-space: nowrap;
     overflow: hidden;
   }
-  .mp-root .mp-gallery .mp-address { font-size: 14px; }
+  .mp-root .mp-gallery .mp-address {
+    font-size: 14px !important; /* строго 14px на мобильных */
+    line-height: 1.15; /* аккуратная плотность строк, можно скорректировать при необходимости */
+  }
 
   /* Основное фото и навигация (квадрат с адаптивной шириной ~270px) */
   .mp-root .mp-gallery__main {
@@ -1657,6 +1717,14 @@ html, body { margin: 0; padding: 0; }
   }
   .mp-root .mp-price-info img { width: 16px; height: 16px; }
   .mp-root .mp-price-per { font-size: 13px; }
+  .mp-root .mp-price-card[data-breakdown="expanded"] .mp-price-breakdown { margin-top: 12px; }
+  .mp-root .mp-price-breakdown__inner { padding: 12px 14px; gap: 8px; }
+  .mp-root .mp-price-breakdown__title { font-size: 15px; }
+  .mp-root .mp-price-breakdown__head th { font-size: 10px; letter-spacing: 0.08em; padding-bottom: 4px; }
+  .mp-root .mp-price-breakdown__body th { font-size: 13px; padding: 8px 0; }
+  .mp-root .mp-price-breakdown__body td { font-size: 14px; padding: 8px 0; }
+  .mp-root .mp-price-breakdown__value { white-space: normal; }
+  .mp-root .mp-price-breakdown__note { font-size: 11px; }
 
   /* Агент: компактнее аватар и сетка */
   .mp-root .mp-agent {
@@ -2104,3 +2172,5 @@ html, body { margin: 0; padding: 0; }
   .mp-root .mp-video-modal .mp-modal__dialog { width: 100vw; max-height: 100dvh; height: 100dvh; border-radius: 0; }
   .mp-root .mp-video__el { max-height: calc(100dvh - 80px); }
 }
+
+/* END OF FILE */

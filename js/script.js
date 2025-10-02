@@ -124,27 +124,29 @@
   const AlignInfoWithMain = (() => {
     let raf = null;
     const MEASURE_DELAY = 0;
+    const STATE = { lockedUntil: 0 };
     const isMobile = () => (window.innerWidth || 0) <= 850; // отключаем на мобильных
     const measure = () => {
+      if (Date.now() < STATE.lockedUntil) return; // во время lock не измеряем
       if (isMobile()) {
         root.style.removeProperty('--mp-main-offset');
         return;
       }
-      const galleryMain = root.querySelector('.mp-card.mp-agent');
-      const info = root.querySelector('.mp-gallery__image');
-      if (!galleryMain || !info) return;
-      // Сбрасываем временно кастомное свойство, чтобы получить «естественные» координаты info
-      const prev = root.style.getPropertyValue('--mp-main-offset');
+      // Эталон: верх изображения (не контейнера figure — чтобы исключить возможные внутренние отступы/бейджи)
+      const imageEl = root.querySelector('.mp-gallery__image');
+      // Целевой элемент: карточка агента
+      const agentCard = root.querySelector('.mp-overview__info .mp-agent');
+      const infoBlock = root.querySelector('.mp-overview__info');
+      if (!imageEl || !agentCard || !infoBlock) return;
+      // Сбрасываем текущее смещение перед измерением
       root.style.setProperty('--mp-main-offset', '0px');
-      // Используем getBoundingClientRect для точного вычисления вертикального смещения
-      const mainTop = galleryMain.getBoundingClientRect().top;
-      const infoTop = info.getBoundingClientRect().top;
-      // Нам нужно поднять info до уровня main: смещение = mainTop - infoTop
-      const diff = mainTop - infoTop;
+      const imgTop = imageEl.getBoundingClientRect().top;
+      const agentTop = agentCard.getBoundingClientRect().top;
+      // Нужно поднять ВЕСЬ info блок так, чтобы agentTop == imgTop.
+      // Значит смещение = agentTop - imgTop (если агент ниже картинки)
+      const diff = agentTop - imgTop;
       const offset = diff > 0 ? diff : 0;
-      // Восстанавливаем корректное значение
       root.style.setProperty('--mp-main-offset', offset + 'px');
-      // Возвращать prev не нужно — мы хотим новое значение
     };
     const schedule = () => {
       if (raf) cancelAnimationFrame(raf);
@@ -159,10 +161,174 @@
       // После автофита заголовка и получения данных
       root.addEventListener('mp:data', () => setTimeout(schedule, 0));
     };
-    return { init, schedule };
+    const lock = (ms = 400) => { STATE.lockedUntil = Date.now() + ms; };
+    return { init, schedule, lock };
   })();
   AlignInfoWithMain.init();
   try { window.addEventListener('load', () => AlignInfoWithMain.schedule()); } catch(_) {}
+
+  // --- Раскрывающаяся таблица цены ---
+  const PriceBreakdown = (() => {
+    const SELECTORS = {
+      card: '.mp-price-card',
+      breakdown: '.mp-price-breakdown',
+      button: '.mp-price-info',
+    };
+    let resizeObserver = null;
+    let expandedForPrint = false;
+
+    const getElements = (context) => {
+      const card = (context && typeof context.closest === 'function')
+        ? context.closest(SELECTORS.card)
+        : root.querySelector(SELECTORS.card);
+      if (!card) return {};
+      const breakdown = card.querySelector(SELECTORS.breakdown);
+      const button = card.querySelector(SELECTORS.button);
+      return { card, breakdown, button };
+    };
+
+    const ensureMeta = (btn) => {
+      if (!btn) return;
+      if (!btn.dataset.tooltipOriginal) {
+        btn.dataset.tooltipOriginal = btn.getAttribute('data-tooltip') || '';
+      }
+      if (!btn.dataset.tooltipHide) {
+        btn.dataset.tooltipHide = 'Скрыть структуру стоимости';
+      }
+      if (!btn.dataset.ariaLabelOriginal) {
+        btn.dataset.ariaLabelOriginal = btn.getAttribute('aria-label') || '';
+      }
+      if (!btn.dataset.ariaLabelHide) {
+        btn.dataset.ariaLabelHide = 'Скрыть подробности цены';
+      }
+    };
+
+    const setTooltipState = (btn, expanded) => {
+      if (!btn) return;
+      ensureMeta(btn);
+      btn.setAttribute('data-tooltip', expanded ? (btn.dataset.tooltipHide || '') : (btn.dataset.tooltipOriginal || ''));
+      btn.setAttribute('aria-label', expanded ? (btn.dataset.ariaLabelHide || '') : (btn.dataset.ariaLabelOriginal || ''));
+    };
+
+    const setAria = (btn, breakdown, expanded) => {
+      if (btn) btn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+      if (breakdown) breakdown.setAttribute('aria-hidden', expanded ? 'false' : 'true');
+    };
+
+    const setHeight = (card, breakdown) => {
+      if (!card || !breakdown) return;
+      const height = breakdown.scrollHeight;
+      card.style.setProperty('--mp-breakdown-height', `${Math.max(0, height)}px`);
+    };
+
+    const updateHeight = () => {
+      const { card, breakdown } = getElements();
+      if (!card || !breakdown) return;
+      if (card.getAttribute('data-breakdown') === 'expanded') {
+        setHeight(card, breakdown);
+      }
+    };
+
+    const expand = (context, { markAuto = false } = {}) => {
+      const { card, breakdown, button } = getElements(context);
+      if (!card || !breakdown) return;
+      ensureMeta(button);
+      setHeight(card, breakdown);
+      card.setAttribute('data-breakdown', 'expanded');
+      button?.classList.add('is-active');
+      setAria(button, breakdown, true);
+      setTooltipState(button, true);
+      expandedForPrint = markAuto;
+      requestAnimationFrame(() => setHeight(card, breakdown));
+      AlignInfoWithMain.schedule();
+    };
+
+    const collapse = (context, { immediate = false, markAuto = false } = {}) => {
+      const { card, breakdown, button } = getElements(context);
+      if (!card || !breakdown) return;
+      ensureMeta(button);
+      const finish = () => {
+        card.removeAttribute('data-breakdown');
+        card.style.setProperty('--mp-breakdown-height', '0px');
+        button?.classList.remove('is-active');
+        setAria(button, breakdown, false);
+        setTooltipState(button, false);
+        AlignInfoWithMain.schedule();
+      };
+      if (immediate) {
+        finish();
+      } else {
+        // Блокируем перерасчёт выравнивания на время анимации, чтобы не было скачка
+        AlignInfoWithMain.lock(420);
+        const currentHeight = breakdown.scrollHeight;
+        card.style.setProperty('--mp-breakdown-height', `${Math.max(0, currentHeight)}px`);
+        requestAnimationFrame(() => {
+          card.removeAttribute('data-breakdown');
+          requestAnimationFrame(() => {
+            card.style.setProperty('--mp-breakdown-height', '0px');
+            // Пересчитываем позицию только после завершения анимации
+            setTimeout(() => AlignInfoWithMain.schedule(), 400);
+          });
+          button?.classList.remove('is-active');
+          setAria(button, breakdown, false);
+          setTooltipState(button, false);
+        });
+      }
+      if (!markAuto) expandedForPrint = false;
+    };
+
+    const toggle = (btn) => {
+      const { card } = getElements(btn);
+      if (!card) return;
+      const expanded = card.getAttribute('data-breakdown') === 'expanded';
+      if (expanded) collapse(card); else expand(card);
+    };
+
+    const reset = () => {
+      expandedForPrint = false;
+      collapse(null, { immediate: true, markAuto: true });
+    };
+
+    const expandForPrint = () => {
+      const { card } = getElements();
+      if (!card) return;
+      if (card.getAttribute('data-breakdown') === 'expanded') {
+        expandedForPrint = false;
+        updateHeight();
+        return;
+      }
+      expand(card, { markAuto: true });
+    };
+
+    const restoreAfterPrint = () => {
+      if (!expandedForPrint) { updateHeight(); return; }
+      expandedForPrint = false;
+      collapse(null, { immediate: true, markAuto: true });
+    };
+
+    const init = () => {
+      reset();
+      const { breakdown } = getElements();
+      const inner = breakdown?.querySelector('.mp-price-breakdown__inner');
+      if (inner && 'ResizeObserver' in window) {
+        resizeObserver = new ResizeObserver(() => updateHeight());
+        resizeObserver.observe(inner);
+      }
+      window.addEventListener('resize', () => updateHeight());
+    };
+
+    return {
+      init,
+      toggle,
+      reset,
+      updateHeight,
+      expand: (ctx) => expand(ctx),
+      collapse: (ctx, opts) => collapse(ctx, opts),
+      expandForPrint,
+      restoreAfterPrint,
+    };
+  })();
+  PriceBreakdown.init();
 
   // --- Пропорциональное масштабирование блока .mp-overview__info (десктоп) ---
   const InfoScaler = (() => {
@@ -259,7 +425,13 @@
     const apply = () => {
       const rootEl = root.querySelector(SELECTOR_ROOT);
       if (!rootEl) return;
-      if (isMobile()) { resetStyles(rootEl); lastScale = 1; AlignInfoWithMain.schedule(); return; }
+      if (isMobile()) {
+        resetStyles(rootEl);
+        lastScale = 1;
+        PriceBreakdown.updateHeight();
+        AlignInfoWithMain.schedule();
+        return;
+      }
       const scale = computeScale();
       if (Math.abs(scale - lastScale) < 0.005) return; // нет существенного изменения
       lastScale = scale;
@@ -268,8 +440,9 @@
       all.forEach((el) => collectBaseline(el, getComputedStyle(el)));
       // Применение масштаба
       scaleRootProps(rootEl, scale);
-      all.forEach((el) => applyScaleToEl(el, scale));
-      // После масштабирования — пересчитать выравнивание блока с main фото
+  all.forEach((el) => applyScaleToEl(el, scale));
+  PriceBreakdown.updateHeight();
+  // После масштабирования — пересчитать выравнивание блока с main фото
       AlignInfoWithMain.schedule();
     };
 
@@ -306,6 +479,13 @@
     const btn = e.target.closest('.mp-btn');
     if (!btn) return;
     MP.emit('mp:share:click', { ts: Date.now() });
+  });
+
+  root.addEventListener('click', (e) => {
+    const infoBtn = e.target.closest('.mp-price-info');
+    if (!infoBtn) return;
+    e.preventDefault();
+    PriceBreakdown.toggle(infoBtn);
   });
 
   // Модалка «Поделиться»: открыть по клику на кнопку в шапке и в подвале
@@ -601,6 +781,57 @@
     if (typeof n !== 'number' || !isFinite(n)) return '';
     try { return new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 0 }).format(n); } catch (_) { return String(n); }
   };
+  // --- Новая логика заполнения 4x3 сетки цены (₽ / $* / €*) ---
+  // Курс ЦБ: хранится в формате RUB_PER[VAL] = сколько рублей за 1 единицу валюты.
+  // Эти значения можно обновить интегратором при загрузке страницы.
+  const CB_RATES_RUB_PER = {
+    USD: 95.00, // Пример: 1 USD = 95.00 RUB
+    EUR: 102.00 // Пример: 1 EUR = 102.00 RUB
+  };
+  // Конвертация из рублей в валюту по таблице выше
+  const convertFromRub = (rubAmount, code) => {
+    if (typeof rubAmount !== 'number' || !isFinite(rubAmount)) return null;
+    const rate = CB_RATES_RUB_PER[code];
+    if (!rate || rate <= 0) return null;
+    return rubAmount / rate;
+  };
+  const fmtPlainNumber = (amount) => {
+    if (typeof amount !== 'number' || !isFinite(amount)) return '';
+    try { return new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 0 }).format(Math.round(amount)); }
+    catch (_) { return String(Math.round(amount)); }
+  };
+  const renderPriceBreakdown = (data) => {
+    const card = root.querySelector('.mp-price-card');
+    if (!card) return;
+    // Новая сетка: ищем элементы по data-pb
+    const getEl = (key) => card.querySelector(`[data-pb="${key}"]`);
+    const priceRUB = (typeof data?.price === 'number') ? data.price : null;
+    let pricePerSqmRUB = (typeof data?.pricePerSqm === 'number') ? data.pricePerSqm : null;
+    if (pricePerSqmRUB == null && typeof data?.price === 'number' && typeof data?.totalAreaSqm === 'number' && data.totalAreaSqm > 0) {
+      pricePerSqmRUB = Math.round(data.price / data.totalAreaSqm);
+    }
+    // Заполняем рубли
+    if (priceRUB != null) { const el = getEl('price-rub'); if (el) el.textContent = fmtPlainNumber(priceRUB); }
+    if (pricePerSqmRUB != null) { const el = getEl('sqm-rub'); if (el) el.textContent = fmtPlainNumber(pricePerSqmRUB); }
+    // Конвертация в USD / EUR
+    ['USD','EUR'].forEach((code) => {
+      if (priceRUB != null) {
+        const v = convertFromRub(priceRUB, code);
+        const el = getEl('price-' + code.toLowerCase());
+        if (el && v != null) el.textContent = fmtPlainNumber(v);
+      }
+      if (pricePerSqmRUB != null) {
+        const v2 = convertFromRub(pricePerSqmRUB, code);
+        const el2 = getEl('sqm-' + code.toLowerCase());
+        if (el2 && v2 != null) el2.textContent = fmtPlainNumber(v2);
+      }
+    });
+    // Заголовок первой ячейки (id="mp-price-breakdown-title") оставляем пустым по макету — не заполняем.
+    PriceBreakdown.reset();
+    PriceBreakdown.updateHeight();
+  };
+
+  // СТАРАЯ версия renderPriceBreakdown (табличная) удалена и заменена на новую выше.
 
   // Упрощаем: не грузим тяжёлый JS API Яндекс. Работаем через iframe + лёгкое геокодирование.
 
@@ -1311,6 +1542,9 @@
       }
     }
 
+    // Расширенная таблица стоимости
+    renderPriceBreakdown(data);
+
     // Условия сделки (2x2 сетка)
     const termsWrap = root.querySelector('.mp-terms__grid');
     if (termsWrap) {
@@ -1383,11 +1617,60 @@
   });
 
   // Хуки печати: до открытия диалога печати прогружаем карту без lazy
-  try { window.addEventListener('beforeprint', prepareMapForPrint); } catch (_) {}
+  const fitTitleForPrint = () => {
+    const title = root.querySelector('.mp-gallery .mp-title');
+    if (!title) return;
+    // Сохраняем исходный инлайн font-size (если есть)
+    if (!title.dataset.printOriginalFontSize) {
+      title.dataset.printOriginalFontSize = title.style.fontSize || '';
+    }
+    const originalComputed = parseFloat(getComputedStyle(title).fontSize) || 48;
+    // Вычисляем доступную ширину — ширина родителя или root
+    const parent = title.parentElement || root;
+    const available = (parent.clientWidth || 0) - 4; // небольшой запас
+    if (available <= 0) return;
+    // Бинарный поиск по уменьшению размера
+    let low = 8;
+    let high = originalComputed;
+    const span = document.createElement('span');
+    span.style.cssText = 'position:absolute;left:-9999px;top:-9999px;white-space:nowrap;font-weight:' + getComputedStyle(title).fontWeight + ';font-family:' + getComputedStyle(title).fontFamily + ';';
+    document.body.appendChild(span);
+    const text = title.textContent?.trim() || '';
+    span.textContent = text;
+    while (high - low > 0.5) {
+      const mid = (low + high) / 2;
+      span.style.fontSize = mid + 'px';
+      if (span.offsetWidth <= available) {
+        low = mid; // можно больше
+      } else {
+        high = mid; // слишком широко
+      }
+    }
+    const finalSize = Math.min(originalComputed, low);
+    title.style.fontSize = finalSize.toFixed(2) + 'px';
+    document.body.removeChild(span);
+  };
+  const restoreTitleAfterPrint = () => {
+    const title = root.querySelector('.mp-gallery .mp-title');
+    if (!title) return;
+    const orig = title.dataset.printOriginalFontSize;
+    if (orig !== undefined) {
+      title.style.fontSize = orig;
+      delete title.dataset.printOriginalFontSize;
+    }
+    // Перезапустим обычный автофит для режима экрана
+    try { TitleAutoFit.fitNow(); } catch (_) {}
+    PriceBreakdown.restoreAfterPrint();
+  };
+  try { window.addEventListener('beforeprint', () => { prepareMapForPrint(); fitTitleForPrint(); PriceBreakdown.expandForPrint(); }); } catch (_) {}
   try {
     const mq = window.matchMedia && window.matchMedia('print');
     if (mq && typeof mq.addEventListener === 'function') {
-      mq.addEventListener('change', (e) => { if (e.matches) prepareMapForPrint(); });
+      mq.addEventListener('change', (e) => {
+        if (e.matches) { prepareMapForPrint(); fitTitleForPrint(); PriceBreakdown.expandForPrint(); }
+        else { restoreTitleAfterPrint(); }
+      });
     }
   } catch (_) {}
+  try { window.addEventListener('afterprint', restoreTitleAfterPrint); } catch(_) {}
 })();

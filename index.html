@@ -81,11 +81,42 @@
               <section class="mp-card mp-price-card" aria-label="Цена объекта">
                 <div class="mp-price-row">
                   <p class="mp-price" itemprop="offers" data-price-currency="RUB">10 250 000 ₽</p>
-                  <button class="mp-price-info" type="button" aria-label="Информация о цене" data-tooltip="Плейсхолдер: как формируется цена и стоимость за м²">
+                  <button
+                    class="mp-price-info"
+                    type="button"
+                    aria-label="Раскрыть подробности цены"
+                    aria-expanded="false"
+                    aria-controls="mp-price-breakdown"
+                    data-tooltip="Показать структуру стоимости">
                     <img src="assets/img/cost-info.svg" alt="" width="24" height="24" aria-hidden="true" />
                   </button>
                 </div>
                 <p class="mp-price-per">186 363 ₽/м²</p>
+                <div class="mp-price-breakdown" id="mp-price-breakdown" aria-hidden="true" role="region" aria-labelledby="mp-price-breakdown-title">
+                  <div class="mp-price-breakdown__inner">
+                    <div class="mp-price-breakdown__grid" aria-labelledby="mp-price-breakdown-title">
+                      <div class="mp-pb-row mp-pb-row--head">
+                        <span class="mp-pb-head mp-pb-head--empty" id="mp-price-breakdown-title"></span>
+                        <span class="mp-pb-head" data-currency-head="RUB">₽</span>
+                        <span class="mp-pb-head" data-currency-head="USD">$*</span>
+                        <span class="mp-pb-head" data-currency-head="EUR">€*</span>
+                      </div>
+                      <div class="mp-pb-row mp-pb-row--price">
+                        <span class="mp-pb-label">Цена</span>
+                        <span class="mp-pb-val" data-pb="price-rub"></span>
+                        <span class="mp-pb-val" data-pb="price-usd"></span>
+                        <span class="mp-pb-val" data-pb="price-eur"></span>
+                      </div>
+                      <div class="mp-pb-row mp-pb-row--sqm">
+                        <span class="mp-pb-label">За м²</span>
+                        <span class="mp-pb-val" data-pb="sqm-rub"></span>
+                        <span class="mp-pb-val" data-pb="sqm-usd"></span>
+                        <span class="mp-pb-val" data-pb="sqm-eur"></span>
+                      </div>
+                    </div>
+                    <span class="mp-price-breakdown__footnote">*по курсу ЦБ</span>
+                  </div>
+                </div>
               </section>
 
               <!-- Карточка специалиста -->
