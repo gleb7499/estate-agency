@@ -5,6 +5,289 @@
   // Храним последний набор данных для повторной инициализации карты при печати
   let __mp_currentData = null;
 
+  // --- Авто-подбор размера заголовка (.mp-title) под ширину (одна строка) ---
+  const TitleAutoFit = (() => {
+    const STATE = { initialized: false, ro: null };
+    const ABS_MAX_FONT = 48; // глобальная верхняя граница
+    const MIN_FONT = 10; // технический минимум читаемости
+    const STEP = 0.5; // точность бинарного поиска
+
+    // Простое вычисление динамического максимума для малых экранов
+    const dynamicMaxForViewport = () => {
+      const vw = Math.max(0, window.innerWidth || document.documentElement.clientWidth || 0);
+      if (!vw) return ABS_MAX_FONT;
+      // Пороговая шкала (подобрано эмпирически):
+      if (vw < 340) return 24;
+      if (vw < 370) return 26;
+      if (vw < 400) return 30;
+      if (vw < 440) return 32;
+      if (vw < 480) return 34;
+      if (vw < 560) return 38;
+      if (vw < 680) return 42;
+      return ABS_MAX_FONT;
+    };
+
+    // Оптимизация: кэш измерений через hidden span
+    let measureSpan = null;
+    const ensureMeasureSpan = () => {
+      if (measureSpan) return measureSpan;
+      measureSpan = document.createElement('span');
+      measureSpan.style.cssText = [
+        'position:absolute','left:-9999px','top:-9999px','white-space:nowrap','padding:0','margin:0','font-weight:700','font-family:"Open Sans",Arial,sans-serif','line-height:1.1','visibility:hidden'
+      ].join(';');
+      document.body.appendChild(measureSpan);
+      return measureSpan;
+    };
+
+    const computeBestFontSize = (titleEl) => {
+      if (!titleEl || !titleEl.textContent) return;
+      // Мобильный режим: фиксированный размер (18px) — без вычислений
+      const isMobile = (window.innerWidth || 0) <= 850;
+      if (isMobile) {
+        titleEl.style.fontSize = '18px';
+        return;
+      }
+      // Определяем доступную ширину: ближайший предок с ненулевой шириной
+      let available = 0;
+      let node = titleEl.parentElement;
+      while (node && node !== document.body) {
+        if (node.clientWidth && node.clientWidth > 0) { available = node.clientWidth; break; }
+        node = node.parentElement;
+      }
+      if (!available) {
+        // Фолбэк — ширина вьюпорта минус небольшой горизонтальный запас
+        available = Math.max(0, (window.innerWidth || 0) - 20);
+      }
+      available = Math.max(0, available - 2); // безопасный отступ
+      if (available <= 0) return;
+      const text = titleEl.textContent.trim();
+      if (!text) return;
+      const span = ensureMeasureSpan();
+      // Бинарный поиск по кеглю
+      const dynMax = dynamicMaxForViewport();
+      let low = MIN_FONT;
+      let high = Math.min(dynMax, parseFloat(getComputedStyle(titleEl).fontSize) || dynMax, ABS_MAX_FONT);
+      let best = low;
+      while (high - low > STEP) {
+        const mid = (low + high) / 2;
+        span.style.fontSize = mid + 'px';
+        span.textContent = text;
+        const w = span.offsetWidth;
+        if (w <= available) { best = mid; low = mid; } else { high = mid; }
+      }
+      titleEl.style.fontSize = best.toFixed(2) + 'px';
+    };
+
+    // Debounce для массовых layout-ивентов
+    let rafId = null;
+    const fitNow = () => {
+      const el = root.querySelector('.mp-gallery .mp-title');
+      if (!el) return;
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
+        // Сбрасываем к динамическому максимуму (может отличаться на мобильном)
+        const dynMax = dynamicMaxForViewport();
+        el.style.fontSize = dynMax + 'px';
+        computeBestFontSize(el);
+      });
+    };
+
+    const init = () => {
+      if (STATE.initialized) return;
+      STATE.initialized = true;
+      // ResizeObserver на контейнер галереи
+      const gallery = root.querySelector('.mp-gallery');
+      if (gallery && 'ResizeObserver' in window) {
+        STATE.ro = new ResizeObserver(() => { fitNow(); });
+        STATE.ro.observe(gallery);
+      }
+      // Всегда слушаем resize + orientationchange (меняется viewport ширина)
+      window.addEventListener('resize', fitNow);
+      window.addEventListener('orientationchange', () => setTimeout(fitNow, 50));
+      // Подбор при изменении текста (MutationObserver на .mp-title)
+      const titleEl = root.querySelector('.mp-gallery .mp-title');
+      if (titleEl && 'MutationObserver' in window) {
+        const mo = new MutationObserver(() => fitNow());
+        mo.observe(titleEl, { characterData: true, subtree: true, childList: true });
+      }
+      // Первый запуск после небольшого таймаута (на случай раскраски шрифтов)
+      setTimeout(fitNow, 0);
+    };
+
+    // Публичный API модуля
+    return { init, fitNow };
+  })();
+  // Инициализируем сразу (текст может появиться позже — MutationObserver подстроит)
+  TitleAutoFit.init();
+
+  // --- Выравнивание: верх .mp-card (price/agent блоков) по верху .mp-gallery__main ---
+  const AlignInfoWithMain = (() => {
+    let raf = null;
+    const MEASURE_DELAY = 0;
+    const isMobile = () => (window.innerWidth || 0) <= 850; // отключаем на мобильных
+    const measure = () => {
+      if (isMobile()) {
+        root.style.removeProperty('--mp-main-offset');
+        return;
+      }
+      const galleryMain = root.querySelector('.mp-card.mp-agent');
+      const info = root.querySelector('.mp-gallery__image');
+      if (!galleryMain || !info) return;
+      // Сбрасываем временно кастомное свойство, чтобы получить «естественные» координаты info
+      const prev = root.style.getPropertyValue('--mp-main-offset');
+      root.style.setProperty('--mp-main-offset', '0px');
+      // Используем getBoundingClientRect для точного вычисления вертикального смещения
+      const mainTop = galleryMain.getBoundingClientRect().top;
+      const infoTop = info.getBoundingClientRect().top;
+      // Нам нужно поднять info до уровня main: смещение = mainTop - infoTop
+      const diff = mainTop - infoTop;
+      const offset = diff > 0 ? diff : 0;
+      // Восстанавливаем корректное значение
+      root.style.setProperty('--mp-main-offset', offset + 'px');
+      // Возвращать prev не нужно — мы хотим новое значение
+    };
+    const schedule = () => {
+      if (raf) cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => setTimeout(measure, MEASURE_DELAY));
+    };
+    const init = () => {
+      schedule();
+      window.addEventListener('resize', schedule);
+      window.addEventListener('orientationchange', () => setTimeout(schedule, 50));
+      // Пересчёт при загрузке изображений главной галереи (высота может меняться из-за отсутствия/наличия скроллбара и др.)
+      root.addEventListener('load', schedule, true);
+      // После автофита заголовка и получения данных
+      root.addEventListener('mp:data', () => setTimeout(schedule, 0));
+    };
+    return { init, schedule };
+  })();
+  AlignInfoWithMain.init();
+  try { window.addEventListener('load', () => AlignInfoWithMain.schedule()); } catch(_) {}
+
+  // --- Пропорциональное масштабирование блока .mp-overview__info (десктоп) ---
+  const InfoScaler = (() => {
+    const SELECTOR_ROOT = '.mp-overview__info';
+    const NUMERIC_PROPS = [
+      'fontSize','paddingTop','paddingRight','paddingBottom','paddingLeft',
+      'borderRadius','gap','rowGap','columnGap','lineHeight'
+    ];
+    const ROOT_PROPS = ['gap','rowGap','columnGap'];
+    let scheduled = false;
+    let lastScale = 1;
+
+    const isMobile = () => (window.innerWidth || 0) <= 850;
+    // Формула коэффициента: плавно от 1440px (1.0) до 1024px (~0.75), ниже держим минимум
+    const computeScale = () => {
+      const w = (window.innerWidth || 0);
+      if (w >= 1440) return 1;
+      if (w <= 1024) return 0.75;
+      const k = (w - 1024) / (1440 - 1024); // 0..1
+      return 0.75 + k * (1 - 0.75); // линейная интерполяция
+    };
+
+    const parsePx = (v) => {
+      if (!v) return null;
+      if (v === 'normal') return null;
+      const m = /([0-9]*\.?[0-9]+)/.exec(v);
+      return m ? parseFloat(m[1]) : null;
+    };
+
+    const collectBaseline = (el, cs) => {
+      NUMERIC_PROPS.forEach((prop) => {
+        const dataKey = 'mpBase' + prop.charAt(0).toUpperCase() + prop.slice(1);
+        if (el.dataset[dataKey] != null) return;
+        const raw = cs.getPropertyValue(prop.replace(/[A-Z]/g, m => '-' + m.toLowerCase()));
+        const val = parsePx(raw);
+        if (val != null) el.dataset[dataKey] = String(val);
+      });
+    };
+
+    const applyScaleToEl = (el, scale) => {
+      NUMERIC_PROPS.forEach((prop) => {
+        const dataKey = 'mpBase' + prop.charAt(0).toUpperCase() + prop.slice(1);
+        const base = el.dataset[dataKey];
+        if (base == null) return;
+        const num = parseFloat(base);
+        if (!Number.isFinite(num)) return;
+        if (prop === 'lineHeight') {
+          // Если line-height был числом (px), масштабируем; если изначально unitless, мы бы не сохранили
+          el.style.lineHeight = (num * scale).toFixed(2) + 'px';
+        } else if (prop === 'fontSize') {
+          el.style.fontSize = (num * scale).toFixed(2) + 'px';
+        } else if (prop.toLowerCase().includes('gap')) {
+          // gap только на контейнерах (root / grid) — применим отдельно
+        } else if (prop.startsWith('padding')) {
+          el.style[prop] = (num * scale).toFixed(2) + 'px';
+        } else if (prop === 'borderRadius') {
+          el.style.borderRadius = (num * scale).toFixed(2) + 'px';
+        }
+      });
+    };
+
+    const scaleRootProps = (rootEl, scale) => {
+      const cs = getComputedStyle(rootEl);
+      ROOT_PROPS.forEach((prop) => {
+        const dataKey = 'mpBase' + prop.charAt(0).toUpperCase() + prop.slice(1);
+        if (rootEl.dataset[dataKey] == null) {
+          const raw = cs.getPropertyValue(prop.replace(/[A-Z]/g, m => '-' + m.toLowerCase()));
+            const val = parsePx(raw);
+            if (val != null) rootEl.dataset[dataKey] = String(val);
+        }
+        const base = rootEl.dataset[dataKey];
+        if (base != null) {
+          const num = parseFloat(base);
+          if (Number.isFinite(num)) rootEl.style[prop] = (num * scale).toFixed(2) + 'px';
+        }
+      });
+    };
+
+    const resetStyles = (rootEl) => {
+      // Очистка инлайновых изменений (мобильный режим)
+      rootEl.removeAttribute('style');
+      rootEl.querySelectorAll('*').forEach((el) => {
+        el.style.fontSize = '';
+        el.style.lineHeight = '';
+        el.style.padding = '';
+        el.style.paddingTop = '';
+        el.style.paddingRight = '';
+        el.style.paddingBottom = '';
+        el.style.paddingLeft = '';
+        el.style.borderRadius = '';
+      });
+    };
+
+    const apply = () => {
+      const rootEl = root.querySelector(SELECTOR_ROOT);
+      if (!rootEl) return;
+      if (isMobile()) { resetStyles(rootEl); lastScale = 1; AlignInfoWithMain.schedule(); return; }
+      const scale = computeScale();
+      if (Math.abs(scale - lastScale) < 0.005) return; // нет существенного изменения
+      lastScale = scale;
+      // Сбор базовых значений (один раз)
+      const all = [rootEl, ...rootEl.querySelectorAll('*')];
+      all.forEach((el) => collectBaseline(el, getComputedStyle(el)));
+      // Применение масштаба
+      scaleRootProps(rootEl, scale);
+      all.forEach((el) => applyScaleToEl(el, scale));
+      // После масштабирования — пересчитать выравнивание блока с main фото
+      AlignInfoWithMain.schedule();
+    };
+
+    const schedule = () => {
+      if (scheduled) return; scheduled = true;
+      requestAnimationFrame(() => { scheduled = false; apply(); });
+    };
+
+    const init = () => {
+      schedule();
+      window.addEventListener('resize', schedule);
+      window.addEventListener('orientationchange', () => setTimeout(schedule, 50));
+      root.addEventListener('mp:data', () => setTimeout(schedule, 0));
+    };
+    return { init, schedule };
+  })();
+  InfoScaler.init();
+
   // Контракт: мок-отправка на сервер — не делает сетевых запросов
   const MP = {
     sendToServer(action, payload) {
@@ -1086,11 +1369,18 @@
     // после первичного рендера сразу скорректируем видимость стрелок
     setTimeout(() => {
       try { updateGalleryNavVisibility(); } catch (_) {}
+      try { TitleAutoFit.fitNow(); } catch (_) {}
     }, 0);
     // Инициализация QR картинок
     try { updateQrImages('all'); } catch (_) {}
   }
-  root.addEventListener('mp:data', (e) => { if (e && e.detail) renderAll(e.detail); });
+  root.addEventListener('mp:data', (e) => {
+    if (e && e.detail) {
+      renderAll(e.detail);
+      // после изменения данных пересчитаем размер заголовка
+      setTimeout(() => { try { TitleAutoFit.fitNow(); } catch (_) {} }, 0);
+    }
+  });
 
   // Хуки печати: до открытия диалога печати прогружаем карту без lazy
   try { window.addEventListener('beforeprint', prepareMapForPrint); } catch (_) {}

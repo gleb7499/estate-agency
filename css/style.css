@@ -173,7 +173,7 @@ html, body { margin: 0; padding: 0; }
 
 /* Тело страницы */
 .mp-root .mp-main {
-  padding: 70px;
+  padding: 45px 60px 60px 60px;
   flex: 1 0 auto; /* занимать доступное пространство для эффекта "подвал внизу" */
 }
 
@@ -364,18 +364,22 @@ html, body { margin: 0; padding: 0; }
   padding: 0; /* контент галереи на одном уровне с родителем */
   display: grid;
   grid-template-rows: auto auto 1fr auto auto;
-  gap: 12px;
 }
 .mp-root .mp-gallery .mp-title {
   font-family: "Open Sans", Arial, sans-serif;
   font-weight: 700;
   /* Статичный кегль */
   font-size: 48px;
-  line-height: 110%;
+  line-height: 100%;
   background: #130F26;
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
+  /* Автофит одной строки: JS уменьшит font-size при необходимости */
+  white-space: nowrap;
+  overflow: hidden;
+  margin-bottom: 5px;
+  /* Не используем text-overflow: ellipsis, т.к. бизнес-требование — именно уменьшить текст, а не обрезать */
 }
 .mp-root .mp-gallery .mp-address {
   /* Статичный кегль */
@@ -384,9 +388,10 @@ html, body { margin: 0; padding: 0; }
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  margin: 0px 0px 20px 0px;
 }
 .mp-root .mp-address__icon { width: 1em; height: 1em; object-fit: contain; display: inline-block; }
-.mp-root .mp-address__text { display: inline; }
+.mp-root .mp-address__text { display: inline; font-size: 18px; }
 .mp-root .mp-gallery__main {
   position: relative;
   width: 100%;
@@ -394,6 +399,7 @@ html, body { margin: 0; padding: 0; }
   overflow: hidden;
   border-radius: 12px;
   background: #f2f6f8;
+  margin-bottom: 8px;
 }
 /* Кнопка запуска видео поверх фото */
 .mp-root .mp-gallery__play {
@@ -601,8 +607,11 @@ html, body { margin: 0; padding: 0; }
   display: grid;
   grid-auto-rows: max-content;
   /* Базовый внутренний интервал между элементами инфоблока */
-  --mp-overview-info-gap: 12px;
+  --mp-overview-info-gap: 8px;
   gap: var(--mp-overview-info-gap); /* компактнее, без лишних внешних отступов между блоками */
+  /* Выравнивание верхней границы с .mp-gallery__main (устанавливается JS) */
+  margin-top: calc(-1 * var(--mp-main-offset, 0px));
+  
 }
 /* Увеличиваем расстояние между карточкой агента и блоком действий в 2 раза от базового gap */
 .mp-root .mp-overview__info .mp-agent + .mp-contact-actions {
@@ -1448,10 +1457,13 @@ html, body { margin: 0; padding: 0; }
     font-family: "Open Sans", Arial, sans-serif;
     font-weight: 600; /* SemiBold */
     font-style: normal;
-    font-size: clamp(9px, 7vw, 18px);
+    /* На мобильных фиксированный размер 18px по требованию */
+    font-size: 18px !important;
     line-height: 100%;
     letter-spacing: 0;
-    overflow-wrap: anywhere;
+    /* Запрещаем перенос: размер будет адаптивно уменьшен */
+    white-space: nowrap;
+    overflow: hidden;
   }
   .mp-root .mp-gallery .mp-address { font-size: 14px; }
 
