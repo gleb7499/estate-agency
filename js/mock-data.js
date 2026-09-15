@@ -1,5 +1,5 @@
-// Централизованные мок-данные для карточки объекта
-// Без сетевых запросов; доступны глобально как window.MP_MOCK
+// Centralized mock data for the property card
+// No network requests; available globally as window.MP_MOCK
 
 (function(){
   const MP_MOCK = {
@@ -13,9 +13,9 @@
       'assets/mock/apartment-4.jpg',
       'assets/mock/apartment-5.jpg',
     ],
-    // Видео для первого элемента карусели
+    // Video for the first carousel item
     video: 'assets/mock/video.mp4',
-    // Постер будет извлекаться автоматически из самого видео
+    // The poster will be extracted automatically from the video itself
     facts: [
       { label: 'Общая площадь', value: '55 м²' },
       { label: 'Жилая площадь', value: '32 м²' },
@@ -23,24 +23,24 @@
       { label: 'Этаж', value: '2/4' },
       { label: 'Год постройки', value: '2014' },
     ],
-    price: 12300000,         // в базовой валюте (RUB)
-    currency: 'RUB',         // код валюты
-    pricePerSqm: 223636,     // ₽/м², можно оставить null — посчитаем из цены и площади
-    totalAreaSqm: 55,        // для вычисления pricePerSqm при необходимости
+    price: 12300000,         // in the base currency (RUB)
+    currency: 'RUB',         // currency code
+    pricePerSqm: 223636,     // ₽/m², can be left null — will be computed from price and area
+    totalAreaSqm: 55,        // for computing pricePerSqm when needed
     priceBreakdownTitle: 'Структура стоимости',
     priceBreakdown: [
       { label: 'Стоимость объекта', value: 12300000, type: 'currency', accent: true },
       { label: 'Первоначальный взнос (20%)', value: 2460000, type: 'currency', note: 'Рекомендация для одобрения ипотеки' },
       { label: 'Ежемесячный платёж (30 лет)', value: '≈ 54 300 ₽/мес', note: 'Расчёт при ставке 12% годовых' },
     ],
-    // Условия сделки (секция «Условия»)
+    // Deal terms ("Terms" section)
     terms: {
-      saleType: 'Свободная (прямая)',   // Тип продажи
-      firstSale: true,                  // Продаётся впервые
-      onlineViewing: true,              // Онлайн показ (заказ)
-      mortgage: true,                   // Ипотека
+      saleType: 'Свободная (прямая)',   // Sale type
+      firstSale: true,                  // First sale
+      onlineViewing: true,              // Online viewing (on request)
+      mortgage: true,                   // Mortgage
     },
-    // Об объекте (секция «Об объекте») — 4x3
+    // About the property ("About the property" section) — 4x3
     about: [
       { label: 'Этаж', value: '10 из 11' },
       { label: 'Балкон/Лоджия', value: 'Балкон' },
@@ -58,7 +58,7 @@
       { label: 'Планировка', value: 'Изолированная' },
       { label: 'Ремонт', value: 'Косметический' },
     ],
-    // О здании (секция «О здании») — 2x3 по макету
+    // About the building ("About the building" section) — 2x3 per the design
     building: [
       { label: 'Тип дома', value: 'Монолитно-кирпичный' },
       { label: 'Мусоропровод', value: 'Нет' },
@@ -67,10 +67,10 @@
       { label: 'Лифт', value: 'Грузовой' },
       { label: 'Новый дом', value: 'Да' },
     ],
-    // Описание от продавца
+    // Seller's description
     description: 'Продается квартира в самом центре города с шикарным видом на город. Просторная кухня-гостиная, большая спальная комната, совмещенный санузел. Во дворе ЖК имеется подземная парковка, видеонаблюдение, закрытая территория двора, 3 шлагбаума. В шаговой доступности 2 муниципальных детских сада, 1 частный детский сад, школа 14, детские кружки, салоны красоты, магазины, МТЦ "НОВЫЙ", клиника "Юнилаб", спортзал, зал единоборств. Обмен не интересует, только продажа.',
   };
 
-  // Экспортируем в глобальную область безопасно
+  // Export to the global scope safely
   try { window.MP_MOCK = MP_MOCK; } catch (_) {}
 })();

@@ -1,30 +1,30 @@
-/* Глобальный сброс отступов, чтобы не было белой рамки вокруг страницы */
+/* Global margin/padding reset so there is no white frame around the page */
 html, body { margin: 0; padding: 0; }
 
-/* Изоляция всех стилей под .mp-root (см. agent.md) */
+/* Isolate all styles under .mp-root (see agent.md) */
 .mp-root * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-/* Базовые переменные и каркас макета */
+/* Base variables and layout skeleton */
 .mp-root {
-  /* базовые размеры шапки (для адаптивного масштабирования) */
+  /* base header sizes (for adaptive scaling) */
   --mp-brand-title: 36px;
   --mp-brand-subtitle: 14px;
   --mp-share-text: 18px;
   --mp-logo-size: 56px;
   --mp-btn-pad-y: 10px;
   --mp-btn-pad-x: 14px;
-  /* системные отступы по краям экрана */
+  /* system padding at screen edges */
   --mp-page-pad: 25px;
 
   display: flex;
   flex-direction: column;
   align-items: stretch;
   height: auto;
-  min-height: auto; /* фиксированный макет без зависимости от высоты окна */
+  min-height: auto; /* fixed layout, independent of window height */
   font-family: "Open Sans", Arial, sans-serif;
 }
 
@@ -33,33 +33,33 @@ html, body { margin: 0; padding: 0; }
   color: #333;
 }
 
-/* Layout: базовые параметры заданы выше в .mp-root */
+/* Layout: base parameters are set above in .mp-root */
 
-/* Шапка и squircle-контейнер */
+/* Header and squircle container */
 .mp-root .mp-header {
   position: relative;
 }
 
 .mp-root .mp-squircle {
-  /* Прозрачная заливка, только рамка #130F26, скругление 32px */
+  /* Transparent fill, only a #130F26 border, 32px radius */
   background: transparent;
   border-radius: 32px;
   border: 1px solid #130F26;
   height: 145px;
 
-  /* Фиксированные боковые отступы шапки по 25px */
+  /* Fixed 25px horizontal header padding */
   width: calc(100% - 50px);
-  margin: 25px 25px 0; /* верх = 25px, бока = 25px */
+  margin: 25px 25px 0; /* top = 25px, sides = 25px */
 
-  /* без внутренних отступов у самого элемента */
+  /* no padding on the element itself */
   padding: 0;
 
   display: grid;
-  grid-template-columns: 1fr auto 1fr; /* слева лого, по центру печать, справа шаринг */
+  grid-template-columns: 1fr auto 1fr; /* logo on the left, print in the center, share on the right */
   align-items: center;
   gap: 12px;
 
-  /* Без контейнерных запросов в статичном макете */
+  /* No container queries in the static layout */
 }
 
 
@@ -70,7 +70,7 @@ html, body { margin: 0; padding: 0; }
   padding-left: 32px;
 }
 .mp-root .mp-header__print {
-  justify-self: center; /* центрируем в средней колонке */
+  justify-self: center; /* center in the middle column */
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -95,7 +95,7 @@ html, body { margin: 0; padding: 0; }
   border-color: #21779E;
 }
 .mp-root .mp-header__print:hover .mp-print__text { color: #F9F9F9; }
-/* Так как иконка — внешнее SVG через <img>, перекрашиваем её приближённо фильтром */
+/* Since the icon is an external SVG via <img>, recolor it approximately with a filter */
 .mp-root .mp-header__print:hover .mp-print__icon { filter: brightness(0) invert(1); }
 .mp-root .mp-header__print:focus-visible { outline: 2px solid #21779E; outline-offset: 2px; }
 
@@ -106,7 +106,7 @@ html, body { margin: 0; padding: 0; }
 }
 
 .mp-root .mp-brand__title {
-  /* Open Sans Condensed Light 36px; градиентный текст */
+  /* Open Sans Condensed Light 36px; gradient text */
   font-family: "Open Sans Condensed", "Open Sans", Arial, sans-serif;
   font-weight: 300;
   font-size: var(--mp-brand-title);
@@ -134,16 +134,16 @@ html, body { margin: 0; padding: 0; }
   gap: 10px;
   padding: var(--mp-btn-pad-y) var(--mp-btn-pad-x);
   border-radius: 10px;
-  border: 0; /* без границы */
-  background: transparent; /* прозрачный фон */
+  border: 0; /* no border */
+  background: transparent; /* transparent background */
   cursor: pointer;
   margin-right: 32px;
-  /* Не растягиваем на всю третью колонку грида, прижимаем к правому краю */
+  /* Do not stretch to the full third grid column; pin to the right edge */
   justify-self: end;
   width: max-content;
 }
 
-/* Иконка в кнопке шапки */
+/* Icon in the header button */
 .mp-root .mp-header__right .mp-share__icon {
   width: 24px;
   height: 24px;
@@ -153,7 +153,7 @@ html, body { margin: 0; padding: 0; }
   font-family: "Open Sans", Arial, sans-serif;
   font-weight: 400;
   font-style: normal;
-  font-size: 18px; /* фиксировано по макету */
+  font-size: 18px; /* fixed per the design */
   line-height: 140%;
   letter-spacing: 0;
   text-align: center;
@@ -162,19 +162,19 @@ html, body { margin: 0; padding: 0; }
   color: #21779E;
 }
 
-/* Поддержка фокуса/hover для доступности */
+/* Focus/hover support for accessibility */
 .mp-root .mp-header__right:hover { background: transparent; }
 .mp-root .mp-header__right:focus-visible {
   outline: 2px solid #21779E;
   outline-offset: 2px;
 }
 
-/* Шрифты подключаются отдельным файлом: assets/fonts/fonts.css */
+/* Fonts are loaded from a separate file: assets/fonts/fonts.css */
 
-/* Тело страницы */
+/* Page body */
 .mp-root .mp-main {
   padding: 45px 60px 60px 60px;
-  flex: 1 0 auto; /* занимать доступное пространство для эффекта "подвал внизу" */
+  flex: 1 0 auto; /* take available space for the "footer at bottom" effect */
 }
 
 .mp-root .mp-todo__text {
@@ -182,7 +182,7 @@ html, body { margin: 0; padding: 0; }
   font-size: 16px;
 }
 
-/* Секции: базовая сетка и типографика */
+/* Sections: base grid and typography */
 .mp-root .mp-section {
   padding: 24px 0;
 }
@@ -215,14 +215,14 @@ html, body { margin: 0; padding: 0; }
   color: #21779E;
 }
 .mp-root .mp-map {
-  height: 420px; /* фиксированная высота по требованию */
-  width: 100%;   /* избегаем переполнения из-за паддингов родителя */
-  max-width: none; /* без зависимости от ширины окна */
-  margin: 0 auto; /* центр по горизонтали */
+  height: 420px; /* fixed height as required */
+  width: 100%;   /* avoid overflow caused by parent padding */
+  max-width: none; /* independent of window width */
+  margin: 0 auto; /* centered horizontally */
   border-radius: 25px;
   overflow: hidden;
 }
-/* Статическая картинка карты (используется для печати) по умолчанию скрыта */
+/* Static map image (used for printing) hidden by default */
 .mp-root .mp-map .mp-map__print {
   display: none;
   width: 100%;
@@ -230,22 +230,22 @@ html, body { margin: 0; padding: 0; }
   object-fit: cover;
 }
 
-/* -------------------- Секция «Условия» -------------------- */
+/* -------------------- "Terms" section -------------------- */
 .mp-root .mp-terms__grid {
   list-style: none;
   display: grid;
-  grid-template-columns: 1fr 1fr; /* 2 колонки */
-  column-gap: 40px;              /* горизонтальный промежуток */
-  row-gap: 3px;                  /* вертикальный промежуток */
+  grid-template-columns: 1fr 1fr; /* 2 columns */
+  column-gap: 40px;              /* horizontal gap */
+  row-gap: 3px;                  /* vertical gap */
 }
 .mp-root .mp-terms__item {
   display: grid;
-  grid-template-columns: 1fr auto; /* подпись слева, значение справа */
+  grid-template-columns: 1fr auto; /* label on the left, value on the right */
   align-items: center;
-  gap: 40px; /* чтобы подпись и значение не прилипали в узких местах */
-  padding: 20px 0; /* вертикальный внутренний отступ для кликабельности */
+  gap: 40px; /* so the label and value do not stick together in narrow spots */
+  padding: 20px 0; /* vertical inner padding for clickability */
 
-  border-bottom: 1px solid #E6EAEE; /* нижняя граница каждого элемента */
+  border-bottom: 1px solid #E6EAEE; /* bottom border of each item */
 }
 .mp-root .mp-terms__label {
   font-family: "Open Sans", Arial, sans-serif;
@@ -254,36 +254,36 @@ html, body { margin: 0; padding: 0; }
   font-size: 20px;
   line-height: 100%;
   letter-spacing: 0;
-  color: #989898; /* серый для подписей */
-  padding-left: 20px; /* визуальный отступ от левого края контейнера */
+  color: #989898; /* gray for labels */
+  padding-left: 20px; /* visual offset from the container's left edge */
 }
 .mp-root .mp-terms__value {
-  justify-self: end; /* значение выравниваем вправо внутри ячейки */
+  justify-self: end; /* align the value to the right inside the cell */
   font-family: "Open Sans", Arial, sans-serif;
   font-weight: 400;
   font-style: normal;
   font-size: 20px;
   line-height: 100%;
   letter-spacing: 0;
-  color: #130F26; /* тёмный для значений */
-  padding-right: 20px; /* визуальный отступ от правого края контейнера */
+  color: #130F26; /* dark for values */
+  padding-right: 20px; /* visual offset from the container's right edge */
 }
 
-/* Адаптив отключён: сетка условий фиксирована в 2 колонки */
-/* -------------------- Секция «Об объекте» -------------------- */
+/* Adaptivity disabled: terms grid is fixed at 2 columns */
+/* -------------------- "About the property" section -------------------- */
 .mp-root .mp-about__grid {
   list-style: none;
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* 3 колонки */
-  column-gap: 40px;  /* горизонтальный промежуток, как в «Условия» */
-  row-gap: 5px;      /* по требованию: внутренние отступы между строками */
+  grid-template-columns: repeat(3, 1fr); /* 3 columns */
+  column-gap: 40px;  /* horizontal gap, same as in "Terms" */
+  row-gap: 5px;      /* as required: inner spacing between rows */
 }
 .mp-root .mp-about__item {
   display: grid;
   grid-template-columns: 1fr auto;
   align-items: center;
   gap: 40px;
-  padding: 20px 0; /* как в «Условия» */
+  padding: 20px 0; /* same as in "Terms" */
   border-bottom: 1px solid #E6EAEE;
 }
 .mp-root .mp-about__label {
@@ -294,7 +294,7 @@ html, body { margin: 0; padding: 0; }
   line-height: 100%;
   letter-spacing: 0;
   color: #989898;
-  padding-left: 20px; /* визуальный отступ текстов как в «Условия» */
+  padding-left: 20px; /* visual text offset as in "Terms" */
 }
 .mp-root .mp-about__value {
   justify-self: end;
@@ -308,14 +308,14 @@ html, body { margin: 0; padding: 0; }
   padding-right: 20px;
 }
 
-/* Адаптив отключён: 3 колонки всегда */
-/* -------------------- Секция «О здании» -------------------- */
+/* Adaptivity disabled: always 3 columns */
+/* -------------------- "About the building" section -------------------- */
 .mp-root .mp-building__grid {
   list-style: none;
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* 3 столбца → 2 строки при 6 элементах */
-  column-gap: 40px;  /* как в других блоках */
-  row-gap: 5px;      /* по требованию: 5px */
+  grid-template-columns: repeat(3, 1fr); /* 3 columns → 2 rows with 6 items */
+  column-gap: 40px;  /* same as in other blocks */
+  row-gap: 5px;      /* as required: 5px */
 }
 .mp-root .mp-building__item {
   display: grid;
@@ -347,8 +347,8 @@ html, body { margin: 0; padding: 0; }
   padding-right: 20px;
 }
 
-/* Адаптив отключён: 3 колонки всегда */
-/* Обзор: grid с областями (gallery | info) */
+/* Adaptivity disabled: always 3 columns */
+/* Overview: grid with areas (gallery | info) */
 .mp-root .mp-overview__content {
   display: grid;
   grid-template-columns: 1.4fr 1fr;
@@ -361,28 +361,28 @@ html, body { margin: 0; padding: 0; }
 .mp-root .mp-gallery {
   grid-area: gallery;
   min-width: 0;
-  padding: 0; /* контент галереи на одном уровне с родителем */
+  padding: 0; /* gallery content at the same level as the parent */
   display: grid;
   grid-template-rows: auto auto 1fr auto auto;
 }
 .mp-root .mp-gallery .mp-title {
   font-family: "Open Sans", Arial, sans-serif;
   font-weight: 700;
-  /* Статичный кегль */
+  /* Static font size */
   font-size: 48px;
   line-height: 100%;
   background: #130F26;
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  /* Автофит одной строки: JS уменьшит font-size при необходимости */
+  /* Single-line autofit: JS reduces font-size when needed */
   white-space: nowrap;
   overflow: hidden;
   margin-bottom: 5px;
-  /* Не используем text-overflow: ellipsis, т.к. бизнес-требование — именно уменьшить текст, а не обрезать */
+  /* No text-overflow: ellipsis — the business requirement is to shrink the text, not truncate it */
 }
 .mp-root .mp-gallery .mp-address {
-  /* Статичный кегль */
+  /* Static font size */
   font-size: 20px;
   color: #130F26;
   display: inline-flex;
@@ -401,17 +401,17 @@ html, body { margin: 0; padding: 0; }
   background: #f2f6f8;
   margin-bottom: 8px;
 }
-/* Кнопка запуска видео поверх фото */
+/* Video play button over the photo */
 .mp-root .mp-gallery__play {
   position: absolute;
   left: 50%; top: 50%; transform: translate(-50%, -50%);
-  width: 80px; height: 80px; /* десктоп */
+  width: 80px; height: 80px; /* desktop */
   border: 0; padding: 0; background: transparent; cursor: pointer;
   display: inline-flex; align-items: center; justify-content: center;
-  z-index: 4; /* поверх изображения, бейджей и стрелок */
+  z-index: 4; /* above the image, badges, and arrows */
 }
 .mp-root .mp-gallery__play img { width: 100%; height: 100%; display: block; }
-/* Скрытие кнопки play когда не нужна */
+/* Hide the play button when not needed */
 .mp-root .mp-gallery__play[hidden] { 
   display: none !important; 
   visibility: hidden !important; 
@@ -497,8 +497,8 @@ html, body { margin: 0; padding: 0; }
   justify-content: center;
   cursor: pointer;
   box-sizing: border-box;
-  padding: 0 8px;           /* внутренний отступ, чтобы контент не прилипал к краям */
-  overflow: hidden;         /* страховка от выхода контента за границы */
+  padding: 0 8px;           /* inner padding so content does not stick to the edges */
+  overflow: hidden;         /* safeguard against content overflowing the bounds */
 }
 .mp-root .mp-badge__icon { width: 18.5px; height: 18.5px; display: block; flex: 0 0 18.5px; }
 .mp-root .mp-gallery__prev { left: 12px; }
@@ -509,17 +509,17 @@ html, body { margin: 0; padding: 0; }
 .mp-root .mp-gallery__image {
   width: 100%;
   height: 100%;
-  white-space: nowrap;      /* одна строка */
-  overflow: hidden;         /* обрезаем лишнее */
-  text-overflow: ellipsis;  /* многоточие при нехватке места */
-  min-width: 0;             /* разрешаем сжиматься внутри flex-контейнера */
-  object-fit: cover;        /* на десктопе — кропим, чтобы заполнить контейнер */
-  object-position: center;  /* кадрируем из центра */
+  white-space: nowrap;      /* single line */
+  overflow: hidden;         /* clip the overflow */
+  text-overflow: ellipsis;  /* ellipsis when out of space */
+  min-width: 0;             /* allow shrinking inside a flex container */
+  object-fit: cover;        /* on desktop — crop to fill the container */
+  object-position: center;  /* crop from the center */
   display: block;
 }
-/* Клик по текущей фотографии открывает лайтбокс */
+/* Clicking the current photo opens the lightbox */
 .mp-root .mp-gallery__main { cursor: zoom-in; }
-/* На десктопе фоновый img для блюра не используем */
+/* On desktop the background img for blur is not used */
 .mp-root .mp-gallery__main .mp-gallery__bg { display: none; }
 .mp-root .mp-gallery__thumbs {
   display: grid;
@@ -530,7 +530,7 @@ html, body { margin: 0; padding: 0; }
   padding-bottom: 4px;
   scrollbar-width: thin;
 }
-/* Индикаторы-«полоски» под фото (по умолчанию скрыты) */
+/* "Bar" indicators under the photo (hidden by default) */
 .mp-root .mp-gallery__indicators { display: none; }
 .mp-root .mp-gallery__indicator { display: inline-block; }
 .mp-root .mp-gallery__thumbs::-webkit-scrollbar { height: 8px; }
@@ -558,13 +558,13 @@ html, body { margin: 0; padding: 0; }
 .mp-root .mp-gallery__thumb:is(:hover, :focus-visible) { outline: 2px solid #49D7E2; outline-offset: 0; }
 .mp-root .mp-gallery__thumb.is-active { outline: 2px solid #21779E; outline-offset: 0; }
 
-/* Адаптивная сетка фактов: «динамическая», сама переливается в ряды */
+/* Adaptive facts grid: "dynamic", flows into rows on its own */
 .mp-root .mp-facts {
   list-style: none;
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
-  /* Растягиваем список на всю ширину грида overview */
+  /* Stretch the list to the full width of the overview grid */
   grid-column: 1 / -1;
   grid-area: facts;
 }
@@ -574,7 +574,7 @@ html, body { margin: 0; padding: 0; }
   gap: 12px;
   align-items: center;
   padding: 12px 14px;
-  /* Тянемся по ширине строки, но сохраняем минимальный размер для читабельности */
+  /* Grow with the row width but keep a minimum size for readability */
   flex: 1 1 220px;
 }
 .mp-root .mp-fact__icon {
@@ -602,18 +602,18 @@ html, body { margin: 0; padding: 0; }
 }
 .mp-root .mp-overview__info { grid-area: info; min-width: 0; }
 
-/* ---------- Инфоблок справа: цена, агент, контакты, CTA ---------- */
+/* ---------- Right info block: price, agent, contacts, CTA ---------- */
 .mp-root .mp-overview__info {
   display: grid;
   grid-auto-rows: max-content;
-  /* Базовый внутренний интервал между элементами инфоблока */
+  /* Base inner spacing between info block elements */
   --mp-overview-info-gap: 8px;
-  gap: var(--mp-overview-info-gap); /* компактнее, без лишних внешних отступов между блоками */
-  /* Выравнивание верхней границы с .mp-gallery__main (устанавливается JS) */
+  gap: var(--mp-overview-info-gap); /* more compact, no extra outer margins between blocks */
+  /* Align the top edge with .mp-gallery__main (set by JS) */
   margin-top: calc(-1 * var(--mp-main-offset, 0px));
   
 }
-/* Увеличиваем расстояние между карточкой агента и блоком действий в 2 раза от базового gap */
+/* Double the distance between the agent card and the actions block relative to the base gap */
 .mp-root .mp-overview__info .mp-agent + .mp-contact-actions {
   margin-top: var(--mp-overview-info-gap);
 }
@@ -626,7 +626,7 @@ html, body { margin: 0; padding: 0; }
   padding: 16px;
 }
 
-/* Для текущего макета — превращаем блоки в простые контейнеры без «карточного» хрома */
+/* For the current layout, turn the blocks into plain containers without "card" chrome */
 .mp-root .mp-price-card,
 .mp-root .mp-agent,
 .mp-root .mp-contact-actions {
@@ -637,17 +637,17 @@ html, body { margin: 0; padding: 0; }
   padding: 0;
 }
 
-/* Каркасные рамки для цены и блока специалиста */
+/* Outline frames for the price and specialist blocks */
 .mp-root .mp-price-card,
 .mp-root .mp-agent {
   border: 3px solid #EDEDED;
   border-radius: 13px;
 }
 
-/* Цена */
+/* Price */
 .mp-root .mp-price-card { display: grid; gap: 8px; padding: 23px; }
 .mp-root .mp-price {
-  white-space: nowrap; /* подпись всегда в одну строку */
+  white-space: nowrap; /* label always on one line */
   font-family: "Open Sans", Arial, sans-serif;
   font-weight: 700; /* Bold */
   font-size: 48px;
@@ -656,10 +656,10 @@ html, body { margin: 0; padding: 0; }
   color: #21779E;
 }
 .mp-root .mp-price-row {
-  display: inline-flex;           /* ставим цену и иконку в одну линию */
+  display: inline-flex;           /* put the price and icon on one line */
   align-items: center;
-  gap: 8px;                       /* расстояние между ценой и иконкой */
-  width: max-content;             /* ширина по содержимому, не тянем на всю карточку */
+  gap: 8px;                       /* distance between the price and the icon */
+  width: max-content;             /* width by content, do not stretch to the full card */
 }
 .mp-root .mp-price-info {
   position: relative;
@@ -674,7 +674,7 @@ html, body { margin: 0; padding: 0; }
   justify-content: center;
 }
 .mp-root .mp-price-info img { width: 24px; height: 24px; display: block; }
-/* Минималистичный tooltip */
+/* Minimalist tooltip */
 .mp-root .mp-price-info::after {
   content: attr(data-tooltip);
   position: absolute;
@@ -706,7 +706,7 @@ html, body { margin: 0; padding: 0; }
   color: #989898;
 }
 
-/* Раскрывающаяся таблица цены */
+/* Expandable price breakdown */
 .mp-root .mp-price-card {
   --mp-breakdown-height: 0px;
 }
@@ -727,7 +727,7 @@ html, body { margin: 0; padding: 0; }
     transform .25s ease,
     margin-top .25s ease;
   will-change: max-height, transform, opacity;
-  /* Цвет фона шапки сетки (первая строка) можно переопределить извне */
+  /* Grid header background color (first row) can be overridden from outside */
   --mp-pb-head-bg: #E6EAEE;
 }
 .mp-root .mp-price-card[data-breakdown="expanded"] .mp-price-breakdown {
@@ -743,9 +743,9 @@ html, body { margin: 0; padding: 0; }
 }
 .mp-root .mp-price-breakdown__grid { display: flex; flex-direction: column; gap: 0; }
 .mp-root .mp-pb-row { display: grid; grid-template-columns: 1fr repeat(3, 1fr); column-gap: 24px; align-items: center; min-height: 45px; height: 45px; position: relative; padding: 0 12px; }
-/* Шапка */
+/* Header */
 .mp-root .mp-pb-row--head { background: var(--mp-pb-head-bg); padding: 0 8px; }
-/* Разделители под второй и третьей строкой */
+/* Dividers under the second and third rows */
 .mp-root .mp-pb-row--price::after,
 .mp-root .mp-pb-row--sqm::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: #E6EAEE; }
 .mp-root .mp-pb-head, .mp-root .mp-pb-label, .mp-root .mp-pb-val, .mp-root .mp-price-breakdown__footnote { font-family: "Open Sans", Arial, sans-serif; font-size: 18px; line-height: 1.2; }
@@ -761,13 +761,13 @@ html, body { margin: 0; padding: 0; }
   .mp-root .mp-pb-head, .mp-root .mp-pb-label, .mp-root .mp-pb-val, .mp-root .mp-price-breakdown__footnote { font-size: 14px; }
 }
 /* (title removed in new layout) */
-/* Старые стили таблицы цены удалены */
+/* Old price table styles removed */
 
-/* Агент */
+/* Agent */
 .mp-root .mp-agent { padding: 0; }
 .mp-root .mp-agent {
   display: grid;
-  gap: 40px; /* расстояние между объектами первого уровня */
+  gap: 40px; /* spacing between first-level children */
   padding-top: 40px;
   padding-right: 30px;
   padding-bottom: 50px;
@@ -775,9 +775,9 @@ html, body { margin: 0; padding: 0; }
 }
 .mp-root .mp-agent__header {
   display: grid;
-  grid-template-columns: 140px 1fr; /* под размер фото */
+  grid-template-columns: 140px 1fr; /* fit the photo size */
   gap: 12px;
-  align-items: center; /* вертикально центрируем контент относительно фото */
+  align-items: center; /* vertically center the content relative to the photo */
 }
 .mp-root .mp-agent__photo {
   width: 140px;
@@ -808,10 +808,10 @@ html, body { margin: 0; padding: 0; }
 }
 .mp-root .mp-agent__contacts {
   display: grid;
-  grid-template-columns: max-content 1fr; /* слева заголовок, справа телефон */
+  grid-template-columns: max-content 1fr; /* title on the left, phone on the right */
   align-items: center;
-  column-gap: 16px; /* чуть больше расстояние между заголовком и телефоном */
-  row-gap: 20px; /* расстояние между телефоном и соц.иконками */
+  column-gap: 16px; /* slightly larger distance between the title and the phone */
+  row-gap: 20px; /* distance between the phone and the social icons */
 }
 .mp-root .mp-agent__contacts-title {
   font-family: "Open Sans", Arial, sans-serif;
@@ -820,17 +820,17 @@ html, body { margin: 0; padding: 0; }
   line-height: 100%;
   letter-spacing: 0;
   color: #000000;
-  grid-column: 1; /* левая колонка */
+  grid-column: 1; /* left column */
 }
 .mp-root .mp-agent__phone-row {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  grid-column: 2; /* правая колонка */
-  justify-self: start; /* держим телефон рядом с надписью */
+  grid-column: 2; /* right column */
+  justify-self: start; /* keep the phone next to the label */
   white-space: nowrap;
 }
-/* Базовый контейнер для маленьких встроенных иконок */
+/* Base container for small inline icons */
 .mp-root .mp-icon { display: inline-flex; align-items: center; justify-content: center; }
 .mp-root .mp-icon--phone {
   width: 20px;
@@ -857,7 +857,7 @@ html, body { margin: 0; padding: 0; }
   list-style: none;
   display: inline-flex;
   gap: 10px;
-  grid-column: 2; /* сразу под телефоном, выровнено по левому краю второй колонки */
+  grid-column: 2; /* right below the phone, aligned to the left edge of the second column */
   justify-self: start;
 }
 .mp-root .mp-social { display: inline-flex; }
@@ -874,15 +874,15 @@ html, body { margin: 0; padding: 0; }
 .mp-root .mp-social a:is(:hover,:focus-visible) { opacity: 0.85; outline: none; }
 .mp-root .mp-social img { width: 100%; height: 100%; object-fit: contain; display: block; }
 
-/* Кнопки действий */
+/* Action buttons */
 .mp-root .mp-contact-actions {
   display: grid;
   grid-template-columns: 1fr;
   gap: 12px;
-  justify-items: center; /* центрируем кнопки внутри контейнера */
+  justify-items: center; /* center the buttons inside the container */
 }
 .mp-root .mp-cta {
-  /* Единая база для обеих кнопок */
+  /* Common base for both buttons */
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -893,7 +893,7 @@ html, body { margin: 0; padding: 0; }
   border-radius: 65px;
   border: 1px solid #21779E;
   cursor: pointer;
-  /* Типографика */
+  /* Typography */
   font-family: "Open Sans", Arial, sans-serif;
   font-weight: 400;
   font-style: normal;
@@ -902,35 +902,35 @@ html, body { margin: 0; padding: 0; }
   letter-spacing: 0;
 }
 .mp-root .mp-cta--primary {
-  background: #21779ECF; /* однотонный фон из макета */
-  border: 0; /* без границы */
+  background: #21779ECF; /* solid background from the design */
+  border: 0; /* no border */
   color: #ffffff;
 }
 .mp-root .mp-cta--primary:hover { filter: brightness(0.98); }
 .mp-root .mp-cta--secondary {
   background: #fff;
   color: #21779E;
-  /* Чтобы длинная подпись помещалась в одну строку при фиксированной ширине */
+  /* So a long label fits on one line at a fixed width */
   padding-left: 32px;
   padding-right: 32px;
 }
 .mp-root .mp-cta:focus-visible { outline: 2px solid #49D7E2; outline-offset: 2px; }
 
-/* Адаптив для инфоблока */
-/* Адаптив отключён для инфоблока и карточки агента */
+/* Adaptivity for the info block */
+/* Adaptivity disabled for the info block and the agent card */
 
-/* Подвал: градиент + скруглённые края */
+/* Footer: gradient + rounded corners */
 .mp-root .mp-footer {
   background: linear-gradient(90deg, #21779E 0%, #49D7E2 100%);
   border-top-left-radius: 32px;
   border-top-right-radius: 32px;
-  /* full-bleed по ширине контейнера — без 100vw, чтобы не учитывать полосу прокрутки */
+  /* full-bleed to the container width — without 100vw, so the scrollbar is not counted */
   width: 100%;
   margin-left: 0;
   margin-right: 0;
-  /* отступ сверху от контента, без отступа снизу (подвал у низа экрана) */
+  /* top offset from the content, no bottom offset (footer at the bottom of the screen) */
   margin-top: 40px;
-  /* размеры по макету */
+  /* sizes per the design */
   height: 290px;
   padding: 79px 495px;
 }
@@ -938,7 +938,7 @@ html, body { margin: 0; padding: 0; }
 .mp-root .mp-footer__inner {
   display: flex;
   align-items: center;
-  justify-content: center; /* центрируем оба блока */
+  justify-content: center; /* center both blocks */
   gap: 10px;
   width: 100%;
   height: 100%;
@@ -947,14 +947,14 @@ html, body { margin: 0; padding: 0; }
 .mp-root .mp-footer__qr {
   width: 132px;  /* Figma size */
   height: 132px; /* Figma size */
-  background: transparent; /* фон прозрачный — виден градиент подвала */
-  border-radius: 0; /* убираем скругление, чтобы не резать QR */
-  box-shadow: none; /* без тени */
+  background: transparent; /* transparent background — the footer gradient shows through */
+  border-radius: 0; /* remove rounding so it does not clip the QR */
+  box-shadow: none; /* no shadow */
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: visible; /* не обрезаем QR */
-  /* Не даём блоку сжиматься в flex-контейнере при узком месте */
+  overflow: visible; /* do not clip the QR */
+  /* Do not let the block shrink in a flex container when space is tight */
   flex: 0 0 132px;
   min-width: 132px;
 }
@@ -962,7 +962,7 @@ html, body { margin: 0; padding: 0; }
 .mp-root .mp-footer__qr-img {
   width: 100%;
   height: 100%;
-  object-fit: contain; /* не обрезать QR, вписывать целиком */
+  object-fit: contain; /* do not clip the QR; fit it entirely */
   background: transparent;
   display: block;
   filter: invert(1);
@@ -976,10 +976,10 @@ html, body { margin: 0; padding: 0; }
   font-size: 24px;  /* Figma size */
   line-height: 100%;
   letter-spacing: 0;
-  margin: 0; /* управляем интервалами через gap у контейнера */
+  margin: 0; /* control spacing via the container's gap */
 }
 
-/* Параграфы внутри контента подвала (на случай, если это не .mp-footer__title) */
+/* Paragraphs inside the footer content (in case it is not .mp-footer__title) */
 .mp-root .mp-footer__content > p {
   font-family: "Hagrid", "Open Sans", Arial, sans-serif;
   font-weight: 500; /* Medium */
@@ -994,7 +994,7 @@ html, body { margin: 0; padding: 0; }
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 15px; /* Figma: расстояние между элементами внутри подвала */
+  gap: 15px; /* Figma: spacing between elements inside the footer */
 }
 
 .mp-root .mp-btn {
@@ -1013,7 +1013,7 @@ html, body { margin: 0; padding: 0; }
   border: 1px solid rgba(255, 255, 255, 0.7);
 }
 
-/* Кнопка в подвале по макету Figma */
+/* Footer button per the Figma design */
 .mp-root .mp-footer__content > button {
   width: 256px;
   height: 57px;
@@ -1024,7 +1024,7 @@ html, body { margin: 0; padding: 0; }
   background: transparent;
   color: #ffffff;
   opacity: 1;
-  /* Типографика из макета для текста внутри кнопки */
+  /* Typography from the design for the text inside the button */
   font-family: "Open Sans", Arial, sans-serif;
   font-weight: 400;
   font-style: normal;
@@ -1036,13 +1036,13 @@ html, body { margin: 0; padding: 0; }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  white-space: nowrap; /* надпись в одну строку */
+  white-space: nowrap; /* label on one line */
 }
 
-/* Запрет переноса конкретно для текста, если кнопка переопределена где-то ещё */
+/* No-wrap specifically for the text, if the button is overridden elsewhere */
 .mp-root .mp-footer__content > button .mp-btn__text { white-space: nowrap; }
 
-/* Иконка в кнопке подвала — 24x24 по макету */
+/* Icon in the footer button — 24x24 per the design */
 .mp-root .mp-footer__content > button .mp-btn__icon {
   width: 24px;
   height: 24px;
@@ -1058,12 +1058,12 @@ html, body { margin: 0; padding: 0; }
   width: 16px;
   height: 16px;
   flex: 0 0 16px;
-  color: #ffffff; /* currentColor для inline-SVG делает линии белыми */
+  color: #ffffff; /* currentColor for inline SVG makes the lines white */
 }
 
-/* Адаптивные блоки удалены */
+/* Adaptive blocks removed */
 
-/* -------------------- Секция «Описание» -------------------- */
+/* -------------------- "Description" section -------------------- */
 .mp-root .mp-description__text {
   font-family: "Open Sans", Arial, sans-serif;
   font-weight: 400;
@@ -1074,7 +1074,7 @@ html, body { margin: 0; padding: 0; }
   color: #130F26;
 }
 
-/* ==================== Модальное окно «Поделиться объектом» ==================== */
+/* ==================== "Share property" modal window ==================== */
 .mp-root .mp-modal[hidden] { display: none !important; }
 .mp-root .mp-modal {
   position: fixed;
@@ -1092,7 +1092,7 @@ html, body { margin: 0; padding: 0; }
   top: 50%;
   transform: translate(-50%, -50%);
   width: 902px;
-  /* Статичная максимальная высота без зависимости от окна */
+  /* Static max height, independent of the window */
   max-height: 538px;
   background: #ffffff;
   border-radius: 20px;
@@ -1100,13 +1100,13 @@ html, body { margin: 0; padding: 0; }
   padding: 32px 32px 28px 32px;
   box-sizing: border-box;
   display: grid;
-  /* Авто-высота строк по контенту, чтобы нижний блок не растягивался */
+  /* Auto row heights by content, so the bottom block does not stretch */
   grid-template-rows: max-content max-content max-content max-content;
-  /* При свободном месте содержимое остаётся прижато к верхней части */
+  /* With extra space, content stays pinned to the top */
   align-content: start;
-  /* Чуть компактнее вертикальные промежутки между рядами */
+  /* Slightly tighter vertical gaps between rows */
   row-gap: 12px;
-  /* Если контента больше, чем max-height — показываем скролл внутри модалки */
+  /* If content exceeds max-height, show a scrollbar inside the modal */
   overflow: auto;
 }
 .mp-root .mp-modal__close {
@@ -1127,11 +1127,11 @@ html, body { margin: 0; padding: 0; }
   font-size: 36px;
   line-height: 100%;
 }
-/* Увеличенный вертикальный интервал и левый отступ только для модалки "Поделиться" */
+/* Increased vertical spacing and left padding only for the "Share" modal */
 .mp-root .mp-share-modal .mp-modal__dialog {
-  /* базовый интервал строк в 2.5 раза больше исходного 12px */
+  /* base row spacing 2.5x the original 12px */
   row-gap: 30px;
-  /* дополнительный левый отступ для внутренних ключевых блоков */
+  /* additional left padding for inner key blocks */
   --mp-share-indent-x: 20px;
 }
 .mp-root .mp-share-modal .mp-share__title,
@@ -1164,7 +1164,7 @@ html, body { margin: 0; padding: 0; }
   align-items: center;
   justify-content: center;
   gap: 21px;
-  /* Градиентная рамка со скруглением: двойной фон + прозрачная граница */
+  /* Gradient border with rounding: double background + transparent border */
   border: 4px solid transparent;
   background:
     linear-gradient(#fff, #fff) padding-box,
@@ -1182,7 +1182,7 @@ html, body { margin: 0; padding: 0; }
 }
 .mp-root .mp-share__icon img { width: 100%; height: 100%; display: block; }
 .mp-root .mp-share__link-title {
-  /* Убираем лишний внешний отступ сверху — расстояние даёт row-gap */
+  /* Remove the extra outer top margin — row-gap provides the spacing */
   margin: 0;
   color: #000000;
   font-family: "Open Sans", Arial, sans-serif;
@@ -1192,31 +1192,31 @@ html, body { margin: 0; padding: 0; }
 }
 .mp-root .mp-share__copy {
   display: flex;
-  flex-wrap: wrap;                 /* перенос при нехватке места */
+  flex-wrap: wrap;                 /* wrap when out of space */
   align-items: center;
-  gap: 12px;                       /* интервал между полем и кнопкой */
+  gap: 12px;                       /* gap between the field and the button */
   align-self: start;
 }
 .mp-root .mp-share__input {
-  width: 340px;                    /* базовая ширина */
-  max-width: 100%;                 /* не вылезать за контейнер */
-  flex: 1 1 340px;                 /* сжиматься/расти и давать место кнопке */
-  min-width: 220px;                /* нижняя граница до переноса */
+  width: 340px;                    /* base width */
+  max-width: 100%;                 /* do not overflow the container */
+  flex: 1 1 340px;                 /* shrink/grow and make room for the button */
+  min-width: 220px;                /* bottom border until wrap */
   min-height: 56px;
   border-radius: 4px;
   padding: 16px 20px;
-  display: block;                 /* даём обычный блочный поток для переноса строк */
+  display: block;                 /* use normal block flow for line wrapping */
   background: #F2F4F7;
   color: #130F26;
   font-family: "Nunito Sans", "Open Sans", Arial, sans-serif;
   font-size: 16px;
   line-height: 24px;
-  /* перенос длинных ссылок и percent-encoding без выхода за рамки */
+  /* wrap long links and percent-encoding without overflowing */
   white-space: normal;
-  overflow-wrap: anywhere;        /* современный способ переносить в любом месте */
-  word-break: break-word;         /* совместимость */
-  max-height: 160px;              /* ограничение роста, если текст очень длинный */
-  overflow: auto;                 /* внутренний скролл при переполнении */
+  overflow-wrap: anywhere;        /* modern way to break anywhere */
+  word-break: break-word;         /* compatibility */
+  max-height: 160px;              /* growth limit for very long text */
+  overflow: auto;                 /* inner scroll on overflow */
 }
 .mp-root .mp-share__copy-btn {
   background: transparent;
@@ -1228,14 +1228,14 @@ html, body { margin: 0; padding: 0; }
   border: 0;
   padding: 0;
   cursor: pointer;
-  flex: 0 0 auto;                 /* не растягивать кнопку */
-  white-space: nowrap;            /* не переносить надпись */
-  margin-left: auto;              /* прижать вправо в текущей строке */
+  flex: 0 0 auto;                 /* do not stretch the button */
+  white-space: nowrap;            /* do not wrap the label */
+  margin-left: auto;              /* push to the right in the current row */
 }
 
-/* Модалки без адаптива */
+/* Modals without adaptivity */
 
-/* ==================== Модалка «Оставить заявку» ==================== */
+/* ==================== "Leave a request" modal ==================== */
 .mp-root .mp-form { display: grid; gap: 16px; }
 .mp-root .mp-field { display: grid; gap: 8px; }
 .mp-root .mp-field__label {
@@ -1258,8 +1258,8 @@ html, body { margin: 0; padding: 0; }
 .mp-root .mp-textarea {
   min-height: 96px;
   height: auto;
-  resize: vertical;           /* разрешаем только вертикальный ресайз */
-  max-height: 320px;          /* фикс. ограничение роста */
+  resize: vertical;           /* allow vertical resize only */
+  max-height: 320px;          /* fixed growth limit */
 }
 .mp-root .mp-input:focus { outline: none; border-color: #49D7E2; box-shadow: 0 0 0 3px rgba(73,215,226,0.25); }
 .mp-root .mp-field__error {
@@ -1270,7 +1270,7 @@ html, body { margin: 0; padding: 0; }
 }
 .mp-root .mp-form__actions { display: flex; justify-content: flex-end; margin-top: 8px; }
 
-/* Состояние после подтверждения интереса */
+/* State after interest confirmation */
 .mp-root .mp-interest-state {
   display: grid;
   justify-items: center;
@@ -1290,17 +1290,17 @@ html, body { margin: 0; padding: 0; }
 }
 .mp-root .mp-interest-state__icon { width: 50px; height: 50px; display: block; }
 
-/* ==================== Toast (всплывающее уведомление) ==================== */
+/* ==================== Toast (popup notification) ==================== */
 .mp-root .mp-toast {
   position: fixed;
   left: 50%;
   bottom: 24px;
   transform: translateX(-50%) translateY(12px);
-  z-index: 1500; /* поверх контента и модалок */
+  z-index: 1500; /* above content and modals */
   padding: 10px 16px;
   border-radius: 12px;
   border: 1px solid rgba(33, 119, 158, 0.4);
-  background: #130F26; /* фирменный тёмный */
+  background: #130F26; /* brand dark color */
   color: #ffffff;
   font-family: "Open Sans", Arial, sans-serif;
   font-style: normal;
@@ -1319,30 +1319,30 @@ html, body { margin: 0; padding: 0; }
   transform: translateX(-50%) translateY(0);
 }
 
-/* ==================== Печать (A4, «как на десктопе») ==================== */
+/* ==================== Print (A4, "as on desktop") ==================== */
 @media print {
-  /* Формат страницы и поля печати */
+  /* Page format and print margins */
   @page { size: A4 portrait; margin: 10mm; }
 
   html, body { margin: 0 !important; padding: 0 !important; background: #fff !important; }
-  /* Точная цветопередача для градиентов/фонов в поддерживаемых браузерах */
+  /* Accurate color rendering for gradients/backgrounds in supported browsers */
   .mp-root, .mp-root * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 
-  /* Глобальный масштаб печати (по умолчанию 60%) */
+  /* Global print scale (60% by default) */
   :root { --mp-print-scale: 0.6; }
-  /* Основной способ для Chromium/Edge */
+  /* Primary method for Chromium/Edge */
   .my-page, .mp-root { zoom: var(--mp-print-scale); }
-  /* Фолбэк для движков без zoom: масштаб через transform */
+  /* Fallback for engines without zoom: scale via transform */
   @supports not (zoom: 1) {
     .my-page, .mp-root {
       transform: scale(var(--mp-print-scale));
       transform-origin: top left;
-      /* При scale контент становится меньше — оставляем исходную ширину,
-         чтобы пагинация считалась предсказуемо, а на лист выводилось уменьшенное изображение */
+      /* With scale the content becomes smaller — keep the original width,
+         so pagination is predictable and the sheet shows the scaled-down image */
     }
   }
 
-  /* Убираем фиксированную «высоту экрана», чтобы не было лишних пустых зон */
+  /* Remove the fixed "screen height" so there are no extra empty areas */
   .mp-root { min-height: auto !important; }
 
 
@@ -1353,26 +1353,26 @@ html, body { margin: 0; padding: 0; }
     gap: 24px !important;
   }
 
-  /* Явно фиксируем сетки характеристик на печати (многоколонная раскладка) */
+  /* Explicitly fix the characteristic grids for print (multi-column layout) */
   .mp-root .mp-terms__grid {
     display: grid !important;
-    grid-template-columns: 1fr 1fr !important; /* 2 колонки */
+    grid-template-columns: 1fr 1fr !important; /* 2 columns */
     column-gap: 40px !important;
     row-gap: 3px !important;
   }
   .mp-root .mp-about__grid {
     display: grid !important;
-    grid-template-columns: repeat(3, 1fr) !important; /* 3 колонки */
+    grid-template-columns: repeat(3, 1fr) !important; /* 3 columns */
     column-gap: 40px !important;
     row-gap: 5px !important;
   }
   .mp-root .mp-building__grid {
     display: grid !important;
-    grid-template-columns: repeat(3, 1fr) !important; /* 3 колонки */
+    grid-template-columns: repeat(3, 1fr) !important; /* 3 columns */
     column-gap: 40px !important;
     row-gap: 5px !important;
   }
-  /* И сами элементы — подпись слева, значение справа */
+  /* And the items themselves — label on the left, value on the right */
   .mp-root .mp-terms__item,
   .mp-root .mp-about__item,
   .mp-root .mp-building__item {
@@ -1382,7 +1382,7 @@ html, body { margin: 0; padding: 0; }
     padding: 20px 0 !important;
   }
 
-  /* Градиентный текст бренда в печати делает текст прозрачным, даём надёжный фолбэк */
+  /* Brand gradient text becomes transparent in print; provide a reliable fallback */
   .mp-root .mp-brand__title {
     background: none !important;
     -webkit-background-clip: initial !important;
@@ -1391,7 +1391,7 @@ html, body { margin: 0; padding: 0; }
     color: #21779E !important;
   }
 
-  /* Скрываем то, что не нужно на бумаге */
+  /* Hide what is not needed on paper */
   .mp-root .mp-header__print,
   .mp-root .mp-header__right,
   .mp-root .mp-gallery__nav,
@@ -1400,11 +1400,11 @@ html, body { margin: 0; padding: 0; }
   .mp-root .mp-modal,
   .mp-root .mp-toast { display: none !important; }
 
-  /* Фиксированные кегли вместо clamp/vw для предсказуемой печати */
+  /* Fixed font sizes instead of clamp/vw for predictable printing */
   .mp-root .mp-gallery .mp-title { white-space: nowrap !important; overflow: visible !important; max-width: 100% !important; }
   .mp-root .mp-gallery .mp-address { font-size: 20px !important; }
 
-  /* Избегаем разрывов внутри важных блоков */
+  /* Avoid breaks inside important blocks */
   .mp-root .mp-section,
   .mp-root .mp-squircle,
   .mp-root .mp-card,
@@ -1418,19 +1418,19 @@ html, body { margin: 0; padding: 0; }
   .mp-root .mp-about__grid { break-inside: avoid; page-break-inside: avoid; }
   img, svg { break-inside: avoid; page-break-inside: avoid; }
 
-  /* Заголовки не должны отрываться от следующего блока */
+  /* Headings must not be separated from the following block */
   .mp-root .mp-section__title { page-break-after: avoid; break-after: avoid; }
 
-  /* Уплотняем отступы контента, чтобы влезать в A4 без «хвостов» */
+  /* Tighten content padding to fit A4 without "tails" */
   .mp-root .mp-main { padding: 24px 25px !important; }
 
-  /* Карта: делаем чуть компактнее на бумаге */
+  /* Map: slightly more compact on paper */
   .mp-root .mp-map { height: 300px !important; max-width: 100% !important; }
-  /* На печать: скрываем iframe и показываем статичную картинку ТОЛЬКО если она реально создана */
+  /* For print: hide the iframe and show the static image ONLY if it was actually created */
   .mp-root .mp-map.has-print-map iframe { display: none !important; }
   .mp-root .mp-map.has-print-map .mp-map__print { display: block !important; }
 
-  /* Подвал: разумные размеры на листе A4 */
+  /* Footer: reasonable sizes on an A4 sheet */
   .mp-root .mp-footer {
     height: auto !important;
     min-height: 100px !important;
@@ -1442,10 +1442,10 @@ html, body { margin: 0; padding: 0; }
   .mp-root .mp-footer__inner { gap: 16px !important; }
   .mp-root .mp-footer__qr { width: 80px !important; height: 80px !important; }
   .mp-root .mp-footer__title { font-size: 20px !important; }
-  /* QR без инверсии/смешивания для печати */
+  /* QR without inversion/mixing for print */
   .mp-root .mp-footer__qr-img { filter: none !important; mix-blend-mode: normal !important; }
 
-  /* Ссылки — без вывода URL рядом (поведение некоторых движков печати) */
+  /* Links — without printing the URL next to them (behavior of some print engines) */
   a[href]::after { content: '' !important; }
 }
 
@@ -1461,13 +1461,13 @@ html, body { margin: 0; padding: 0; }
     --mp-page-pad: 16px;
   }
 
-  /* Шапка компактнее, тексты в кнопках скрываем */
+  /* More compact header, hide button texts */
   .mp-root .mp-squircle {
     height: auto;
     width: calc(100% - 24px);
     margin: 12px;
     border-radius: 26px;
-    border: 0.5px solid #130F26; /* тонкая рамка по макету */
+    border: 0.5px solid #130F26; /* thin border per the design */
     grid-template-columns: 1fr auto auto;
     gap: 8px;
     padding: 8px 6px;
@@ -1478,18 +1478,18 @@ html, body { margin: 0; padding: 0; }
   .mp-root .mp-share__text { display: none; }
   .mp-root .mp-header__right { margin-right: 8px; padding: 8px; }
 
-  /* Основной отступ страницы */
+  /* Main page offset */
   .mp-root .mp-main { padding: 12px 24px; display: flex; flex-direction: column; }
 
-  /* Плоская структура в мобильной версии: позволяем переупорядочивать элементы */
+  /* Flat structure in the mobile version: allow reordering elements */
   .mp-root .mp-overview,
   .mp-root .mp-overview__content,
   .mp-root .mp-overview__info,
   .mp-root .mp-gallery { display: contents; }
 
-  /* Порядок следования (header уже выше по DOM):
-     1) альбом с фото → 2) thumbs → 3) заголовок → 4) цена → 5) факты → 6) адрес →
-     7) карта → 8) карточка специалиста → 9) описание → 10) условия → 11) об объекте → 12) о здании → 13) кнопки */
+  /* Order of blocks (header is higher in the DOM):
+     1) photo album → 2) thumbs → 3) title → 4) price → 5) facts → 6) address →
+     7) map → 8) specialist card → 9) description → 10) terms → 11) about property → 12) about building → 13) buttons */
   .mp-root .mp-gallery__main { order: 10; }
   .mp-root .mp-gallery__thumbs { order: 15; }
   .mp-root .mp-gallery .mp-title { order: 20; }
@@ -1504,39 +1504,39 @@ html, body { margin: 0; padding: 0; }
   .mp-root .mp-building { order: 110; }
   .mp-root .mp-contact-actions { order: 120; }
 
-  /* Небольшие интервалы между логическими блоками */
+  /* Small gaps between logical blocks */
   .mp-root .mp-gallery .mp-title,
   .mp-root .mp-price-card,
   .mp-root .mp-gallery .mp-address { margin-top: 16px; margin-bottom: 5px; }
 
-  /* Заголовок и адрес компактнее */
+  /* Title and address more compact */
   .mp-root .mp-gallery .mp-title {
     font-family: "Open Sans", Arial, sans-serif;
     font-weight: 600; /* SemiBold */
     font-style: normal;
-    /* На мобильных фиксированный размер 18px по требованию */
+    /* Fixed 18px size on mobile as required */
     font-size: 18px !important;
     line-height: 100%;
     letter-spacing: 0;
-    /* Запрещаем перенос: размер будет адаптивно уменьшен */
+    /* No wrapping: the size will be adaptively reduced */
     white-space: nowrap;
     overflow: hidden;
   }
   .mp-root .mp-gallery .mp-address {
-    font-size: 14px !important; /* строго 14px на мобильных */
-    line-height: 1.15; /* аккуратная плотность строк, можно скорректировать при необходимости */
+    font-size: 14px !important; /* strictly 14px on mobile */
+    line-height: 1.15; /* neat line density, adjustable if needed */
   }
 
-  /* Основное фото и навигация (квадрат с адаптивной шириной ~270px) */
+  /* Main photo and navigation (square with adaptive width ~270px) */
   .mp-root .mp-gallery__main {
     position: relative;
     border-radius: 12px;
-    aspect-ratio: 1 / 1;  /* квадрат */
-    align-self: center;   /* центрируем в колонке */
-    overflow: hidden;     /* скругление и блюр внутри */
-    background: #0b1520;  /* тёмная подложка под блюр */
+    aspect-ratio: 1 / 1;  /* square */
+    align-self: center;   /* center in the column */
+    overflow: hidden;     /* rounding and blur inside */
+    background: #0b1520;  /* dark backdrop under the blur */
   }
-  /* Фоновый img как надёжный фолбэк блюра (под основным изображением) */
+  /* Background img as a reliable blur fallback (under the main image) */
   .mp-root .mp-gallery__main .mp-gallery__bg {
     position: absolute;
     top: -36px; left: -36px; right: -36px; bottom: -36px;
@@ -1548,14 +1548,14 @@ html, body { margin: 0; padding: 0; }
     transform: translateZ(0) scale(1.08);
     z-index: 0;
     pointer-events: none;
-    display: block; /* переопределяет десктопное display:none */
+    display: block; /* overrides the desktop display:none */
   }
-  /* Блюр-подложка: берёт картинку из CSS-переменной --mp-gallery-bg */
+  /* Blur backdrop: takes the image from the CSS variable --mp-gallery-bg */
   .mp-root .mp-gallery__main::before {
     content: '';
     position: absolute;
-    inset: -36px;                /* достаточно, чтобы ядро размытия не обрезалось */
-    /* основной путь — CSS-переменная; если не задана, наследуем фон от контейнера */
+    inset: -36px;                /* enough so the blur kernel is not clipped */
+    /* primary path — CSS variable; if not set, inherit the background from the container */
     background-image: var(--mp-gallery-bg, inherit);
     background-size: cover;
     background-position: center;
@@ -1564,44 +1564,44 @@ html, body { margin: 0; padding: 0; }
   filter: blur(26px) saturate(1.12) brightness(1.02);
   will-change: filter, transform;
   transform: translateZ(0) scale(1.08);
-  opacity: 1;                   /* блюр - полностью перекрывает фон контейнера */
+  opacity: 1;                   /* blur fully covers the container background */
   contain: paint;
   z-index: 0;
   }
-  /* Само изображение — без кропа, поверх блюра */
+  /* The image itself — no crop, above the blur */
   .mp-root .mp-gallery__image {
     position: relative;
     z-index: 1;
-    object-fit: contain;  /* без обрезки */
+    object-fit: contain;  /* no clipping */
     background: transparent;
   }
   .mp-root .mp-gallery__nav { width: 36px; height: 36px; }
   .mp-root .mp-gallery__nav { z-index: 3; }
   .mp-root .mp-gallery__nav img { width: 24px; height: 12px; }
-  .mp-root .mp-gallery__play { width: 60px; height: 60px; } /* мобилы */
+  .mp-root .mp-gallery__play { width: 60px; height: 60px; } /* mobile */
   .mp-root .mp-gallery__play { z-index: 4; }
 
-  /* Превью фото компактнее */
+  /* Photo previews more compact */
   .mp-root .mp-gallery__thumb { height: 48px; }
-  /* На мобилке используем индикаторы вместо мини-превью */
+  /* On mobile, use indicators instead of mini previews */
   .mp-root .mp-gallery__thumbs { display: none; }
   .mp-root .mp-gallery__indicators {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 7px;                 /* между индикаторами 7px */
+    gap: 7px;                 /* 7px between indicators */
     width: 100%;
     margin-top: 10px;
-    order: 14; /* после основного фото, перед прочим */
+    order: 14; /* after the main photo, before the rest */
   }
   .mp-root .mp-gallery__indicator {
-    flex: 1 1 0%;            /* ширина делится поровну по доступному пространству */
-    min-width: 8px;          /* страховка, если фото очень много */
-    height: 5px;             /* высота по макету */
-    border-radius: 2px;      /* скругление по макету */
-    background: #21779E;     /* цвет заливки по макету */
-    opacity: 0.32;           /* неактивные — менее заметны, но тот же цвет */
-    border: 0;               /* без границы */
+    flex: 1 1 0%;            /* width divides evenly across the available space */
+    min-width: 8px;          /* safeguard for very many photos */
+    height: 5px;             /* height per the design */
+    border-radius: 2px;      /* radius per the design */
+    background: #21779E;     /* fill color per the design */
+    opacity: 0.32;           /* inactive ones — less prominent, same color */
+    border: 0;               /* no border */
     padding: 0;
     transition: opacity .18s ease;
   }
@@ -1610,7 +1610,7 @@ html, body { margin: 0; padding: 0; }
   }
   .mp-root .mp-gallery__indicator:focus-visible { outline: 2px solid #49D7E2; outline-offset: 2px; }
 
-  /* Бейджи: скрыть левый верхний, ID — вправо вверх, Планировка — вниз по центру */
+  /* Badges: hide the top-left one, ID — top right, Layout — bottom center */
   .mp-root .mp-gallery__badge { z-index: 2; }
   .mp-root .mp-gallery__badge--tl { display: none; }
   .mp-root .mp-gallery__badge--bl {
@@ -1628,11 +1628,11 @@ html, body { margin: 0; padding: 0; }
     padding: 4px 8px; gap: 6px;
     justify-content: center;
   }
-  /* Размеры иконок в бейджах */
+  /* Icon sizes in badges */
   .mp-root .mp-gallery__badge--bl .mp-badge__icon,
   .mp-root .mp-gallery__badge--br .mp-badge__icon { width: 14px; height: 14px; flex: 0 0 14px; }
   .mp-root .mp-gallery__badge--bl .mp-badge__copy { width: 14px; height: 14px; }
-  /* Типографика текста бейджей */
+  /* Badge text typography */
   .mp-root .mp-gallery__badge--bl .mp-badge__text,
   .mp-root .mp-gallery__badge--br .mp-badge__text {
     font-family: "Open Sans", Arial, sans-serif;
@@ -1642,14 +1642,14 @@ html, body { margin: 0; padding: 0; }
     letter-spacing: 0;
   }
 
-  /* Факты — 4 элемента в одну строку, без иконок, центрирование текста */
+  /* Facts — 4 items in one row, no icons, centered text */
   .mp-root .mp-facts {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 0;
     padding: 8px 0;
   }
-  /* скрываем факт «Этаж» целиком на мобилке */
+  /* hide the "Floor" fact entirely on mobile */
   .mp-root .mp-fact[data-label^="Этаж"] { display: none; }
   .mp-root .mp-fact {
     display: grid;
@@ -1663,7 +1663,7 @@ html, body { margin: 0; padding: 0; }
   }
   .mp-root .mp-fact__icon { display: none !important; }
   .mp-root .mp-fact__text { display: contents; }
-  /* значение сверху */
+  /* value on top */
   .mp-root .mp-fact__value {
     grid-row: 1;
     font-family: "Open Sans", Arial, sans-serif;
@@ -1675,13 +1675,13 @@ html, body { margin: 0; padding: 0; }
     color: #130F26;
     text-align: center;
   }
-  /* подпись снизу */
+  /* label at the bottom */
   .mp-root .mp-fact__label {
     grid-row: 2;
     font-family: "Open Sans", Arial, sans-serif;
     font-weight: 400;
     font-style: normal;
-    /* Скрываем оригинальный длинный текст, чтобы не влиял на ширину */
+    /* Hide the original long text so it does not affect the width */
     font-size: 0;
     line-height: 0;
     letter-spacing: 0;
@@ -1695,16 +1695,16 @@ html, body { margin: 0; padding: 0; }
   .mp-root .mp-fact__label::before {
     content: attr(data-label-short);
     display: inline-block;
-    font-size: 12px; /* фактический размер шрифта подписи */
+    font-size: 12px; /* actual label font size */
     line-height: 1;
     color: #989898;
     white-space: nowrap;
   }
 
-  /* Инфоблок справа — теперь сверху */
+  /* Right info block — now on top */
   .mp-root .mp-overview__info { gap: 10px; }
 
-  /* Цена */
+  /* Price */
   .mp-root .mp-price-card { padding: 0px 16px 16px 0; border: 0 !important; }
   .mp-root .mp-price {
     font-family: "Open Sans", Arial, sans-serif;
@@ -1726,7 +1726,7 @@ html, body { margin: 0; padding: 0; }
   .mp-root .mp-price-breakdown__value { white-space: normal; }
   .mp-root .mp-price-breakdown__note { font-size: 11px; }
 
-  /* Агент: компактнее аватар и сетка */
+  /* Agent: more compact avatar and grid */
   .mp-root .mp-agent {
     gap: 16px;
     padding: 0px 0px 18px 0px;
@@ -1750,7 +1750,7 @@ html, body { margin: 0; padding: 0; }
   .mp-root .mp-agent__socials { grid-column: 1; }
   .mp-root .mp-agent__phone { font-size: 14px; }
 
-  /* CTA — на всю ширину */
+  /* CTA full width */
   .mp-root .mp-contact-actions {
     grid-template-columns: 1fr;
     justify-items: stretch;
@@ -1765,7 +1765,7 @@ html, body { margin: 0; padding: 0; }
     font-size: 18px;
   }
 
-  /* Сетки характеристик → одна колонка */
+  /* Characteristic grids → one column */
   .mp-root .mp-terms__grid,
   .mp-root .mp-about__grid,
   .mp-root .mp-building__grid {
@@ -1795,8 +1795,8 @@ html, body { margin: 0; padding: 0; }
     font-size: 16px;
   }
 
-  /* Элементы списков (Условия, Об объекте, О здании) — в одну строку:
-     label слева, value справа, без переносов, кегль 12px */
+  /* List items (Terms, About property, About building) — one row:
+     label on the left, value on the right, no wrapping, 12px font */
   .mp-root .mp-terms__item,
   .mp-root .mp-about__item,
   .mp-root .mp-building__item {
@@ -1817,7 +1817,7 @@ html, body { margin: 0; padding: 0; }
   .mp-root .mp-terms__value,
   .mp-root .mp-about__value,
   .mp-root .mp-building__value {
-    justify-self: end; /* прижимаем вправо */
+    justify-self: end; /* push to the right */
     font-size: 14px;
     line-height: 1;
     white-space: nowrap;
@@ -1825,8 +1825,8 @@ html, body { margin: 0; padding: 0; }
     text-overflow: ellipsis;
   }
 
-  /* Убираем в мобильной версии внутренние поля:
-     слева у label и справа у value — для всех трёх списков */
+  /* Remove inner padding in the mobile version:
+     left on label and right on value — for all three lists */
   .mp-root .mp-terms__label,
   .mp-root .mp-about__label,
   .mp-root .mp-building__label { padding-left: 0; }
@@ -1834,13 +1834,13 @@ html, body { margin: 0; padding: 0; }
   .mp-root .mp-about__value,
   .mp-root .mp-building__value { padding-right: 0; }
 
-  /* Описание */
+  /* Description */
   .mp-root .mp-description__text { font-size: 14px; line-height: 1.4; }
 
-  /* Карта компактнее */
+  /* More compact map */
   .mp-root .mp-map { height: 260px; border-radius: 16px; }
 
-  /* Подвал в колонку */
+  /* Footer in a column */
   .mp-root .mp-footer {
     height: auto;
     padding: 24px 16px;
@@ -1857,19 +1857,19 @@ html, body { margin: 0; padding: 0; }
   .mp-root .mp-footer__qr { width: 120px; height: 120px; flex: 0 0 auto; }
   .mp-root .mp-footer__title { font-size: 18px; }
   .mp-root .mp-footer__content { align-items: center; gap: 12px; }
-  /* Спрятать заголовок подвала в мобильной версии */
+  /* Hide the footer heading in the mobile version */
   .mp-root .mp-footer__title { display: none; }
 
-  /* Кнопка в подвале — 80% ширины экрана */
+  /* Footer button — 80% of screen width */
   .mp-root .mp-footer__content > .mp-btn.mp-btn--outline {
     width: 80vw;
     max-width: none;
     height: 52px;
     padding: 14px 16px;
     align-self: center;
-    font-size: 18px; /* Размер надписи внутри кнопки */
+    font-size: 18px; /* Label size inside the button */
   }
-  /* Размер иконки внутри кнопки — 18x18 */
+  /* Icon size inside the button — 18x18 */
   .mp-root .mp-footer__content > .mp-btn.mp-btn--outline .mp-btn__icon,
   .mp-root .mp-footer__content > .mp-btn.mp-btn--outline svg,
   .mp-root .mp-footer__content > .mp-btn.mp-btn--outline img {
@@ -1877,28 +1877,28 @@ html, body { margin: 0; padding: 0; }
     height: 18px;
     flex: 0 0 18px;
   }
-  /* Если текст выделен отдельным спаном */
+  /* If the text is in a separate span */
   .mp-root .mp-footer__content > .mp-btn.mp-btn--outline .mp-btn__text { font-size: 18px; }
 
-  /* Модалки: ширина под экран, внутренняя сетка — в колонку */
+  /* Modals: width fits the screen, inner grid — column */
   .mp-root .mp-modal__dialog {
-    width: min(96vw, 560px);           /* шире на мобильном, но с ограничением */
-    max-height: 90dvh;                 /* использовать вертикаль экрана, с учётом моб. хрома */
+    width: min(96vw, 560px);           /* wider on mobile, but capped */
+    max-height: 90dvh;                 /* use screen height, accounting for mobile browser chrome */
     height: auto;
-    padding: 16px;                     /* базовый внутренний отступ */
-    /* безопасные зоны для вырезов/жестов */
+    padding: 16px;                     /* base inner padding */
+    /* safe areas for notches/gestures */
     padding-left: calc(16px + env(safe-area-inset-left));
     padding-right: calc(16px + env(safe-area-inset-right));
     padding-bottom: calc(16px + env(safe-area-inset-bottom));
     row-gap: 16px;
-    border-radius: 16px;               /* компактнее радиус */
-    overflow: auto;                    /* вертикальный скролл внутри */
-    -webkit-overflow-scrolling: touch; /* плавная прокрутка на iOS */
-    overscroll-behavior: contain;      /* не пробрасывать скролл на body */
+    border-radius: 16px;               /* tighter radius */
+    overflow: auto;                    /* vertical scroll inside */
+    -webkit-overflow-scrolling: touch; /* smooth scrolling on iOS */
+    overscroll-behavior: contain;      /* do not propagate scroll to body */
   }
-  /* Само модальное перекрытие — ограничиваем overscroll на мобильном */
+  /* The modal overlay itself — limit overscroll on mobile */
   .mp-root .mp-modal { overscroll-behavior: contain; }
-  /* Кнопка закрытия — больше тап-зона и учёт безопасных зон */
+  /* Close button — larger tap area, safe-area aware */
   .mp-root .mp-modal__close {
     top: calc(8px + env(safe-area-inset-top));
     right: calc(8px + env(safe-area-inset-right));
@@ -1935,27 +1935,27 @@ html, body { margin: 0; padding: 0; }
   }
   .mp-root .mp-share__copy-btn { font-size: 16px; }
 
-  /* Скрыть заголовок только у секции «Расположение» */
+  /* Hide the heading only in the "Location" section */
   .mp-root .mp-location .mp-section__title { display: none !important; }
-  /* Остальные заголовки показывать и уменьшить до 16px */
+  /* Show the other headings and reduce them to 16px */
   .mp-root .mp-section:not(.mp-location) .mp-section__title {
     display: block;
     font-size: 19px;
     line-height: 100%;
   }
 
-  /* Отступ между адресом и картой должен быть 5px:
-    убираем верхний padding у секции карты и задаём отступ самой карте */
+  /* The gap between the address and the map should be 5px:
+    remove the top padding of the map section and set the offset on the map itself */
   .mp-root .mp-location { padding-top: 0; }
   .mp-root .mp-map { margin-top: 5px; }
 
-  /* ========== Агент: мобильная раскладка и стили (только мобайл) ========== */
-  /* Убираем рамку карточки на мобильной версии */
+  /* ========== Agent: mobile layout and styles (mobile only) ========== */
+  /* Remove the card border in the mobile version */
   .mp-root .mp-agent { border: 0 !important; box-shadow: none !important; }
 
-  /* Перекладываем внутренности карточки агента в сетку 2x2:
-     верхний ряд — заголовок (контент) на две колонки,
-     нижний ряд — фото слева, контакты справа */
+  /* Rearrange the agent card contents into a 2x2 grid:
+     top row — title (content) spanning two columns,
+     bottom row — photo on the left, contacts on the right */
   .mp-root .mp-agent {
     grid-template-columns: 120px 1fr;
     grid-template-areas:
@@ -1965,16 +1965,16 @@ html, body { margin: 0; padding: 0; }
     row-gap: 12px;
     align-items: start;
   }
-  /* Размыкаем обёртку шапки, чтобы её дети стали элементами сетки родителя */
+  /* Unwrap the header wrapper so its children become grid items of the parent */
   .mp-root .mp-agent__header { display: contents; }
   .mp-root .mp-agent__content { grid-area: head; }
   .mp-root .mp-agent__photo { grid-area: photo; width: 120px; height: 120px; }
   .mp-root .mp-agent__contacts { grid-area: contacts; align-self: center; }
 
-  /* Скрыть заголовок «Контакты:» */
+  /* Hide the "Contacts:" heading */
   .mp-root .mp-agent__contacts-title { display: none !important; }
 
-  /* Размеры и отступы внутри карточки агента (масштаб +20-25%) */
+  /* Sizes and padding inside the agent card (+20-25% scale) */
   .mp-root .mp-agent__role { font-size: 14px; }
   .mp-root .mp-agent__name { font-size: 18px; }
   .mp-root .mp-agent__phone { font-size: 18px; color: #21779E; }
@@ -1987,27 +1987,27 @@ html, body { margin: 0; padding: 0; }
   .mp-root .mp-agent__verified-icon { width: 17px; height: 17px; }
 
   .mp-root .mp-agent__socials { gap: 12px; }
-  /* Растянуть соц-иконки по горизонтали и распределить равномерно */
+  /* Stretch social icons horizontally and distribute evenly */
   .mp-root .mp-agent__socials {
     display: flex;
     width: 100%;
-    gap: 0;                 /* равномерное распределение, без внутренних зазоров */
-    justify-self: stretch;  /* занять всю ширину ячейки сетки */
+    gap: 0;                 /* even distribution, no inner gaps */
+    justify-self: stretch;  /* take the full width of the grid cell */
   }
   .mp-root .mp-agent__socials .mp-social {
-    flex: 1 1 0;            /* равные «колонки» */
+    flex: 1 1 0;            /* equal "columns" */
     display: flex;
-    justify-content: center;/* иконки по центру своей колонки */
+    justify-content: center;/* icons centered in their column */
     align-items: center;
   }
   .mp-root .mp-agent__socials .mp-social a { width: 24px; height: 24px; }
   .mp-root .mp-agent__socials img { width: 24px; height: 24px; }
 
-  /* Иконка телефона — точная заливка фирменным цветом через inline CSS mask */
+  /* Phone icon — exact brand-color fill via inline CSS mask */
   .mp-root .mp-icon.mp-icon--phone {
-    width: 18px; height: 18px; /* увеличено на ~25% */
-    background-color: #21779E; /* целевой цвет */
-    /* Явные mask-свойства для широкой совместимости */
+    width: 18px; height: 18px; /* enlarged by ~25% */
+    background-color: #21779E; /* target color */
+    /* Explicit mask properties for broad compatibility */
     -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 21'><path d='M6.00051 14.6989C-1.26052 7.07393 -0.228021 3.58232 0.537416 2.45717C0.63575 2.27532 3.05945 -1.53424 5.65746 0.700812C12.1061 6.27729 3.94221 5.48886 9.35726 11.1756C14.7734 16.8612 14.0225 8.28942 19.3325 15.0591C21.4612 17.7881 17.8329 20.3329 17.6609 20.435C16.5892 21.2398 13.2627 22.3239 6.00051 14.6989Z' fill='white'/></svg>");
       mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 21'><path d='M6.00051 14.6989C-1.26052 7.07393 -0.228021 3.58232 0.537416 2.45717C0.63575 2.27532 3.05945 -1.53424 5.65746 0.700812C12.1061 6.27729 3.94221 5.48886 9.35726 11.1756C14.7734 16.8612 14.0225 8.28942 19.3325 15.0591C21.4612 17.7881 17.8329 20.3329 17.6609 20.435C16.5892 21.2398 13.2627 22.3239 6.00051 14.6989Z' fill='white'/></svg>");
     -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
@@ -2017,13 +2017,13 @@ html, body { margin: 0; padding: 0; }
   .mp-root .mp-icon.mp-icon--phone img { display: none !important; }
 }
 
-/* ==================== Модалка просмотра фотографий (Lightbox) ==================== */
+/* ==================== Photo viewer modal (Lightbox) ==================== */
 .mp-root .mp-photo-modal { z-index: 1200; }
 .mp-root .mp-photo-modal .mp-modal__overlay { background: rgba(6, 7, 16, 0.9); }
 .mp-root .mp-photo-modal .mp-modal__dialog {
   width: min(96vw, 1180px);
   max-height: 94dvh;
-  background: #0F1020; /* глубокий тёмный */
+  background: #0F1020; /* deep dark */
   color: #F5F7FA;
   border-radius: 12px;
   padding: 16px 16px 20px;
@@ -2058,7 +2058,7 @@ html, body { margin: 0; padding: 0; }
   font: 600 16px/1 "Open Sans", Arial, sans-serif;
 }
 .mp-root .mp-photo-modal .mp-modal__close {
-  position: static; /* в шапке */
+  position: static; /* in the header */
   width: 40px; height: 40px;
   margin-left: 4px;
 }
@@ -2066,20 +2066,20 @@ html, body { margin: 0; padding: 0; }
 .mp-root .mp-photo__viewport {
   position: relative;
   display: grid;
-  place-items: center; /* по центру и по вертикали, и по горизонтали */
+  place-items: center; /* centered both vertically and horizontally */
   background: #0B0C18;
   border-radius: 12px;
-  overflow: hidden; /* без скролла — картинка подгоняется под рамку */
-  min-height: 0; /* важно для grid: разрешить сжиматься внутри 1fr-трека */
-  height: 100%;  /* занять всю высоту строки сетки */
+  overflow: hidden; /* no scroll — the image fits the frame */
+  min-height: 0; /* important for grid: allow shrinking inside the 1fr track */
+  height: 100%;  /* take the full height of the grid row */
 }
 .mp-root .mp-photo__image {
-  max-width: 100%;      /* не выходить за рамку по ширине */
-  max-height: 100%;     /* не выходить за рамку по высоте */
-  width: auto;          /* не растягивать больше натурального */
-  height: auto;         /* не растягивать больше натурального */
-  object-fit: contain;  /* вписать без обрезания */
-  object-position: center center; /* строго по центру */
+  max-width: 100%;      /* do not exceed the frame width */
+  max-height: 100%;     /* do not exceed the frame height */
+  width: auto;          /* do not stretch beyond natural size */
+  height: auto;         /* do not stretch beyond natural size */
+  object-fit: contain;  /* fit without cropping */
+  object-position: center center; /* strictly centered */
   display: block;
 }
 .mp-root .mp-photo__nav {
@@ -2091,13 +2091,13 @@ html, body { margin: 0; padding: 0; }
   background: rgba(255,255,255,0.12);
   display: inline-flex; align-items: center; justify-content: center;
   cursor: pointer;
-  z-index: 2; /* поверх изображения */
+  z-index: 2; /* above the image */
 }
 .mp-root .mp-photo__prev { left: 16px; }
 .mp-root .mp-photo__next { right: 16px; }
 .mp-root .mp-photo__nav img { width: 28px; height: 14px; filter: invert(1) contrast(1.2); }
 
-/* В лайтбоксе используем чисто белые стрелки через CSS mask, не затрагивая основную галерею */
+/* In the lightbox, use pure white arrows via CSS mask without affecting the main gallery */
 .mp-root .mp-photo-modal .mp-photo__nav img { display: block !important; filter: invert(1) brightness(1.2) contrast(1.05); }
 .mp-root .mp-photo-modal .mp-photo__nav::before { content: none !important; }
 
@@ -2111,7 +2111,7 @@ html, body { margin: 0; padding: 0; }
 .mp-root .mp-photo__thumbs .mp-gallery__thumb { height: 64px; background: #0B0C18; border-color: rgba(255,255,255,0.15); }
 .mp-root .mp-photo__thumbs .mp-gallery__thumb.is-active { outline-color: #49D7E2; }
 
-/* Мобильная адаптация лайтбокса */
+/* Mobile adaptation of the lightbox */
 @media (max-width: 768px) {
   .mp-root .mp-photo-modal .mp-modal__dialog {
     width: 100vw; max-height: 100dvh; height: 100dvh; border-radius: 0;
@@ -2125,12 +2125,12 @@ html, body { margin: 0; padding: 0; }
   .mp-root .mp-photo__thumbs .mp-gallery__thumb { height: 52px; }
 }
 
-/* Мобильные размеры маскированных стрелок */
+/* Mobile sizes of the masked arrows */
 @media (max-width: 768px) {
-  /* размеры img уже переопределены выше (22x12) через общий блок мобилок */
+  /* img sizes already overridden above (22x12) via the common mobile block */
 }
 
-/* Десктоп: резервируем место для стрелок, чтобы они не перекрывали изображение */
+/* Desktop: reserve space for arrows so they do not overlap the image */
 @media (min-width: 769px) {
   .mp-root .mp-photo__viewport { padding: 0 56px; }
   .mp-root .mp-photo__image { max-width: calc(100% - 112px); }
@@ -2138,7 +2138,7 @@ html, body { margin: 0; padding: 0; }
   .mp-root .mp-photo__next { right: 16px; }
 }
 
-/* ==================== Модалка видео ==================== */
+/* ==================== Video modal ==================== */
 .mp-root .mp-video-modal .mp-modal__dialog {
   width: min(96vw, 1180px);
   max-height: 94dvh;

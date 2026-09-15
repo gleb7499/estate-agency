@@ -1,120 +1,120 @@
-# agent.md — Источник истины для фронтенд-агента
+# agent.md — Source of truth for the frontend agent
 
-# 1. Цель документа
+# 1. Purpose of this document
 
-Этот файл — единый справочник для генерации HTML/CSS/JS **локальной автономной страницы карточки объекта**, которую затем сможет интегрировать коллега (Илья) в legacy-проект. Документ задаёт жёсткие правила по изоляции, названию классов, структуре отдаваемых файлов и формату инструкций для интегратора. Ты делаешь фронт — интегратор делает вставку в PHP.
-
----
-
-# 2. Что ты делаешь (обязанности верстальщика)
-
-* Создаёшь автономный демо-пакет: `index.html`, `css/style.css`, `js/script.js`, `assets/` (img/fonts/vendor).
-* Верстаешь точный визуал по макетам (цвета/типы/отступы/компоненты), без доступа к серверу.
-* Ничего не меняешь на сервере и не пытаешься подключаться к его файлам.
-* Готовишь `README.integration.md` — четкий набор патчей-замен и инструкций для интегратора.
-* Документируешь все места, где твой HTML зависит от динамических данных (например `data-object-id`, itemprop, атрибуты для цен и контактов).
+This file is the single reference for generating the HTML/CSS/JS of a **local, autonomous property card page**, which a colleague (Ilya) will then integrate into a legacy project. The document sets hard rules on isolation, class naming, the structure of the delivered files, and the format of instructions for the integrator. You do the frontend — the integrator inserts it into PHP.
 
 ---
 
-# 3. Обязательные правила (жёстко — не обсуждаем)
+# 2. What you do (markup developer responsibilities)
 
-1. **Полная изоляция под `.mp-root`**
-   Весь HTML обязан быть внутри:
+* You create an autonomous demo package: `index.html`, `css/style.css`, `js/script.js`, `assets/` (img/fonts/vendor).
+* You build the exact visual per the designs (colors/type/spacing/components), without access to the server.
+* You change nothing on the server and do not attempt to connect to its files.
+* You prepare `README.integration.md` — a clear set of replacement patches and instructions for the integrator.
+* You document every place where your HTML depends on dynamic data (e.g. `data-object-id`, itemprop, attributes for prices and contacts).
+
+---
+
+# 3. Mandatory rules (hard — not negotiable)
+
+1. **Full isolation under `.mp-root`**
+   All HTML must be inside:
 
    ```html
    <div class="mp-root mp-object-card"> ... </div>
    ```
 
-   Все CSS-правила и JS-селекторы — только внутри `.mp-root`.
+   All CSS rules and JS selectors — only inside `.mp-root`.
 
-2. **Префикс классов: `mp-`**
-   Все классы компонентов, утилит и стилей — с префиксом `mp-` (пример: `.mp-title`, `.mp-price`, `.mp-gallery`).
+2. **Class prefix: `mp-`**
+   All component, utility, and style classes carry the `mp-` prefix (e.g. `.mp-title`, `.mp-price`, `.mp-gallery`).
 
-3. **Ноль глобальных стилей и ноль правок system-wide**
-   Никакие правила не должны изменять `html`, `body`, `a`, `button` глобально. Только `.mp-root a` и т.п.
+3. **Zero global styles and zero system-wide changes**
+   No rule may modify `html`, `body`, `a`, `button` globally. Only `.mp-root a` and the like.
 
-4. **Никаких inline-скриптов в финале; минимально — inline-стилей**
+4. **No inline scripts in the final build; inline styles kept to a minimum**
 
-   * JS — только в `js/script.js`. Скрипт подключается с `defer`.
-   * Inline-стили допускаются только в черновиках; в финальной сдаче все стили вынесены в `css/style.css`.
-     Это защита от CSP/legacy-ограничений и от случайного конфликта с серверным кодом.
+   * JS — only in `js/script.js`. The script is loaded with `defer`.
+   * Inline styles are allowed in drafts only; in the final delivery all styles are moved to `css/style.css`.
+     This protects against CSP/legacy restrictions and accidental conflicts with server code.
 
-5. **Нет прямых сетевых запросов к прод-API**
-   Если поведение предполагает обращения к серверу — реализуй мок-сценарий и в README укажи, какие endpoint’ы и payload нужны.
+5. **No direct network requests to the production API**
+   If behavior implies server calls — implement a mock scenario and note in the README which endpoints and payloads are needed.
 
-6. **Не трогаем PHP/серверную логику**
-   Ты не меняешь `getlist3.php`, `index_newagency3.html` и т.п. Всё, что нужно изменить на их стороне — подготовленные тобой diff-патчи и инструкции для интегратора.
+6. **We do not touch PHP/server logic**
+   You do not modify `getlist3.php`, `index_newagency3.html`, etc. Everything that needs to change on their side — your prepared diff patches and instructions for the integrator.
 
-7. **Локальные зависимости**
-   Если нужна библиотека (слайдер, lightbox), подключай её локально в `assets/vendor/` и указывай версию и лицензию. Не подключать CDN без согласия интегратора.
-
----
-
-# 4. Что ты сдаёшь (конкретно)
-
-1. `index.html` — автономный пример, рендерящий все блоки карточки (фото, заголовок, цена, адрес, параметры, контакты, описание, карта, кнопки «Заинтересовал/Не заинтересовал»). Внутри — реальные DOM-структуры и data-атрибуты, которые ожидает прод.
-2. `css/style.css` — все стили, полностью ограниченные `.mp-root`.
-3. `js/script.js` — вся интерактивность (галерея, переключение валют, события «заинтересовал», модалки). Включает мок-запросы и эмит custom events для интегратора.
-4. `assets/` — картинки/иконки/шрифты/vendor.
-5. `README.integration.md` — подробная инструкция для интегратора (см. секцию 6).
-6. `design_notes.md` (опционально) — мелкие решения по типографике, сетке и поведению, которые важны при встраивании.
+7. **Local dependencies**
+   If a library is needed (slider, lightbox), bundle it locally in `assets/vendor/` and state its version and license. Do not use a CDN without the integrator's consent.
 
 ---
 
-# 5. Как я представляю структуру DOM (пример)
+# 4. What you deliver (concretely)
 
-(используй это как шаблон — все классы с префиксом `mp-`)
+1. `index.html` — a standalone example rendering all card blocks (photos, title, price, address, parameters, contacts, description, map, "Interested / Not interested" buttons). Inside — the real DOM structures and data attributes the production code expects.
+2. `css/style.css` — all styles, fully scoped to `.mp-root`.
+3. `js/script.js` — all interactivity (gallery, currency switch, "interested" events, modals). Includes mock requests and emits custom events for the integrator.
+4. `assets/` — images/icons/fonts/vendor.
+5. `README.integration.md` — detailed instructions for the integrator (see section 6).
+6. `design_notes.md` (optional) — small decisions on typography, grid, and behavior that matter when embedding.
+
+---
+
+# 5. How I picture the DOM structure (example)
+
+(use this as a template — all classes with the `mp-` prefix)
 
 ```html
 <div class="mp-root mp-object-card" data-object-id="606239">
   <header class="mp-header">
-    <h1 class="mp-title" itemprop="name">Название объекта</h1>
+    <h1 class="mp-title" itemprop="name">Property name</h1>
     <p class="mp-price" itemprop="offers">12 000 000 ₽</p>
-    <p class="mp-address">г. Город, Улица, д. 1</p>
+    <p class="mp-address">City, Street, bld. 1</p>
   </header>
 
-  <section class="mp-gallery" aria-label="Фотографии">
-    <!-- превью/лайтбокс -->
+  <section class="mp-gallery" aria-label="Photos">
+    <!-- preview/lightbox -->
   </section>
 
   <section class="mp-params">
-    <p class="mp-area">Площадь: 120 м²</p>
-    <p class="mp-info">Комнат: 3 • Этаж: 2/9</p>
+    <p class="mp-area">Area: 120 m²</p>
+    <p class="mp-info">Rooms: 3 • Floor: 2/9</p>
   </section>
 
   <section class="mp-actions">
-    <button class="mp-btn mp-fav" data-action="favorite">Заинтересовал</button>
-    <button class="mp-btn mp-unfav" data-action="unfavorite">Не заинтересовал</button>
+    <button class="mp-btn mp-fav" data-action="favorite">Interested</button>
+    <button class="mp-btn mp-unfav" data-action="unfavorite">Not interested</button>
   </section>
 
   <section class="mp-desc">
-    <h2>Описание</h2>
-    <p>Текст описания...</p>
+    <h2>Description</h2>
+    <p>Description text...</p>
   </section>
 
   <section class="mp-contacts">
-    <!-- контакты агента/компании -->
+    <!-- agent/company contacts -->
   </section>
 
   <section class="mp-map">
-    <!-- заглушка карты / координаты -->
+    <!-- map placeholder / coordinates -->
   </section>
 </div>
 ```
 
 ---
 
-# 6. README.integration.md — чёткий шаблон для интегратора (включи это в сдачу)
+# 6. README.integration.md — clear template for the integrator (include in the delivery)
 
-README должен быть предельно практичным: точные строки, diff-патчи, порядок действий и рекомендации по откату.
+The README must be as practical as possible: exact lines, diff patches, order of operations, and rollback recommendations.
 
-Пример содержимого README (обязательные разделы):
+Example README content (required sections):
 
-1. **Введение** — «я сделал автономную страницу; я не трогал сервер; вот набор файлов».
+1. **Introduction** — "I built an autonomous page; I did not touch the server; here is the set of files".
 
-2. **Где на проде находится шаблон** — `templates/index_newagency3.html` (вставляет строку «Информация об объекте»), а весь остальной HTML собирается `system/getlist3.php`.
+2. **Where the template lives in production** — `templates/index_newagency3.html` (inserts the "Property information" line), and all the rest of the HTML is assembled by `system/getlist3.php`.
 
-3. **Список мест в `getlist3.php`, где часто используются inline-стили/HTML** (названия функций):
+3. **List of places in `getlist3.php` that commonly use inline styles/HTML** (function names):
 
    * `mode_getboard`
    * `_item`
@@ -123,99 +123,99 @@ README должен быть предельно практичным: точны
    * `_usobjects_agencies_block`
    * `_geo_board`
 
-4. **Рекомендуемый безопасный порядок интеграции (шаги)**:
+4. **Recommended safe integration order (steps)**:
 
-   * Сделать BACKUP оригинальных файлов (`getlist3.php`, `index_newagency3.html`).
-   * Загрузить `css/style.css` в папку проекта (предпочтительно в подпапку staging).
-   * Вставить HTML фрагменты из `index.html` в `{$content}` либо заменить строку в `index_newagency3.html` минимально (вариант обсуждается).
-   * Применить патчи в `getlist3.php` (см. ниже примеры).
-   * Подключить `js/script.js` (после статики).
-   * Прогнать smoke-tests (включены в README).
-   * При ошибке — откатить файлы по бэкапу.
+   * Make a BACKUP of the original files (`getlist3.php`, `index_newagency3.html`).
+   * Upload `css/style.css` into the project folder (preferably a staging subfolder).
+   * Insert HTML fragments from `index.html` into `{$content}`, or minimally replace the line in `index_newagency3.html` (variant to be discussed).
+   * Apply the patches to `getlist3.php` (see examples below).
+   * Load `js/script.js` (after the static assets).
+   * Run the smoke tests (included in the README).
+   * On failure — roll the files back from the backup.
 
-5. **Примеры diff-патчей (рекомендуемые изменения в PHP)**
-   Эти патчи — шаблоны. Интегратор вставляет их в `getlist3.php` в соответствующих местах.
+5. **Example diff patches (recommended PHP changes)**
+   These patches are templates. The integrator inserts them into `getlist3.php` in the corresponding places.
 
-   Пример 1 — заголовок:
+   Example 1 — title:
 
    ```diff
    - $result .= '<h1 style="font-size: 25px; margin-top: 0; padding-bottom: 5px;"><span itemprop="name">' . $s_header . '</span></h1>';
    + $result .= '<h1 class="mp-title"><span itemprop="name">' . $s_header . '</span></h1>';
    ```
 
-   Пример 2 — цена:
+   Example 2 — price:
 
    ```diff
    - $result .= '<p style="font-size: 17px; margin-top: 0; padding-bottom: 5px;">' . $s_price . '</p>';
    + $result .= '<p class="mp-price">' . $s_price . '</p>';
    ```
 
-   Пример 3 — адрес:
+   Example 3 — address:
 
    ```diff
    - $result .= '<p style="font-size: 17px; margin-top: 0; padding-bottom: 5px; color: #009900;">' . $item_address . '</p>';
    + $result .= '<p class="mp-address">' . $item_address . '</p>';
    ```
 
-   Пример 4 — контейнер для галереи:
+   Example 4 — gallery container:
 
    ```diff
    - $result .= '<div class="photos" ...>'.$photos_html.'</div>';
    + $result .= '<div class="mp-gallery">'.$photos_html.'</div>';
    ```
 
-   > Примечание: патчи простые — заменяют `style="..."` на `class="mp-..."`. Никакой серверной логики не меняется.
+   > Note: the patches are simple — they replace `style="..."` with `class="mp-..."`. No server logic is changed.
 
-6. **Data-attributes и ожидания**
-   Укажи, какие data-attributes нужны для интеграции (пример):
+6. **Data attributes and expectations**
+   List the data attributes needed for integration (example):
 
-   * `data-object-id` — id объекта (используется в AJAX).
-   * `data-price-currency` — валюта.
-   * `data-agent-id` — id агента.
+   * `data-object-id` — object id (used in AJAX).
+   * `data-price-currency` — currency.
+   * `data-agent-id` — agent id.
 
-7. **Smoke-tests (короткий чеклист для интегратора)**
+7. **Smoke tests (short checklist for the integrator)**
 
-   * Открыть страницу объекта (пример URL) и сверить с макетом.
-   * Проверить, что стили `.mp-root` применились и не ломают хост-сайт.
-   * Проверить клики по кнопкам, открытие галереи, корректность цен и контактов.
-   * Проверить отсутствие JS-ошибок в консоли.
+   * Open the property page (example URL) and compare with the design.
+   * Verify the `.mp-root` styles applied and do not break the host site.
+   * Check button clicks, gallery opening, correctness of prices and contacts.
+   * Verify there are no JS errors in the console.
 
-8. **Откат** — как вернуть файлы из бэкапа (команды/путь). (PLACEHOLDER: интегратор заполняет по среде).
-
----
-
-# 7. JS-контракт: события и мок-эндпойнты
-
-* Все интерактивные действия эмитят кастомные события на `.mp-root`, которые интегратор может слушать:
-
-  * `mp:favorite:toggle` — переключение заинтересованности. Detail: `{ objectId, state }`.
-  * `mp:gallery:open` — открытие лайтбокса. Detail: `{ index }`.
-* Если нужны реальные запросы — в `js/script.js` оставить функцию `MP.sendToServer(action, payload)` — по умолчанию мок (логирует), в README описать, как заменить на реальный AJAX.
+8. **Rollback** — how to restore the files from the backup (commands/path). (PLACEHOLDER: the integrator fills this in per environment).
 
 ---
 
-# 8. Безопасность и операции
+# 7. JS contract: events and mock endpoints
 
-* **Никаких секретов** в коде.
-* Рекомендуй интегратору SFTP/FTPS. Если он обязан использовать FTP — помни о рисках.
-* Напомни интегратору про обязательный бэкап перед любой заменой.
+* All interactive actions emit custom events on `.mp-root`, which the integrator can listen to:
 
----
-
-# 9. Примечание агенту (поведение при генерации кода / автогенерации)
-
-1. **Перед генерацией** — свериться с этим файлом.
-2. **Генерировать только автономные фрагменты** (index + css + js + assets + README).
-3. **Если встречается `[TBD: ...]`** — возвращать конкретный список вопросов (не менять правила).
-4. **Все предложенные diff-патчи** — в README, снабжены комментариями «для интегратора», и не применяются автоматически.
-5. **Не пытаться догадаться о внутренней логике PHP** — если нужно поведение, формировать контракт (data-attributes + events), который интегратор реализует в PHP.
+  * `mp:favorite:toggle` — toggling interest. Detail: `{ objectId, state }`.
+  * `mp:gallery:open` — opening the lightbox. Detail: `{ index }`.
+* If real requests are needed — keep a function `MP.sendToServer(action, payload)` in `js/script.js` — a mock by default (logs), with the README describing how to replace it with real AJAX.
 
 ---
 
-# 10. Быстрая шпаргалка (для тебя, верстальщика — 5 пунктов)
+# 8. Security and operations
 
-1. Делай автономный демо-пакет — не лезь в сервер.
-2. Оборачивай всё в `.mp-root`.
-3. Выноси все стили в `css/style.css` перед сдачей.
-4. В README сделай понятные diff-патчи для интегратора (замена `style="..."` → `class="mp-..."`).
-5. Сделай мок-функцию `MP.sendToServer` и эмит custom events — интеграция должна быть простой заменой мок→реал.
+* **No secrets** in the code.
+* Recommend SFTP/FTPS to the integrator. If they must use FTP — keep the risks in mind.
+* Remind the integrator about the mandatory backup before any replacement.
+
+---
+
+# 9. Note to the agent (behavior when generating code / auto-generation)
+
+1. **Before generating** — check this file.
+2. **Generate only autonomous fragments** (index + css + js + assets + README).
+3. **If you encounter a `[TBD: ...]`** — return a concrete list of questions (do not change the rules).
+4. **All proposed diff patches** — go into the README, marked "for the integrator", and are never applied automatically.
+5. **Do not try to guess the PHP internals** — if behavior is needed, define a contract (data attributes + events) that the integrator implements in PHP.
+
+---
+
+# 10. Quick cheat sheet (for you, the markup developer — 5 points)
+
+1. Build an autonomous demo package — do not touch the server.
+2. Wrap everything in `.mp-root`.
+3. Move all styles into `css/style.css` before delivery.
+4. In the README, make clear diff patches for the integrator (replace `style="..."` with `class="mp-..."`).
+5. Provide a mock `MP.sendToServer` and emit custom events — integration should be a simple mock→real swap.

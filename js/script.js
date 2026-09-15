@@ -1,22 +1,22 @@
-// Базовый скрипт (без плейсхолдер-логов), изолированный от глобальной области
+// Base script (no placeholder logs), isolated from the global scope
 (() => {
   const root = document.querySelector('.mp-root');
   if (!root) return;
-  // Храним последний набор данных для повторной инициализации карты при печати
+  // Keep the latest dataset for re-initializing the map when printing
   let __mp_currentData = null;
 
-  // --- Авто-подбор размера заголовка (.mp-title) под ширину (одна строка) ---
+  // --- Auto-fit the title (.mp-title) font size to the width (single line) ---
   const TitleAutoFit = (() => {
     const STATE = { initialized: false, ro: null };
-    const ABS_MAX_FONT = 48; // глобальная верхняя граница
-    const MIN_FONT = 10; // технический минимум читаемости
-    const STEP = 0.5; // точность бинарного поиска
+    const ABS_MAX_FONT = 48; // global upper bound
+    const MIN_FONT = 10; // technical minimum for readability
+    const STEP = 0.5; // binary search precision
 
-    // Простое вычисление динамического максимума для малых экранов
+    // Simple computation of a dynamic maximum for small screens
     const dynamicMaxForViewport = () => {
       const vw = Math.max(0, window.innerWidth || document.documentElement.clientWidth || 0);
       if (!vw) return ABS_MAX_FONT;
-      // Пороговая шкала (подобрано эмпирически):
+      // Threshold scale (tuned empirically):
       if (vw < 340) return 24;
       if (vw < 370) return 26;
       if (vw < 400) return 30;
@@ -27,7 +27,7 @@
       return ABS_MAX_FONT;
     };
 
-    // Оптимизация: кэш измерений через hidden span
+    // Optimization: cache measurements via a hidden span
     let measureSpan = null;
     const ensureMeasureSpan = () => {
       if (measureSpan) return measureSpan;
@@ -41,13 +41,13 @@
 
     const computeBestFontSize = (titleEl) => {
       if (!titleEl || !titleEl.textContent) return;
-      // Мобильный режим: фиксированный размер (18px) — без вычислений
+      // Mobile mode: fixed size (18px) — no computations
       const isMobile = (window.innerWidth || 0) <= 850;
       if (isMobile) {
         titleEl.style.fontSize = '18px';
         return;
       }
-      // Определяем доступную ширину: ближайший предок с ненулевой шириной
+      // Determine the available width: nearest ancestor with non-zero width
       let available = 0;
       let node = titleEl.parentElement;
       while (node && node !== document.body) {
@@ -55,15 +55,15 @@
         node = node.parentElement;
       }
       if (!available) {
-        // Фолбэк — ширина вьюпорта минус небольшой горизонтальный запас
+        // Fallback — viewport width minus a small horizontal margin
         available = Math.max(0, (window.innerWidth || 0) - 20);
       }
-      available = Math.max(0, available - 2); // безопасный отступ
+      available = Math.max(0, available - 2); // safe margin
       if (available <= 0) return;
       const text = titleEl.textContent.trim();
       if (!text) return;
       const span = ensureMeasureSpan();
-      // Бинарный поиск по кеглю
+      // Binary search over the font size
       const dynMax = dynamicMaxForViewport();
       let low = MIN_FONT;
       let high = Math.min(dynMax, parseFloat(getComputedStyle(titleEl).fontSize) || dynMax, ABS_MAX_FONT);
@@ -78,14 +78,14 @@
       titleEl.style.fontSize = best.toFixed(2) + 'px';
     };
 
-    // Debounce для массовых layout-ивентов
+    // Debounce for mass layout events
     let rafId = null;
     const fitNow = () => {
       const el = root.querySelector('.mp-gallery .mp-title');
       if (!el) return;
       if (rafId) cancelAnimationFrame(rafId);
       rafId = requestAnimationFrame(() => {
-        // Сбрасываем к динамическому максимуму (может отличаться на мобильном)
+        // Reset to the dynamic maximum (may differ on mobile)
         const dynMax = dynamicMaxForViewport();
         el.style.fontSize = dynMax + 'px';
         computeBestFontSize(el);
@@ -95,55 +95,55 @@
     const init = () => {
       if (STATE.initialized) return;
       STATE.initialized = true;
-      // ResizeObserver на контейнер галереи
+      // ResizeObserver on the gallery container
       const gallery = root.querySelector('.mp-gallery');
       if (gallery && 'ResizeObserver' in window) {
         STATE.ro = new ResizeObserver(() => { fitNow(); });
         STATE.ro.observe(gallery);
       }
-      // Всегда слушаем resize + orientationchange (меняется viewport ширина)
+      // Always listen to resize + orientationchange (viewport width changes)
       window.addEventListener('resize', fitNow);
       window.addEventListener('orientationchange', () => setTimeout(fitNow, 50));
-      // Подбор при изменении текста (MutationObserver на .mp-title)
+      // Re-fit when the text changes (MutationObserver on .mp-title)
       const titleEl = root.querySelector('.mp-gallery .mp-title');
       if (titleEl && 'MutationObserver' in window) {
         const mo = new MutationObserver(() => fitNow());
         mo.observe(titleEl, { characterData: true, subtree: true, childList: true });
       }
-      // Первый запуск после небольшого таймаута (на случай раскраски шрифтов)
+      // First run after a short timeout (in case fonts finish loading)
       setTimeout(fitNow, 0);
     };
 
-    // Публичный API модуля
+    // Module public API
     return { init, fitNow };
   })();
-  // Инициализируем сразу (текст может появиться позже — MutationObserver подстроит)
+  // Initialize right away (text may appear later — MutationObserver will adjust)
   TitleAutoFit.init();
 
-  // --- Выравнивание: верх .mp-card (price/agent блоков) по верху .mp-gallery__main ---
+  // --- Alignment: top of .mp-card (price/agent blocks) with the top of .mp-gallery__main ---
   const AlignInfoWithMain = (() => {
     let raf = null;
     const MEASURE_DELAY = 0;
     const STATE = { lockedUntil: 0 };
-    const isMobile = () => (window.innerWidth || 0) <= 850; // отключаем на мобильных
+    const isMobile = () => (window.innerWidth || 0) <= 850; // disabled on mobile
     const measure = () => {
-      if (Date.now() < STATE.lockedUntil) return; // во время lock не измеряем
+      if (Date.now() < STATE.lockedUntil) return; // do not measure while locked
       if (isMobile()) {
         root.style.removeProperty('--mp-main-offset');
         return;
       }
-      // Эталон: верх изображения (не контейнера figure — чтобы исключить возможные внутренние отступы/бейджи)
+      // Reference: top of the image (not the figure container — to rule out possible inner padding/badges)
       const imageEl = root.querySelector('.mp-gallery__image');
-      // Целевой элемент: карточка агента
+      // Target element: the agent card
       const agentCard = root.querySelector('.mp-overview__info .mp-agent');
       const infoBlock = root.querySelector('.mp-overview__info');
       if (!imageEl || !agentCard || !infoBlock) return;
-      // Сбрасываем текущее смещение перед измерением
+      // Reset the current offset before measuring
       root.style.setProperty('--mp-main-offset', '0px');
       const imgTop = imageEl.getBoundingClientRect().top;
       const agentTop = agentCard.getBoundingClientRect().top;
-      // Нужно поднять ВЕСЬ info блок так, чтобы agentTop == imgTop.
-      // Значит смещение = agentTop - imgTop (если агент ниже картинки)
+      // We need to raise the ENTIRE info block so that agentTop == imgTop.
+      // So the offset = agentTop - imgTop (if the agent is below the image)
       const diff = agentTop - imgTop;
       const offset = diff > 0 ? diff : 0;
       root.style.setProperty('--mp-main-offset', offset + 'px');
@@ -156,9 +156,9 @@
       schedule();
       window.addEventListener('resize', schedule);
       window.addEventListener('orientationchange', () => setTimeout(schedule, 50));
-      // Пересчёт при загрузке изображений главной галереи (высота может меняться из-за отсутствия/наличия скроллбара и др.)
+      // Recalculate when the main gallery images load (height may change due to the scrollbar appearing/disappearing, etc.)
       root.addEventListener('load', schedule, true);
-      // После автофита заголовка и получения данных
+      // After the title autofit and data retrieval
       root.addEventListener('mp:data', () => setTimeout(schedule, 0));
     };
     const lock = (ms = 400) => { STATE.lockedUntil = Date.now() + ms; };
@@ -167,7 +167,7 @@
   AlignInfoWithMain.init();
   try { window.addEventListener('load', () => AlignInfoWithMain.schedule()); } catch(_) {}
 
-  // --- Раскрывающаяся таблица цены ---
+  // --- Expandable price breakdown ---
   const PriceBreakdown = (() => {
     const SELECTORS = {
       card: '.mp-price-card',
@@ -258,7 +258,7 @@
       if (immediate) {
         finish();
       } else {
-        // Блокируем перерасчёт выравнивания на время анимации, чтобы не было скачка
+        // Block the alignment recalculation during the animation to avoid a jump
         AlignInfoWithMain.lock(420);
         const currentHeight = breakdown.scrollHeight;
         card.style.setProperty('--mp-breakdown-height', `${Math.max(0, currentHeight)}px`);
@@ -266,7 +266,7 @@
           card.removeAttribute('data-breakdown');
           requestAnimationFrame(() => {
             card.style.setProperty('--mp-breakdown-height', '0px');
-            // Пересчитываем позицию только после завершения анимации
+            // Recalculate the position only after the animation finishes
             setTimeout(() => AlignInfoWithMain.schedule(), 400);
           });
           button?.classList.remove('is-active');
@@ -330,7 +330,7 @@
   })();
   PriceBreakdown.init();
 
-  // --- Пропорциональное масштабирование блока .mp-overview__info (десктоп) ---
+  // --- Proportional scaling of the .mp-overview__info block (desktop) ---
   const InfoScaler = (() => {
     const SELECTOR_ROOT = '.mp-overview__info';
     const NUMERIC_PROPS = [
@@ -342,13 +342,13 @@
     let lastScale = 1;
 
     const isMobile = () => (window.innerWidth || 0) <= 850;
-    // Формула коэффициента: плавно от 1440px (1.0) до 1024px (~0.75), ниже держим минимум
+    // Scale factor formula: smoothly from 1440px (1.0) to 1024px (~0.75), keep the minimum below
     const computeScale = () => {
       const w = (window.innerWidth || 0);
       if (w >= 1440) return 1;
       if (w <= 1024) return 0.75;
       const k = (w - 1024) / (1440 - 1024); // 0..1
-      return 0.75 + k * (1 - 0.75); // линейная интерполяция
+      return 0.75 + k * (1 - 0.75); // linear interpolation
     };
 
     const parsePx = (v) => {
@@ -376,12 +376,12 @@
         const num = parseFloat(base);
         if (!Number.isFinite(num)) return;
         if (prop === 'lineHeight') {
-          // Если line-height был числом (px), масштабируем; если изначально unitless, мы бы не сохранили
+          // If line-height was a number (px), scale it; if it was originally unitless, we would not have stored it
           el.style.lineHeight = (num * scale).toFixed(2) + 'px';
         } else if (prop === 'fontSize') {
           el.style.fontSize = (num * scale).toFixed(2) + 'px';
         } else if (prop.toLowerCase().includes('gap')) {
-          // gap только на контейнерах (root / grid) — применим отдельно
+          // gap only on containers (root / grid) — apply separately
         } else if (prop.startsWith('padding')) {
           el.style[prop] = (num * scale).toFixed(2) + 'px';
         } else if (prop === 'borderRadius') {
@@ -408,7 +408,7 @@
     };
 
     const resetStyles = (rootEl) => {
-      // Очистка инлайновых изменений (мобильный режим)
+      // Clean up inline changes (mobile mode)
       rootEl.removeAttribute('style');
       rootEl.querySelectorAll('*').forEach((el) => {
         el.style.fontSize = '';
@@ -433,16 +433,16 @@
         return;
       }
       const scale = computeScale();
-      if (Math.abs(scale - lastScale) < 0.005) return; // нет существенного изменения
+      if (Math.abs(scale - lastScale) < 0.005) return; // no significant change
       lastScale = scale;
-      // Сбор базовых значений (один раз)
+      // Collect baseline values (once)
       const all = [rootEl, ...rootEl.querySelectorAll('*')];
       all.forEach((el) => collectBaseline(el, getComputedStyle(el)));
-      // Применение масштаба
+      // Apply the scale
       scaleRootProps(rootEl, scale);
   all.forEach((el) => applyScaleToEl(el, scale));
   PriceBreakdown.updateHeight();
-  // После масштабирования — пересчитать выравнивание блока с main фото
+  // After scaling — recalculate the alignment with the main photo block
       AlignInfoWithMain.schedule();
     };
 
@@ -461,10 +461,10 @@
   })();
   InfoScaler.init();
 
-  // Контракт: мок-отправка на сервер — не делает сетевых запросов
+  // Contract: mock send to server — makes no network requests
   const MP = {
     sendToServer(action, payload) {
-      // мок: логируем; интегратор заменит на AJAX
+      // mock: log it; the integrator will replace with AJAX
       // eslint-disable-next-line no-console
       console.debug('[MP.sendToServer]', action, payload);
       return Promise.resolve({ ok: true });
@@ -474,7 +474,7 @@
     },
   };
 
-  // Пример: клик по кнопке «Отправить ссылку»
+  // Example: click on the "Send link" button
   root.addEventListener('click', (e) => {
     const btn = e.target.closest('.mp-btn');
     if (!btn) return;
@@ -488,7 +488,7 @@
     PriceBreakdown.toggle(infoBtn);
   });
 
-  // Модалка «Поделиться»: открыть по клику на кнопку в шапке и в подвале
+  // "Share" modal: open on click of the button in the header and in the footer
   const openShareModal = () => {
     const modal = root.querySelector('.mp-share-modal');
     if (!modal) return;
@@ -496,7 +496,7 @@
       const href = window.location?.href || '';
       const box = modal.querySelector('.mp-share__input');
       if (box) box.textContent = href;
-      // Обновляем QR в модалке
+      // Update the QR in the modal
       try { updateQrImages('modal'); } catch (_) {}
     } catch (_) {}
     modal.hidden = false;
@@ -518,18 +518,18 @@
     }
     const isClose = e.target.closest('[data-close="true"]');
     if (isClose) {
-      // Закрыть любую открытую модалку
+      // Close any open modal
       closeShareModal();
       closeInterestModal();
       try { closePhotoModal(); } catch (_) {}
       return;
     }
   });
-  // Escape закрывает модалку
+  // Escape closes the modal
   window.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') { closeShareModal(); closeInterestModal(); }
   });
-  // Кнопка «Скопировать»
+  // "Copy" button
   root.addEventListener('click', async (e) => {
     const copyBtn = e.target.closest('.mp-share__copy-btn');
     if (!copyBtn) return;
@@ -545,11 +545,11 @@
     }
   });
 
-  // Кнопка «Печать» — печать страницы
+  // "Print" button — print the page
   root.addEventListener('click', (e) => {
     const printBtn = e.target.closest('.mp-header__print');
     if (!printBtn) return;
-    // Перед печатью готовим карту и по возможности ждём готовности статичного изображения
+    // Before printing, prepare the map and wait for the static image to be ready when possible
     try { prepareMapForPrint(); } catch (_) {}
     const container = root.querySelector('#mp-map');
     const img = container?.querySelector('img.mp-map__print');
@@ -564,19 +564,19 @@
     waitReady(() => { try { window.print(); } catch (_) {} });
   });
 
-  // Генерация QR через публичный энкодер (без JS-библиотек)
+  // QR generation via a public encoder (no JS libraries)
   const buildQrUrl = (data, sizePx = 160) => {
     const s = Math.max(32, Math.min(1024, Math.round(sizePx)));
     const encoded = encodeURIComponent(String(data || ''));
     return `https://api.qrserver.com/v1/create-qr-code/?size=${s}x${s}&data=${encoded}`;
   };
-  // Построение URL статического изображения карты (Yandex Static Maps)
+  // Build the static map image URL (Yandex Static Maps)
   const buildStaticMapUrl = ({ lat, lng, zoom = 16, size = [600, 400] }) => {
     const [w, h] = size;
-    // Ограничения API по размеру: подберём безопасные дефолты
+    // API size limits: pick safe defaults
     const width = Math.max(200, Math.min(650, Math.round(w)));
     const height = Math.max(200, Math.min(650, Math.round(h)));
-    // Маркер красный (pm2rdm)
+    // Red marker (pm2rdm)
     return `https://static-maps.yandex.ru/1.x/?ll=${lng},${lat}&z=${zoom}&size=${width},${height}&pt=${lng},${lat},pm2rdm&l=map`;
   };
   const updateQrImages = (scope = 'all') => {
@@ -598,7 +598,7 @@
     }
   };
 
-  // Простая функция показа тоста
+  // Simple toast display function
   const showToast = (message, ms = 1400) => {
     let toast = root.querySelector('.mp-toast');
     if (!toast) {
@@ -614,13 +614,13 @@
     }, ms);
   };
 
-  // =================== Модалка «Оставить заявку» ===================
+  // =================== "Leave a request" modal ===================
   const openInterestModal = () => {
     const modal = root.querySelector('.mp-interest-modal');
     if (!modal) return;
     modal.hidden = false;
     document.body.style.overflow = 'hidden';
-    // фокус на поле телефона
+    // focus the phone field
     const phone = modal.querySelector('#mp-int-phone');
     if (phone) { try { phone.focus(); } catch (_) {} }
   };
@@ -630,20 +630,20 @@
     modal.hidden = true;
     document.body.style.overflow = '';
   };
-  // Открытие по клику на primary CTA внутри #overview
+  // Open on click of the primary CTA inside #overview
   root.addEventListener('click', (e) => {
     const primaryCta = e.target.closest('#overview .mp-contact-actions .mp-cta.mp-cta--primary');
     if (!primaryCta) return;
     e.preventDefault();
     openInterestModal();
   });
-  // Простейшая валидация телефона: допустимы цифры + пробелы + ( ) + - , минимум 10 цифр
+  // Simplest phone validation: digits + spaces + ( ) + - allowed, at least 10 digits
   const validatePhone = (value) => {
     if (typeof value !== 'string') return false;
     const digits = value.replace(/\D+/g, '');
-    return digits.length >= 10; // РФ номера обычно 10-11 без кода страны
+    return digits.length >= 10; // RU numbers are usually 10-11 digits without the country code
   };
-  // Обработка submit формы
+  // Form submit handling
   root.addEventListener('submit', async (e) => {
     const form = e.target.closest('.mp-interest-form');
     if (!form) return;
@@ -671,12 +671,12 @@
     }
   });
 
-  // При успешной отправке — заменить кнопки на статус «Объект заинтересовал»
+  // On successful submit — replace the buttons with the "Property interested" status
   const renderInterestedState = () => {
     const overview = root.querySelector('#overview');
     const actions = root.querySelector('#overview .mp-overview__info .mp-contact-actions');
     if (!actions) return;
-    // Если уже отрисовано — не повторяем
+    // If already rendered — do not repeat
     if (overview?.getAttribute('data-interested') === 'true') return;
     actions.innerHTML = `
       <div class="mp-interest-state" role="status" aria-live="polite">
@@ -689,15 +689,15 @@
   root.addEventListener('mp:interest:submitted', renderInterestedState);
 
   
-  // Маска телефона: +7 (XXX) XXX-XX-XX — лёгкая, без зависимостей
+  // Phone mask: +7 (XXX) XXX-XX-XX — lightweight, no dependencies
   const maskPhoneValue = (raw) => {
     if (typeof raw !== 'string') return '';
     let d = raw.replace(/\D+/g, '');
     if (!d) return '';
-    // Приводим 8/9 к российскому формату +7
-    if (d[0] === '9') d = '7' + d; // без кода страны, начинаем с оператора
+    // Normalize 8/9 to the Russian +7 format
+    if (d[0] === '9') d = '7' + d; // without the country code, starting with the carrier
     else if (d[0] === '8') d = '7' + d.slice(1);
-    // Если не 7 — позволяем ввод других стран без форматирования
+    // If not 7 — allow other countries' input without formatting
     if (d[0] !== '7') return `+${d.slice(0, 15)}`;
     const len = d.length;
     let res = '+7';
@@ -724,7 +724,7 @@
     setTimeout(() => applyPhoneMask(el), 0);
   });
 
-  // Навигация по секциям (если появятся ссылки с href="#id")
+  // Section navigation (if links with href="#id" appear)
   root.addEventListener('click', (e) => {
     const a = e.target.closest('a[href^="#"]');
     if (!a) return;
@@ -736,7 +736,7 @@
     }
   });
 
-  // Копирование ID по клику на иконку в левом нижнем бейдже
+  // Copy the ID on click of the icon in the bottom-left badge
   root.addEventListener('click', async (e) => {
     const btn = e.target.closest('.mp-gallery__badge--bl .mp-badge__copy');
     if (!btn) return;
@@ -750,7 +750,7 @@
       await navigator.clipboard.writeText(idStr);
       showToast('Скопировано!');
     } catch (_) {
-      // Фолбэк: создаём временный input
+      // Fallback: create a temporary input
       const tmp = document.createElement('input');
       tmp.value = idStr;
       tmp.style.position = 'fixed';
@@ -763,7 +763,7 @@
     }
   });
 
-  // Утилиты форматирования (общие)
+  // Formatting utilities (shared)
   const fmtCurrency = (amount, currency = 'RUB') => {
     if (typeof amount !== 'number' || !isFinite(amount)) return '';
     try {
@@ -781,14 +781,14 @@
     if (typeof n !== 'number' || !isFinite(n)) return '';
     try { return new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 0 }).format(n); } catch (_) { return String(n); }
   };
-  // --- Новая логика заполнения 4x3 сетки цены (₽ / $* / €*) ---
-  // Курс ЦБ: хранится в формате RUB_PER[VAL] = сколько рублей за 1 единицу валюты.
-  // Эти значения можно обновить интегратором при загрузке страницы.
+  // --- New logic for filling the 4x3 price grid (₽ / $* / €*) ---
+  // CB rate: stored as RUB_PER[VAL] = how many rubles per 1 unit of currency.
+  // The integrator can update these values when the page loads.
   const CB_RATES_RUB_PER = {
-    USD: 95.00, // Пример: 1 USD = 95.00 RUB
-    EUR: 102.00 // Пример: 1 EUR = 102.00 RUB
+    USD: 95.00, // Example: 1 USD = 95.00 RUB
+    EUR: 102.00 // Example: 1 EUR = 102.00 RUB
   };
-  // Конвертация из рублей в валюту по таблице выше
+  // Convert from rubles to currency using the table above
   const convertFromRub = (rubAmount, code) => {
     if (typeof rubAmount !== 'number' || !isFinite(rubAmount)) return null;
     const rate = CB_RATES_RUB_PER[code];
@@ -803,17 +803,17 @@
   const renderPriceBreakdown = (data) => {
     const card = root.querySelector('.mp-price-card');
     if (!card) return;
-    // Новая сетка: ищем элементы по data-pb
+    // New grid: find elements by data-pb
     const getEl = (key) => card.querySelector(`[data-pb="${key}"]`);
     const priceRUB = (typeof data?.price === 'number') ? data.price : null;
     let pricePerSqmRUB = (typeof data?.pricePerSqm === 'number') ? data.pricePerSqm : null;
     if (pricePerSqmRUB == null && typeof data?.price === 'number' && typeof data?.totalAreaSqm === 'number' && data.totalAreaSqm > 0) {
       pricePerSqmRUB = Math.round(data.price / data.totalAreaSqm);
     }
-    // Заполняем рубли
+    // Fill in rubles
     if (priceRUB != null) { const el = getEl('price-rub'); if (el) el.textContent = fmtPlainNumber(priceRUB); }
     if (pricePerSqmRUB != null) { const el = getEl('sqm-rub'); if (el) el.textContent = fmtPlainNumber(pricePerSqmRUB); }
-    // Конвертация в USD / EUR
+    // Convert to USD / EUR
     ['USD','EUR'].forEach((code) => {
       if (priceRUB != null) {
         const v = convertFromRub(priceRUB, code);
@@ -826,17 +826,17 @@
         if (el2 && v2 != null) el2.textContent = fmtPlainNumber(v2);
       }
     });
-    // Заголовок первой ячейки (id="mp-price-breakdown-title") оставляем пустым по макету — не заполняем.
+    // The first cell's title (id="mp-price-breakdown-title") is left empty per the design — do not fill it.
     PriceBreakdown.reset();
     PriceBreakdown.updateHeight();
   };
 
-  // СТАРАЯ версия renderPriceBreakdown (табличная) удалена и заменена на новую выше.
+  // The OLD version of renderPriceBreakdown (table-based) was removed and replaced with the new one above.
 
-  // Упрощаем: не грузим тяжёлый JS API Яндекс. Работаем через iframe + лёгкое геокодирование.
+  // Simplification: we do not load the heavy Yandex JS API. We work via iframe + lightweight geocoding.
 
-  // Инициализация карты: получаем координаты → вставляем iframe с точкой
-  // Нормализация адреса: убираем квартиру/этаж/подъезд из строки, чтобы повысить шанс точного геокода
+  // Map initialization: get the coordinates → insert an iframe with the point
+  // Address normalization: remove the apartment/floor/entrance from the string to improve the chance of an accurate geocode
   const normalizeAddress = (addr) => {
     if (typeof addr !== 'string') return addr;
     let a = addr;
@@ -844,15 +844,15 @@
     a = a.replace(/\bквартира\s*\d+\b/gi, '');
     a = a.replace(/\bподъезд\s*\d+\b/gi, '');
     a = a.replace(/\bэтаж\s*\d+\b/gi, '');
-    // Частый формат корпуса: 117/1 → 117к1 (как отдаёт Яндекс)
+    // Frequent building format: 117/1 → 117k1 (as Yandex returns it)
     a = a.replace(/(\d+)\s*\/\s*(\d+)\b/g, '$1к$2');
-    a = a.replace(/\s*,\s*,+/g, ','); // двойные запятые
+    a = a.replace(/\s*,\s*,+/g, ','); // double commas
     a = a.replace(/\s{2,}/g, ' ').trim();
     a = a.replace(/,\s*$/,'');
     return a;
   };
   
-  // JSONP-геокодирование Яндекс (обходит CORS). Возвращает [lat, lng]
+  // Yandex JSONP geocoding (bypasses CORS). Returns [lat, lng]
   const jsonpGeocode = (addr) => {
     const address = normalizeAddress(addr);
     if (!address) return Promise.reject(new Error('Нет адреса для JSONP-геокодирования'));
@@ -892,7 +892,7 @@
       timer = setTimeout(() => { cleanup(); reject(new Error('JSONP: таймаут')); }, 8000);
     });
   };
-  // Альтернативный геокодер (OSM Nominatim) — без ключа. Возвращает [lat, lng]
+  // Alternative geocoder (OSM Nominatim) — no key. Returns [lat, lng]
   const osmGeocode = (addr) => {
     const address = normalizeAddress(addr);
     if (!address) return Promise.reject(new Error('Нет адреса для OSM-геокодирования'));
@@ -916,7 +916,7 @@
       : null;
     const addressRaw = (data && typeof data.address === 'string') ? data.address : addressAttr;
     const address = normalizeAddress(addressRaw);
-    // Пытаемся взять координаты из data-атрибутов (если интегратор их проставит)
+    // Try to take the coordinates from data attributes (if the integrator sets them)
     let lat = null; let lng = null;
     if (section) {
       const latAttr = section.getAttribute('data-lat');
@@ -933,17 +933,17 @@
       const src = `https://yandex.ru/map-widget/v1/?ll=${plng},${plat}&z=16&pt=${plng},${plat},pm2rdm`;
       const loading = eager ? 'eager' : 'lazy';
       container.innerHTML = `<iframe title="Карта" src="${src}" style="border:0;width:100%;height:100%" loading="${loading}" referrerpolicy="no-referrer-when-downgrade"></iframe>`;
-  // Обновим/создадим статичную картинку для печати
+  // Update/create the static image for printing
   const img = container.querySelector('img.mp-map__print') || (() => { const i = document.createElement('img'); i.className = 'mp-map__print'; container.appendChild(i); return i; })();
       try { img.alt = 'Карта'; } catch (_) {}
       try { img.decoding = 'sync'; img.loading = 'eager'; } catch (_) {}
   try { img.src = buildStaticMapUrl({ lat: plat, lng: plng, size: [container.clientWidth || 600, container.clientHeight || 400] }); container.classList.add('has-print-map'); } catch (_) {}
     };
 
-    // 1) если координаты заданы — рисуем сразу
+    // 1) if coordinates are given — draw immediately
   if (lat != null && lng != null) { buildIframeWithPoint(lat, lng); return; }
 
-    // 2) есть адрес — JSONP Яндекс → OSM → в крайнем случае поиск (может показать "1 найден")
+    // 2) address present — Yandex JSONP → OSM → as a last resort search (may show "1 found")
     jsonpGeocode(address)
       .then(([plat, plng]) => buildIframeWithPoint(plat, plng))
       .catch(() => osmGeocode(address)
@@ -952,21 +952,21 @@
           const q = encodeURIComponent(address || '');
           const src = `https://yandex.ru/map-widget/v1/?text=${q}&z=16`;
           container.innerHTML = `<iframe title="Карта" src="${src}" style="border:0;width:100%;height:100%" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>`;
-          // Нет точных координат — статичную карту формируем без маркера (просто по центру текста не поддерживается API), оставляем только iframe для печати
+          // No exact coordinates — build the static map without a marker (the API does not support centering on text), leave only the iframe for printing
           const img = container.querySelector('img.mp-map__print') || (() => { const i = document.createElement('img'); i.className = 'mp-map__print'; container.appendChild(i); return i; })();
           try { img.removeAttribute('src'); } catch (_) {}
         })
       );
   };
 
-  // Перед печатью гарантируем, что карта отрисована и не «ленивая»
+  // Before printing, make sure the map is rendered and not "lazy"
   const prepareMapForPrint = () => {
     const container = root.querySelector('#mp-map');
     if (!container) return;
-  // Если iframe ещё не вставлен — вставим быстрый поисковый вариант по адресу
+  // If the iframe is not inserted yet — insert a quick search variant by address
     let iframe = container.querySelector('iframe');
     if (!iframe) {
-      // Попытка взять адрес из данных/DOM
+      // Attempt to take the address from data/DOM
       const addrFromData = (__mp_currentData && __mp_currentData.address) || '';
       const addrFromDom = (root.querySelector('.mp-gallery .mp-address__text')?.textContent || '').trim();
       const address = addrFromData || addrFromDom || '';
@@ -974,7 +974,7 @@
         const q = encodeURIComponent(address);
         const src = `https://yandex.ru/map-widget/v1/?text=${q}&z=16`;
         container.innerHTML = `<iframe title="Карта" src="${src}" style="border:0;width:100%;height:100%" loading="eager" referrerpolicy="no-referrer-when-downgrade"></iframe>`;
-        // Попробуем создать статичную картинку, если известны координаты из секции
+        // Try to create a static image if the section has known coordinates
         const section = root.querySelector('#location');
         const latAttr = section?.getAttribute('data-lat');
         const lngAttr = section?.getAttribute('data-lng');
@@ -989,16 +989,16 @@
         }
         iframe = container.querySelector('iframe');
       } else {
-        // Если адрес недоступен, пробуем стандартную инициализацию
+        // If the address is unavailable, try the standard initialization
         try { initMap(__mp_currentData); } catch (_) {}
       }
     }
-    // Принудительно выключаем lazy-загрузку и перезапускаем загрузку
+    // Force off lazy loading and restart loading
     if (iframe) {
       try { iframe.setAttribute('loading', 'eager'); } catch (_) {}
       try { iframe.src = iframe.src; } catch (_) {}
     }
-    // Убедимся, что статичное изображение карты готово — подождём недолго
+    // Make sure the static map image is ready — wait briefly
     const img = container.querySelector('img.mp-map__print');
     if (img && !img.complete) {
       try {
@@ -1007,13 +1007,13 @@
           if (img.complete || img.naturalWidth > 0 || Date.now() - t0 > 1500) cb();
           else setTimeout(() => done(cb), 60);
         };
-        // Печать вызовется внешним кодом, тут мы лишь стараемся успеть прогрузить
+        // Printing is triggered by external code; here we just try to get it loaded in time
         done(() => {});
       } catch (_) {}
     }
   };
 
-  // Делегированный клик по превью галереи — один обработчик на корне
+  // Delegated click on gallery previews — a single handler on the root
   root.addEventListener('click', (e) => {
     const btn = e.target.closest('.mp-gallery__thumb');
     if (!btn || !root.contains(btn)) return;
@@ -1024,7 +1024,7 @@
     const isVideo = btn.getAttribute('data-type') === 'video';
     if (full && mainImg) {
       mainImg.src = full;
-      // обновим фон-блюр для квадратной области
+      // update the background blur for the square area
       const mainWrap = gallery.querySelector('.mp-gallery__main');
       if (mainWrap) {
         try {
@@ -1032,7 +1032,7 @@
           mainWrap.style.backgroundImage = `url('${full}')`;
           mainWrap.style.backgroundSize = 'cover';
           mainWrap.style.backgroundPosition = 'center';
-          // Фолбэк-фоновый <img> с блюром
+          // Fallback background <img> with blur
           let bg = mainWrap.querySelector('img.mp-gallery__bg');
           if (!bg) {
             bg = document.createElement('img');
@@ -1044,7 +1044,7 @@
           bg.src = full;
         } catch (_) {}
       }
-      // показываем кнопку play только на видео-кадре
+      // show the play button only on the video frame
       const playBtn = gallery.querySelector('.mp-gallery__play');
       if (playBtn) playBtn.hidden = !isVideo;
       gallery.querySelectorAll('.mp-gallery__thumb.is-active').forEach((el) => el.classList.remove('is-active'));
@@ -1054,34 +1054,34 @@
     }
   });
 
-  // =================== Лайтбокс фотографий ===================
+  // =================== Photo lightbox ===================
   const openPhotoModal = () => {
     const modal = root.querySelector('.mp-photo-modal');
     const gallery = root.querySelector('.mp-gallery');
     if (!modal || !gallery) return;
-    // Заголовок
+    // Title
     const title = (gallery.querySelector('.mp-title')?.textContent || '').trim();
     const titleEl = modal.querySelector('.mp-photo__title');
     if (titleEl) titleEl.textContent = title;
-    // Кнопка «Позвонить» — используем номер из карточки агента, если есть
+    // "Call" button — use the number from the agent card if available
     const phoneLink = root.querySelector('.mp-agent .mp-agent__phone');
     const callBtn = modal.querySelector('.mp-photo__call');
     if (callBtn) {
       const href = phoneLink?.getAttribute('href') || '#';
       callBtn.setAttribute('href', href);
     }
-    // Список превью (в галерее) и активный индекс — исключаем видео
+    // List of previews (in the gallery) and the active index — excluding video
     const allThumbs = Array.from(gallery.querySelectorAll('.mp-gallery__thumbs .mp-gallery__thumb'));
     const photoThumbs = allThumbs.filter((t) => t.getAttribute('data-type') !== 'video');
     const activePhotoIndex = Math.max(0, photoThumbs.findIndex((t) => t.classList.contains('is-active')));
-    // Если активен видео-элемент, в модалку подставим первую фотографию
+    // If the video item is active, put the first photo into the modal
     const activeIsVideo = !!allThumbs.find((t) => t.classList.contains('is-active') && t.getAttribute('data-type') === 'video');
     const mainSrc = activeIsVideo
       ? (photoThumbs[0]?.getAttribute('data-full') || photoThumbs[0]?.querySelector('img')?.getAttribute('src') || '')
       : (gallery.querySelector('.mp-gallery__image')?.getAttribute('src') || '');
     const img = modal.querySelector('.mp-photo__image');
     if (img && mainSrc) img.src = mainSrc;
-    // Превью в модалке
+    // Previews in the modal
     const thumbsWrap = modal.querySelector('.mp-photo__thumbs');
     if (thumbsWrap) {
       if (photoThumbs.length) {
@@ -1090,17 +1090,17 @@
           return `<button class="mp-gallery__thumb${i === activePhotoIndex ? ' is-active' : ''}" type="button" data-full="${src}"><img src="${src}" alt="Превью ${i + 1}"></button>`;
         }).join('');
       } else {
-        // Фолбэк — если нет миниатюр, но есть основной src
+        // Fallback — if there are no thumbnails but there is a main src
         thumbsWrap.innerHTML = mainSrc ? `<button class="mp-gallery__thumb is-active" type="button" data-full="${mainSrc}"><img src="${mainSrc}" alt="Превью"></button>` : '';
       }
     }
     updatePhotoNavVisibility();
-    // Прокрутить миниатюры так, чтобы активная была видна
+    // Scroll the thumbnails so the active one is visible
     try {
       const activeThumb = modal.querySelector('.mp-photo__thumbs .mp-gallery__thumb.is-active');
       activeThumb?.scrollIntoView({ behavior: 'instant', inline: 'center', block: 'nearest' });
     } catch (_) {}
-    // Показать модалку
+    // Show the modal
     modal.hidden = false;
     document.body.style.overflow = 'hidden';
     try { modal.querySelector('.mp-photo__image')?.focus?.(); } catch (_) {}
@@ -1112,9 +1112,9 @@
     document.body.style.overflow = '';
   };
 
-  // Открытие: клик по текущей фотографии (не по стрелкам/бейджам)
+  // Open: click on the current photo (not on arrows/badges)
   root.addEventListener('click', (e) => {
-    if (e.target.closest('.mp-gallery__play')) return; // не открывать фото, если клик по play
+    if (e.target.closest('.mp-gallery__play')) return; // do not open the photo if the click is on play
     const img = e.target.closest('.mp-gallery__main .mp-gallery__image');
     if (!img) return;
     e.preventDefault();
@@ -1129,7 +1129,7 @@
     }
   });
 
-  // =================== Видео: открытие/закрытие модалки ===================
+  // =================== Video: open/close modal ===================
   const openVideoModal = (src) => {
     const modal = root.querySelector('.mp-video-modal');
     if (!modal) return;
@@ -1150,33 +1150,33 @@
     const video = modal.querySelector('.mp-video__el');
     modal.hidden = true;
     document.body.style.overflow = '';
-    // Останавливаем и очищаем источник
+    // Stop and clear the source
     if (video) {
       try { video.pause(); } catch (_) {}
       try { video.removeAttribute('src'); video.load?.(); } catch (_) {}
     }
   };
-  // Кнопка play на главном фото
+  // Play button on the main photo
   root.addEventListener('click', (e) => {
     const btn = e.target.closest('.mp-gallery__play');
     if (!btn) return;
     e.preventDefault();
-    // Источник видео: data-video на кнопке или на .mp-gallery, далее фолбэк (пусто)
+    // Video source: data-video on the button or on .mp-gallery, then a fallback (empty)
     const gallery = root.querySelector('.mp-gallery');
     const src = btn.getAttribute('data-video')
       || gallery?.getAttribute('data-video')
       || '';
     openVideoModal(src);
   });
-  // Закрытие видео по overlay/крестику уже обрабатывается общим обработчиком; добавим явный вызов
+  // Video close on overlay/close icon is already handled by the common handler; adding an explicit call
   root.addEventListener('click', (e) => {
     const isClose = e.target.closest('.mp-video-modal [data-close="true"]');
     if (!isClose) return;
     closeVideoModal();
   });
-  // ESC закрывает видео
+  // ESC closes the video
   window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeVideoModal(); });
-  // Навигация внутри лайтбокса
+  // Navigation inside the lightbox
   root.addEventListener('click', (e) => {
     const prev = e.target.closest('.mp-photo-modal .mp-photo__prev');
     const next = e.target.closest('.mp-photo-modal .mp-photo__next');
@@ -1189,7 +1189,7 @@
     const target = next ? Math.min(idx + 1, thumbs.length - 1) : Math.max(idx - 1, 0);
     if (thumbs[target]) thumbs[target].click();
   });
-  // Клик по миниатюре внутри лайтбокса
+  // Click on a thumbnail inside the lightbox
   root.addEventListener('click', (e) => {
     const btn = e.target.closest('.mp-photo-modal .mp-photo__thumbs .mp-gallery__thumb');
     if (!btn) return;
@@ -1202,7 +1202,7 @@
     updatePhotoNavVisibility();
     try { btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' }); } catch (_) {}
   });
-  // Закрытие по Esc дополнительно
+  // Additional close on Esc
   window.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') { closePhotoModal(); return; }
     const modal = root.querySelector('.mp-photo-modal');
@@ -1215,7 +1215,7 @@
       prev?.click();
     }
   });
-  // Клик по оверлею обрабатывается общим обработчиком data-close="true" выше
+  // Overlay click is handled by the common data-close="true" handler above
 
   function updatePhotoNavVisibility() {
     const modal = root.querySelector('.mp-photo-modal');
@@ -1230,7 +1230,7 @@
     if (nextBtn) nextBtn.hidden = isLast;
   }
 
-  // Кнопка «следующее фото» на текущем изображении
+  // "Next photo" button on the current image
   root.addEventListener('click', (e) => {
     const nextBtn = e.target.closest('.mp-gallery__next');
     if (!nextBtn) return;
@@ -1242,11 +1242,11 @@
     if (!thumbs.length) return;
     const currentIndex = thumbs.findIndex((t) => t.classList.contains('is-active'));
     const nextIndex = Math.min((currentIndex >= 0 ? currentIndex + 1 : 1), thumbs.length - 1);
-    // клик по следующему превью — переиспользуем имеющуюся логику
+    // click the next preview — reuse the existing logic
     thumbs[nextIndex].click();
   });
 
-  // Кнопка «предыдущее фото»
+  // "Previous photo" button
   root.addEventListener('click', (e) => {
     const prevBtn = e.target.closest('.mp-gallery__prev');
     if (!prevBtn) return;
@@ -1261,7 +1261,7 @@
     thumbs[prevIndex].click();
   });
 
-  // Показываем/скрываем стрелки на первом/последнем фото
+  // Show/hide arrows on the first/last photo
   const updateGalleryNavVisibility = () => {
     const gallery = root.querySelector('.mp-gallery');
     if (!gallery) return;
@@ -1279,9 +1279,9 @@
     if (prevBtn) prevBtn.hidden = isFirst;
     if (nextBtn) nextBtn.hidden = isLast;
   };
-  // Обновляем видимость при изменении галереи
+  // Update visibility when the gallery changes
   root.addEventListener('mp:gallery:change', updateGalleryNavVisibility);
-  // Синхронизируем активное состояние индикаторов при смене фото
+  // Sync the active state of indicators when the photo changes
   root.addEventListener('mp:gallery:change', () => {
     const gallery = root.querySelector('.mp-gallery');
     if (!gallery) return;
@@ -1295,7 +1295,7 @@
     });
   });
 
-  // Клик по индикатору → переключение фото
+  // Click on an indicator → switch photo
   root.addEventListener('click', (e) => {
     const ind = e.target.closest('.mp-gallery__indicator');
     if (!ind) return;
@@ -1305,39 +1305,39 @@
     const thumbs = Array.from(gallery.querySelectorAll('.mp-gallery__thumbs .mp-gallery__thumb'));
     if (thumbs[idx]) thumbs[idx].click();
   });
-  // И при первичном рендере данных
+  // And on the initial data render
   root.addEventListener('mp:data', () => setTimeout(updateGalleryNavVisibility, 0));
 
-  // Рендер всей карточки по переданным данным
+  // Render the whole card from the given data
   const renderAll = (data) => {
     __mp_currentData = data || __mp_currentData;
     const gallery = root.querySelector('.mp-gallery');
     if (!gallery || !data) return;
 
-    // Заголовок и адрес
+    // Title and address
     const titleEl = gallery.querySelector('.mp-title');
     const addrEl = gallery.querySelector('.mp-address__text');
     if (titleEl) titleEl.textContent = data.name || '';
     if (addrEl) addrEl.textContent = data.address || '';
 
-    // Главная фотка/видео и превью
+    // Main photo/video and previews
     const mainImg = gallery.querySelector('.mp-gallery__image');
     const playBtn = gallery.querySelector('.mp-gallery__play');
     const videoSrc = (typeof data.video === 'string' && data.video.trim()) ? data.video.trim() : (gallery.getAttribute('data-video') || '').trim();
     const hasPhotos = Array.isArray(data.photos) && data.photos.length;
     const hasVideo = !!videoSrc;
     
-    // Функция для извлечения постера из видео
+    // Function to extract a poster from the video
     const extractVideoPoster = (videoUrl, callback) => {
       const video = document.createElement('video');
       video.crossOrigin = 'anonymous';
       video.preload = 'metadata';
-      video.muted = true; // обязательно для автовоспроизведения
-      video.currentTime = 1.5; // берём кадр с 1.5 секунды
+      video.muted = true; // required for autoplay
+      video.currentTime = 1.5; // take the frame at 1.5 seconds
       
       video.addEventListener('loadeddata', () => {
         try {
-          // Пробуем извлечь через Canvas
+          // Try to extract via Canvas
           const canvas = document.createElement('canvas');
           canvas.width = video.videoWidth || 320;
           canvas.height = video.videoHeight || 240;
@@ -1347,19 +1347,19 @@
           callback(posterUrl);
         } catch (err) {
           console.warn('Canvas extraction failed, trying video poster approach:', err);
-          // Фолбэк: используем сам видео элемент как источник
-          callback(videoUrl + '#t=1'); // URL с тайм-кодом для постера
+          // Fallback: use the video element itself as the source
+          callback(videoUrl + '#t=1'); // URL with a timecode for the poster
         }
       });
       
       video.addEventListener('error', (e) => {
         console.warn('Ошибка загрузки видео для постера:', e);
-        callback(hasPhotos ? data.photos[0] : ''); // финальный фолбэк
+        callback(hasPhotos ? data.photos[0] : ''); // final fallback
       });
       
-      // Тайм-аут на случай долгой загрузки
+      // Timeout in case loading takes long
       setTimeout(() => {
-        if (video.readyState < 2) { // если видео не загрузилось за 3 сек
+        if (video.readyState < 2) { // if the video did not load within 3 seconds
           callback(hasPhotos ? data.photos[0] : '');
         }
       }, 3000);
@@ -1368,18 +1368,18 @@
     };
 
     if (hasPhotos || hasVideo) {
-      // Установить основной кадр
+      // Set the main frame
       if (mainImg) {
         if (hasVideo) {
-          // Временно устанавливаем фолбэк, пока извлекаем постер из видео
+          // Temporarily set the fallback while extracting the poster from the video
           const fallbackPoster = hasPhotos ? data.photos[0] : '';
           mainImg.src = fallbackPoster;
           
-          // Извлекаем настоящий постер из видео
+          // Extract the real poster from the video
           extractVideoPoster(videoSrc, (posterUrl) => {
             if (posterUrl && mainImg) {
               mainImg.src = posterUrl;
-              // Обновляем фон тоже
+              // Update the background too
               const mainWrap = gallery.querySelector('.mp-gallery__main');
               if (mainWrap) {
                 try {
@@ -1389,7 +1389,7 @@
                   if (bg) bg.src = posterUrl;
                 } catch (_) {}
               }
-              // Обновляем превью видео в карусели
+              // Update the video preview in the carousel
               const videoThumb = gallery.querySelector('.mp-gallery__thumb[data-type="video"]');
               if (videoThumb) {
                 const thumbImg = videoThumb.querySelector('img');
@@ -1403,7 +1403,7 @@
         }
         try { mainImg.setAttribute('loading', 'eager'); } catch (_) {}
         
-        // Настройка фона (будет обновлена асинхронно для видео)
+        // Background setup (will be updated asynchronously for video)
         const mainWrap = gallery.querySelector('.mp-gallery__main');
         if (mainWrap) {
           const initialBgSrc = hasVideo ? (hasPhotos ? data.photos[0] : '') : data.photos[0];
@@ -1424,12 +1424,12 @@
           } catch (_) {}
         }
       }
-      // Видимость и источник play-кнопки: показываем только при загрузке, если первым идёт видео
+      // Visibility and source of the play button: shown on load only if the video comes first
       if (playBtn) {
-        playBtn.hidden = !hasVideo; // при загрузке: если есть видео, показываем (так как первым будет видео)
+        playBtn.hidden = !hasVideo; // on load: if there is a video, show it (since the video comes first)
         if (hasVideo) playBtn.setAttribute('data-video', videoSrc); else playBtn.removeAttribute('data-video');
       }
-      // Собираем превью: сначала видео (если есть), затем фото
+      // Build previews: video first (if any), then photos
       const thumbsWrap = gallery.querySelector('.mp-gallery__thumbs');
       if (thumbsWrap) {
         const parts = [];
@@ -1452,7 +1452,7 @@
         }
         thumbsWrap.innerHTML = parts.join('');
       }
-      // Индикаторы карусели (мобайл): создаём/обновляем
+      // Carousel indicators (mobile): create/update
       let indicators = gallery.querySelector('.mp-gallery__indicators');
       if (!indicators) {
         indicators = document.createElement('div');
@@ -1468,12 +1468,12 @@
       indicators.innerHTML = Array.from({ length: totalItems }).map((_, i) => (
         `<button type="button" class="mp-gallery__indicator${i === 0 ? ' is-active' : ''}" aria-label="Показать элемент ${i + 1}" data-index="${i}"></button>`
       )).join('');
-      // Обновляем бейдж количества (включая видео)
+      // Update the count badge (including video)
       const badge = gallery.querySelector('.mp-gallery__badge .mp-badge__text');
       if (badge) badge.textContent = `${totalItems} фото`;
     }
 
-    // Бейдж с ID (внизу слева): берём из параметра id в URL
+    // ID badge (bottom left): taken from the id URL parameter
     try {
       const url = new URL(window.location.href);
       const objectId = url.searchParams.get('id');
@@ -1489,7 +1489,7 @@
       }
     } catch (_) { /* no-op */ }
 
-    // Факты
+    // Facts
     const factsWrap = root.querySelector('#overview .mp-facts');
     if (factsWrap && Array.isArray(data.facts)) {
       const iconByIndex = [
@@ -1503,7 +1503,7 @@
         const shortMap = {
           'Общая площадь': 'Общая пл.',
           'Жилая площадь': 'Жилая пл.',
-          // Другие потенциальные сокращения можно добавить здесь при необходимости
+          // Other potential abbreviations can be added here if needed
         };
         const labelShort = shortMap[label] || label;
         return (
@@ -1521,7 +1521,7 @@
       });
     }
 
-    // Цена и цена за м²
+    // Price and price per m²
     const priceEl = root.querySelector('.mp-overview__info .mp-price');
     const pricePerEl = root.querySelector('.mp-overview__info .mp-price-per');
     if (priceEl) {
@@ -1542,10 +1542,10 @@
       }
     }
 
-    // Расширенная таблица стоимости
+    // Extended price breakdown
     renderPriceBreakdown(data);
 
-    // Условия сделки (2x2 сетка)
+    // Deal terms (2x2 grid)
     const termsWrap = root.querySelector('.mp-terms__grid');
     if (termsWrap) {
       const t = data.terms || {};
@@ -1564,7 +1564,7 @@
       )).join('');
     }
 
-    // Об объекте (4x3)
+    // About the property (4x3)
     const aboutWrap = root.querySelector('.mp-about__grid');
     if (aboutWrap && Array.isArray(data.about)) {
       aboutWrap.innerHTML = data.about.map(({ label, value }) => (
@@ -1575,7 +1575,7 @@
       )).join('');
     }
 
-    // О здании (2x3)
+    // About the building (2x3)
     const buildingWrap = root.querySelector('.mp-building__grid');
     if (buildingWrap && Array.isArray(data.building)) {
       buildingWrap.innerHTML = data.building.map(({ label, value }) => (
@@ -1586,50 +1586,50 @@
       )).join('');
     }
 
-    // Описание (plain text)
+    // Description (plain text)
     const descEl = root.querySelector('.mp-description__text');
     if (descEl && typeof data.description === 'string') {
       descEl.textContent = data.description;
     }
 
-    // Расположение: инициализируем карту
+    // Location: initialize the map
     try { initMap(data); } catch (err) { /* no-op */ }
   };
 
-  // Инициализация: если данные уже глобально доступны — рендерим; иначе ждём события mp:data
+  // Initialization: if the data is already globally available — render; otherwise wait for the mp:data event
   const initialData = (typeof window !== 'undefined' && window.MP_MOCK) ? window.MP_MOCK : null;
   if (initialData) {
     renderAll(initialData);
-    // после первичного рендера сразу скорректируем видимость стрелок
+    // after the initial render, adjust arrow visibility right away
     setTimeout(() => {
       try { updateGalleryNavVisibility(); } catch (_) {}
       try { TitleAutoFit.fitNow(); } catch (_) {}
     }, 0);
-    // Инициализация QR картинок
+    // QR image initialization
     try { updateQrImages('all'); } catch (_) {}
   }
   root.addEventListener('mp:data', (e) => {
     if (e && e.detail) {
       renderAll(e.detail);
-      // после изменения данных пересчитаем размер заголовка
+      // after the data changes, recalculate the title size
       setTimeout(() => { try { TitleAutoFit.fitNow(); } catch (_) {} }, 0);
     }
   });
 
-  // Хуки печати: до открытия диалога печати прогружаем карту без lazy
+  // Print hooks: before the print dialog opens, load the map without lazy
   const fitTitleForPrint = () => {
     const title = root.querySelector('.mp-gallery .mp-title');
     if (!title) return;
-    // Сохраняем исходный инлайн font-size (если есть)
+    // Save the original inline font-size (if any)
     if (!title.dataset.printOriginalFontSize) {
       title.dataset.printOriginalFontSize = title.style.fontSize || '';
     }
     const originalComputed = parseFloat(getComputedStyle(title).fontSize) || 48;
-    // Вычисляем доступную ширину — ширина родителя или root
+    // Compute the available width — parent width or root
     const parent = title.parentElement || root;
-    const available = (parent.clientWidth || 0) - 4; // небольшой запас
+    const available = (parent.clientWidth || 0) - 4; // small margin
     if (available <= 0) return;
-    // Бинарный поиск по уменьшению размера
+    // Binary search reducing the size
     let low = 8;
     let high = originalComputed;
     const span = document.createElement('span');
@@ -1641,9 +1641,9 @@
       const mid = (low + high) / 2;
       span.style.fontSize = mid + 'px';
       if (span.offsetWidth <= available) {
-        low = mid; // можно больше
+        low = mid; // can go bigger
       } else {
-        high = mid; // слишком широко
+        high = mid; // too wide
       }
     }
     const finalSize = Math.min(originalComputed, low);
@@ -1658,7 +1658,7 @@
       title.style.fontSize = orig;
       delete title.dataset.printOriginalFontSize;
     }
-    // Перезапустим обычный автофит для режима экрана
+    // Restart the regular autofit for screen mode
     try { TitleAutoFit.fitNow(); } catch (_) {}
     PriceBreakdown.restoreAfterPrint();
   };
