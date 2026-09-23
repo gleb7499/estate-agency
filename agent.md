@@ -2,6 +2,8 @@
 
 # 1. Purpose of this document
 
+> Note (2026-09): `js/script.js` has since been split into ES modules — `js/main.js` (bootstrap) plus `js/modules/*.js` (state, format, layout, price, share, interest, map, gallery) — and is loaded via `<script type="module" src="js/main.js">`. All integration contracts below (custom events, `MP.sendToServer`, `window.MP_MOCK`) are unchanged.
+
 This file is the single reference for generating the HTML/CSS/JS of a **local, autonomous property card page**, which a colleague (Ilya) will then integrate into a legacy project. The document sets hard rules on isolation, class naming, the structure of the delivered files, and the format of instructions for the integrator. You do the frontend — the integrator inserts it into PHP.
 
 ---
