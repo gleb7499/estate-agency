@@ -1,0 +1,9 @@
+# Demo video is not committed (see README "Demo video")
+assets/mock/video.mp4
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+node_modules/

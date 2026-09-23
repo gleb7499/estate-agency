@@ -13,8 +13,11 @@
       'assets/mock/apartment-4.jpg',
       'assets/mock/apartment-5.jpg',
     ],
-    // Video for the first carousel item
-    video: 'assets/mock/video.mp4',
+    // Video for the first carousel item.
+    // The demo video is not committed to the repo (see README "Demo video").
+    // Put your own file at assets/mock/video.mp4 and restore the path here,
+    // or pass any other URL via the `video` field.
+    video: '',
     // The poster will be extracted automatically from the video itself
     facts: [
       { label: 'Общая площадь', value: '55 м²' },
