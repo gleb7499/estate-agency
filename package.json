@@ -1,0 +1,15 @@
+{
+  "name": "estate-agency",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Property card page demo (markup + styles + vanilla JS modules)",
+  "scripts": {
+    "lint": "eslint js/",
+    "lint:fix": "eslint js/ --fix",
+    "serve": "python -m http.server 8000"
+  },
+  "devDependencies": {
+    "eslint": "^9.0.0"
+  }
+}
