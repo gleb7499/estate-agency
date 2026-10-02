@@ -1,11 +1,12 @@
 // Centralized mock data for the property card
 // No network requests; available globally as window.MP_MOCK
+// NOTE: demo data only — no real client information
 
 (function(){
   const MP_MOCK = {
-    id: 58557936,
-    name: '2-комн. квартира, 55 м², 2/4 эт.',
-    address: 'Иркутск, Октябрьский, Карла Либкнехта, 112',
+    id: 10050011,
+    name: '2-комн. квартира, 58 м², 3/5 эт.',
+    address: 'Демо-город, Примерный проспект, 7',
     photos: [
       'assets/mock/apartment-1.jpg',
       'assets/mock/apartment-2.jpg',
@@ -20,21 +21,21 @@
     video: '',
     // The poster will be extracted automatically from the video itself
     facts: [
-      { label: 'Общая площадь', value: '55 м²' },
-      { label: 'Жилая площадь', value: '32 м²' },
-      { label: 'Кухня', value: '20 м²' },
-      { label: 'Этаж', value: '2/4' },
-      { label: 'Год постройки', value: '2014' },
+      { label: 'Общая площадь', value: '58 м²' },
+      { label: 'Жилая площадь', value: '34 м²' },
+      { label: 'Кухня', value: '18 м²' },
+      { label: 'Этаж', value: '3/5' },
+      { label: 'Год постройки', value: '2018' },
     ],
-    price: 12300000,         // in the base currency (RUB)
+    price: 8750000,          // in the base currency (RUB)
     currency: 'RUB',         // currency code
-    pricePerSqm: 223636,     // ₽/m², can be left null — will be computed from price and area
-    totalAreaSqm: 55,        // for computing pricePerSqm when needed
+    pricePerSqm: 150862,     // ₽/m², can be left null — will be computed from price and area
+    totalAreaSqm: 58,        // for computing pricePerSqm when needed
     priceBreakdownTitle: 'Структура стоимости',
     priceBreakdown: [
-      { label: 'Стоимость объекта', value: 12300000, type: 'currency', accent: true },
-      { label: 'Первоначальный взнос (20%)', value: 2460000, type: 'currency', note: 'Рекомендация для одобрения ипотеки' },
-      { label: 'Ежемесячный платёж (30 лет)', value: '≈ 54 300 ₽/мес', note: 'Расчёт при ставке 12% годовых' },
+      { label: 'Стоимость объекта', value: 8750000, type: 'currency', accent: true },
+      { label: 'Первоначальный взнос (20%)', value: 1750000, type: 'currency', note: 'Рекомендация для одобрения ипотеки' },
+      { label: 'Ежемесячный платёж (30 лет)', value: '≈ 48 900 ₽/мес', note: 'Расчёт при ставке 12% годовых' },
     ],
     // Deal terms ("Terms" section)
     terms: {
@@ -45,33 +46,33 @@
     },
     // About the property ("About the property" section) — 4x3
     about: [
-      { label: 'Этаж', value: '10 из 11' },
-      { label: 'Балкон/Лоджия', value: 'Балкон' },
+      { label: 'Этаж', value: '3 из 5' },
+      { label: 'Балкон/Лоджия', value: 'Лоджия' },
       { label: 'Отопление', value: 'Центральное' },
 
-      { label: 'Общая площадь', value: '51 м²' },
-      { label: 'Площадь балкона', value: '2,8 м²' },
-      { label: 'Вид из окон', value: 'Во двор' },
+      { label: 'Общая площадь', value: '58 м²' },
+      { label: 'Площадь балкона', value: '3,2 м²' },
+      { label: 'Вид из окон', value: 'На улицу' },
 
-      { label: 'Жилая площадь', value: '32 м²' },
+      { label: 'Жилая площадь', value: '34 м²' },
       { label: 'Санузел', value: '1 совмещенный' },
       { label: 'Газ', value: 'Нет' },
 
-      { label: 'Площадь кухни', value: '20 м²' },
+      { label: 'Площадь кухни', value: '18 м²' },
       { label: 'Планировка', value: 'Изолированная' },
-      { label: 'Ремонт', value: 'Косметический' },
+      { label: 'Ремонт', value: 'Евроремонт' },
     ],
     // About the building ("About the building" section) — 2x3 per the design
     building: [
-      { label: 'Тип дома', value: 'Монолитно-кирпичный' },
+      { label: 'Тип дома', value: 'Монолитный' },
       { label: 'Мусоропровод', value: 'Нет' },
-      { label: 'Год постройки', value: '2014' },
+      { label: 'Год постройки', value: '2018' },
 
-      { label: 'Лифт', value: 'Грузовой' },
+      { label: 'Лифт', value: 'Пассажирский' },
       { label: 'Новый дом', value: 'Да' },
     ],
     // Seller's description
-    description: 'Продается квартира в самом центре города с шикарным видом на город. Просторная кухня-гостиная, большая спальная комната, совмещенный санузел. Во дворе ЖК имеется подземная парковка, видеонаблюдение, закрытая территория двора, 3 шлагбаума. В шаговой доступности 2 муниципальных детских сада, 1 частный детский сад, школа 14, детские кружки, салоны красоты, магазины, МТЦ "НОВЫЙ", клиника "Юнилаб", спортзал, зал единоборств. Обмен не интересует, только продажа.',
+    description: 'Демонстрационное описание объекта. Просторная двухкомнатная квартира с функциональной планировкой: кухня-гостиная, изолированная спальня, совмещенный санузел. Окна выходят на тихий двор. В подъезде консьерж, во дворе наземный паркинг и детская площадка. Район с развитой инфраструктурой: школа, детский сад, магазины в шаговой доступности. Показ по предварительной записи.',
   };
 
   // Export to the global scope safely
